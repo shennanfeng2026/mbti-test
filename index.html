@@ -3,74 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评（去伪装·终极版）</title>
+    <title>MBTI 八维深度测评（翻页·去伪装版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' },
-                        indigo: { 500: '#6366f1', 600: '#4f46e5' },
-                        red: { 600: '#dc2626' },
-                        green: { 600: '#16a34a' }
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { colors: { slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' }, indigo: { 500: '#6366f1', 600: '#4f46e5' }, red: { 600: '#dc2626' }, green: { 600: '#16a34a' } } } } }
     </script>
     <style>
-        .slider { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: linear-gradient(to right, #ef4444, #fbbf24, #10b981); outline: none; transition: background 0.3s; }
+        .slider { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: linear-gradient(to right, #ef4444, #fbbf24, #10b981); outline: none; }
         .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .card { transition: all 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        .slider::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans min-h-screen">
-<div id="app" class="max-w-5xl mx-auto py-8 px-4 md:px-6">
-    <header class="text-center mb-12">
-        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">MBTI 八维深度测评</h1>
-        <div class="h-1 w-24 bg-gradient-to-r from-indigo-500 to-purple-600 mx-auto mb-6 rounded-full"></div>
-        <p class="text-slate-600 max-w-3xl mx-auto mb-4">52 道深度题目 · 包含“面具撕除”校验题 · 能量拮抗算法</p>
-        <p class="text-sm text-slate-500 bg-slate-100 inline-block px-4 py-2 rounded-full">数据本地保存 · 隐私安全</p>
-        
-        <div class="mt-10 max-w-2xl mx-auto">
-            <div class="flex justify-between text-sm text-slate-600 mb-3">
-                <span>进度：<span id="progress-count">0</span>/52</span>
-                <span id="progress-percent">0%</span>
+<div class="max-w-5xl mx-auto py-8 px-4">
+    <header class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">MBTI 八维深度测评（去伪装版）</h1>
+        <p class="text-slate-600 mb-6">52 道私下本能题 · 翻页设计 · 结果更贴近真实自我</p>
+
+        <!-- 进度显示 -->
+        <div class="flex justify-center items-center gap-6 mb-8">
+            <span class="text-lg font-semibold">第 <span id="current-page">1</span> / 7 页</span>
+            <span class="text-lg font-semibold">已答 <span id="answered-count">0</span>/52</span>
+            <div class="w-64 bg-slate-200 rounded-full h-3">
+                <div id="total-progress" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-            <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
+        </div>
+
+        <!-- 手机端引导提示 -->
+        <div class="block md:hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 text-sm">
+            <p class="font-bold text-amber-800 mb-2">答题提示：</p>
+            <p>• <span class="text-red-600 font-bold">红色端</span> = 更认同左侧描述</p>
+            <p>• <span class="text-green-600 font-bold">绿色端</span> = 更认同右侧描述</p>
+            <p>• <span class="font-bold">拖动幅度越大 = 认可度越强</span>（轻微拖 = 稍认同，完全中立 = 不偏向）</p>
         </div>
     </header>
 
-    <div id="quiz-container" class="space-y-8 mb-12"></div>
+    <div id="quiz-container" class="space-y-8"></div>
 
-    <div class="text-center border-t border-slate-200 pt-12">
-        <button id="calculate-btn" onclick="calculateResults()" disabled
-                class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xl font-bold py-5 px-20 rounded-3xl shadow-2xl hover:opacity-90 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-            生成深度报告
-        </button>
-        <div class="mt-6">
-            <button onclick="clearStorage()" class="text-sm text-slate-500 hover:text-slate-700 underline transition-colors">清除进度重新开始</button>
-        </div>
+    <!-- 翻页按钮 -->
+    <div class="flex justify-between mt-12">
+        <button id="prev-btn" onclick="prevPage()" class="px-8 py-4 bg-slate-200 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">上一页</button>
+        <button id="next-btn" onclick="nextPage()" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold">下一页</button>
     </div>
 
-    <div id="result-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-5xl w-full p-8 md:p-10 shadow-2xl overflow-y-auto max-h-[95vh]">
-            <div id="result-content"></div>
-            <div class="flex gap-4 mt-10">
-                <button onclick="location.reload()" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-bold hover:opacity-90 transition">重新测试</button>
-                <button onclick="shareResults()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-bold transition">复制结果</button>
-            </div>
-        </div>
+    <div class="text-center mt-12">
+        <button id="calculate-btn" onclick="calculateResults()" disabled class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xl font-bold py-5 px-20 rounded-3xl shadow-2xl disabled:opacity-50">
+            生成深度报告
+        </button>
     </div>
 </div>
 
 <script>
-// ============ 1. 深度优化题库（含冲突校验） ============
+// 题库（使用你最新的去伪装版 52 题）
 const rawQuestions = [
     // 保留原高质量题，同时替换/优化 10 道偏职场/社会化的题为“去伪装”私下本能题
     // 前 42 道保留原题（核心经典题不变）
@@ -132,89 +116,90 @@ const rawQuestions = [
     { id: 51, left: "Fi", right: "Te", lText: "私下做决定时，我最在意是否违背了自己的核心价值观", rText: "私下做决定时，我最在意是否能高效达成目标", reversed: false },
     { id: 52, left: "Ni", right: "Te", lText: "独处反思时，我更关注事情的长远意义和潜在走向", rText: "独处反思时，我更关注如何实际执行和优化结果", reversed: false }
 ];
-// ============ 2. 核心变量 ============
+
+// 分页设置
+const QUESTIONS_PER_PAGE = 8;
+let currentPage = 0;
 let shuffledQuestions = [];
 let userAnswers = {};
-const STORAGE_KEY = 'mbti_eight_functions_v3_final';
-const TOTAL_QUESTIONS = rawQuestions.length;
+const STORAGE_KEY = 'mbti_paged_v1';
 
-// ============ 3. 初始化 ============
 function startApp() {
-    try {
-        loadAnswers();
-        // 每次随机打乱
-        shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
-        renderQuestions();
-        updateProgress();
-    } catch (e) {
-        console.error("Init Error", e);
-        setTimeout(startApp, 500);
-    }
+    loadAnswers();
+    shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
+    renderPage();
+    updateProgress();
 }
 
-function loadAnswers() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) userAnswers = JSON.parse(saved).answers || {};
-    } catch (e) { userAnswers = {}; }
-}
-
-function renderQuestions() {
+function renderPage() {
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
-    shuffledQuestions.forEach((q, idx) => {
+    const start = currentPage * QUESTIONS_PER_PAGE;
+    const end = Math.min(start + QUESTIONS_PER_PAGE, shuffledQuestions.length);
+    const pageQuestions = shuffledQuestions.slice(start, end);
+
+    pageQuestions.forEach((q, idx) => {
+        const globalIdx = start + idx;
         const savedValue = userAnswers[q.id] ?? 5;
         const leftText = q.reversed ? q.rText : q.lText;
         const rightText = q.reversed ? q.lText : q.rText;
 
         const div = document.createElement('div');
-        div.className = 'card bg-white p-6 md:p-8 rounded-3xl shadow-md border border-slate-100 fade-in';
-        div.style.animationDelay = `${Math.min(idx * 0.04, 0.8)}s`;
-
-div.innerHTML = `
-    <div class="flex justify-between items-center mb-6">
-        <span class="text-sm font-semibold px-4 py-2 bg-slate-100 text-slate-600 rounded-full">${idx + 1}/52</span>
-    </div>
-    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <!-- 左右文字：手机上下，电脑并排 -->
-        <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
-            <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">
-                ${leftText}
+        div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm';
+        div.innerHTML = `
+            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/52</div>
+            <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
+                <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
+                <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
+                <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">${rightText}</div>
             </div>
-            <div class="hidden md:block text-sm text-slate-400">VS</div>
-            <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">
-                ${rightText}
+            <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
+            <div class="py-4">
+                <input type="range" min="0" max="10" value="${savedValue}" class="slider"
+                       id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                <div class="flex justify-between mt-4 text-sm font-medium">
+                    <span class="text-red-600">强烈左倾</span>
+                    <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
+                    <span class="text-green-600">强烈右倾</span>
+                </div>
             </div>
-        </div>
-        
-        <!-- 手机端显示 VS -->
-        <div class="block md:hidden text-center text-sm text-slate-500 mb-4 font-medium">VS</div>
-
-        <!-- 滑块 -->
-        <div class="py-4">
-            <input type="range" min="0" max="10" value="${savedValue}" class="slider"
-                   id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
-            <div class="flex justify-between mt-4 text-sm font-medium">
-                <span class="text-red-600">强烈左倾</span>
-                <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
-                <span class="text-green-600">强烈右倾</span>
-            </div>
-        </div>
-    </div>
-`;
+        `;
         container.appendChild(div);
     });
+
+    // 更新按钮状态
+    document.getElementById('prev-btn').disabled = currentPage === 0;
+    const allAnswered = shuffledQuestions.every(q => userAnswers[q.id] !== undefined);
+    document.getElementById('calculate-btn').disabled = !allAnswered;
+    document.getElementById('current-page').textContent = currentPage + 1;
 }
 
-function getDisplayText(value) {
-    value = parseInt(value);
-    if (value <= 2) return "强烈左倾";
-    if (value <= 4) return "倾向左侧";
-    if (value === 5) return "完全中立";
-    if (value <= 7) return "倾向右侧";
-    return "强烈右倾";
+function nextPage() {
+    if ((currentPage + 1) * QUESTIONS_PER_PAGE < shuffledQuestions.length) {
+        currentPage++;
+        renderPage();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
 }
 
+function prevPage() {
+    if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+}
+
+function updateProgress() {
+    const answered = Object.keys(userAnswers).length;
+    const percent = Math.round((answered / TOTAL_QUESTIONS) * 100);
+    document.getElementById('answered-count').textContent = answered;
+    document.getElementById('total-progress').style.width = `${percent}%`;
+}
+
+// 其余函数（onSliderChange, saveAnswer, calculateResults, determineType, showModal 等）保持不变
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
     userAnswers[id] = value;
@@ -388,11 +373,8 @@ function clearStorage() {
     if(confirm('确定重置？')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }
 }
 
-// 启动
-if (document.readyState === "complete" || document.readyState === "interactive") startApp();
-else document.addEventListener('DOMContentLoaded', startApp);
-window.onload = startApp;
+// 初始化
+document.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
-
