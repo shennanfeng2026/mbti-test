@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维认知功能深度测评（完全离线终极版）</title>
-    <!-- 完全离线 Tailwind CSS v3.4（核心类已内置，无需网络） -->
+    <title>MBTI 八维深度测评（去伪装·终极版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a'
-                        },
+                        slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' },
                         indigo: { 500: '#6366f1', 600: '#4f46e5' },
                         red: { 600: '#dc2626' },
                         green: { 600: '#16a34a' }
@@ -25,23 +22,19 @@
     <style>
         .slider { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: linear-gradient(to right, #ef4444, #fbbf24, #10b981); outline: none; transition: background 0.3s; }
         .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .slider::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         .card { transition: all 0.3s ease; }
-        @media (hover: hover) { .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -6px rgba(0,0,0,0.12); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeIn 0.5s ease forwards; }
-        /* 基础保障样式（防止 Tailwind 加载失败） */
-        .fallback-card { background: white; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #ddd; border-radius: 1rem; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans min-h-screen">
 <div id="app" class="max-w-5xl mx-auto py-8 px-4 md:px-6">
     <header class="text-center mb-12">
-        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">MBTI 八维认知功能深度测评</h1>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">MBTI 八维深度测评</h1>
         <div class="h-1 w-24 bg-gradient-to-r from-indigo-500 to-purple-600 mx-auto mb-6 rounded-full"></div>
-        <p class="text-slate-600 max-w-3xl mx-auto mb-4">52 道专业题目 · 含生活场景与反向题 · 结果精准深入</p>
-        <p class="text-sm text-slate-500 bg-slate-100 inline-block px-4 py-2 rounded-full">所有数据仅本地保存，隐私100%安全（完全离线运行）</p>
-
+        <p class="text-slate-600 max-w-3xl mx-auto mb-4">52 道深度题目 · 包含“面具撕除”校验题 · 能量拮抗算法</p>
+        <p class="text-sm text-slate-500 bg-slate-100 inline-block px-4 py-2 rounded-full">数据本地保存 · 隐私安全</p>
+        
         <div class="mt-10 max-w-2xl mx-auto">
             <div class="flex justify-between text-sm text-slate-600 mb-3">
                 <span>进度：<span id="progress-count">0</span>/52</span>
@@ -65,22 +58,22 @@
         </div>
     </div>
 
-    <!-- 结果模态框（保持原样） -->
     <div id="result-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl max-w-5xl w-full p-8 md:p-10 shadow-2xl overflow-y-auto max-h-[95vh]">
             <div id="result-content"></div>
             <div class="flex gap-4 mt-10">
                 <button onclick="location.reload()" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-bold hover:opacity-90 transition">重新测试</button>
-                <button onclick="shareResults()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-bold transition">分享结果</button>
+                <button onclick="shareResults()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-bold transition">复制结果</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// ============ 1. 完整 52 题题库 ============
+// ============ 1. 深度优化题库（含冲突校验） ============
 const rawQuestions = [
-    // N 维度（13题）
+    // 保留原高质量题，同时替换/优化 10 道偏职场/社会化的题为“去伪装”私下本能题
+    // 前 42 道保留原题（核心经典题不变）
     { id: 1, left: "Ni", right: "Ne", lText: "我常被事物的深层含义和最终走向所吸引", rText: "我常被事物引申出的无限可能性所吸引", reversed: false },
     { id: 2, left: "Ni", right: "Ne", lText: "我倾向于寻找那个唯一的“真相”", rText: "我倾向于寻找多种有趣的替代方案", reversed: false },
     { id: 3, left: "Ni", right: "Ne", lText: "灵感往往是内心突然的顿悟", rText: "灵感往往来自外界碰撞和交流", reversed: true },
@@ -95,7 +88,6 @@ const rawQuestions = [
     { id: 12, left: "Ni", right: "Ne", lText: "买东西时我会想象它未来的意义", rText: "买东西时我会被新奇功能吸引", reversed: true },
     { id: 13, left: "Ni", right: "Ne", lText: "我对“命运”和“使命感”话题很感兴趣", rText: "我对“可能性”和“选择分支”话题很感兴趣", reversed: false },
 
-    // S 维度（13题）
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
     { id: 15, left: "Si", right: "Se", lText: "我注重细节、熟悉感和精确记忆", rText: "我注重感官冲击、现场氛围和即兴", reversed: false },
     { id: 16, left: "Si", right: "Se", lText: "我喜欢规律、可预测的生活节奏", rText: "我喜欢充满新鲜感和挑战的生活", reversed: true },
@@ -110,7 +102,6 @@ const rawQuestions = [
     { id: 25, left: "Si", right: "Se", lText: "我做决定常参考过去的相似案例", rText: "我做决定常根据当下具体情况调整", reversed: false },
     { id: 26, left: "Si", right: "Se", lText: "我喜欢传统节日按老规矩过", rText: "我喜欢传统节日加入新玩法", reversed: false },
 
-    // T 维度（13题）
     { id: 27, left: "Ti", right: "Te", lText: "我追求知识体系的内在逻辑完美", rText: "我追求目标的高效达成和资源利用", reversed: false },
     { id: 28, left: "Ti", right: "Te", lText: "解决问题时我必须先彻底弄懂原理", rText: "解决问题时我更关心办法是否实用", reversed: true },
     { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
@@ -125,36 +116,38 @@ const rawQuestions = [
     { id: 38, left: "Ti", right: "Te", lText: "我能花很长时间琢磨一个理论问题", rText: "我更倾向快速行动获取反馈", reversed: false },
     { id: 39, left: "Ti", right: "Te", lText: "批评时我指出系统性逻辑错误", rText: "批评时我指出具体可改进的指标", reversed: false },
 
-    // F 维度（13题）
     { id: 40, left: "Fi", right: "Fe", lText: "决定时我先看是否违背内心真实感受", rText: "决定时我先看是否照顾多数人情绪", reversed: false },
     { id: 41, left: "Fi", right: "Fe", lText: "我的情感深沉私密，追求灵魂共鸣", rText: "我的情感温暖外显，追求群体和谐", reversed: true },
     { id: 42, left: "Fi", right: "Fe", lText: "我非常在意个体的独立和独特价值", rText: "我非常在意群体的凝聚与互助", reversed: false },
-    { id: 43, left: "Fi", right: "Fe", lText: "支持别人时我肯定其内在独特价值", rText: "支持别人时我安抚情绪并寻求共识", reversed: false },
-    { id: 44, left: "Fi", right: "Fe", lText: "我对自身价值观波动极度敏感", rText: "我对他人的社交需求极度敏感", reversed: true },
-    { id: 45, left: "Fi", right: "Fe", lText: "我坚持自己价值观，哪怕独自前行", rText: "我愿意调整以维持关系和谐", reversed: false },
-    { id: 46, left: "Fi", right: "Fe", lText: "聚会中我更在意是否找到灵魂知音", rText: "聚会中我更在意大家是否都开心", reversed: false },
-    { id: 47, left: "Fi", right: "Fe", lText: "我认为每个人应为自己情绪负责", rText: "我认为我们有责任照顾彼此情绪", reversed: true },
-    { id: 48, left: "Fi", right: "Fe", lText: "我通过艺术创作表达内心", rText: "我通过社交活动感受情感连接", reversed: false },
-    { id: 49, left: "Fi", right: "Fe", lText: "看到不公我更愤怒于违背我的原则", rText: "看到不公我更愤怒于伤害了群体氛围", reversed: false },
-    { id: 50, left: "Fi", right: "Fe", lText: "我需要独处时间整理真实感受", rText: "我通过与人互动理解自己情绪", reversed: true },
-    { id: 51, left: "Fi", right: "Fe", lText: "送礼时我更在意是否符合对方个性", rText: "送礼时我更在意是否让对方当场开心", reversed: false },
-    { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
-];
 
-// ============ 2. 核心变量与初始化 ============
+    // ============ 以下 10 道为全新“去伪装”私下本能题，替换原偏职场/社会的题 ============
+    { id: 43, left: "Fi", right: "Fe", lText: "独处时，我更享受沉浸在自己的情感和回忆中，感觉被充电", rText: "独处时，我更想联系朋友或家人，感觉被充电", reversed: false },
+    { id: 44, left: "Fi", right: "Fe", lText: "没人看到时，我会完全按照内心真实感受行事，哪怕别人觉得奇怪", rText: "没人看到时，我还是会考虑‘这样做会不会让别人不舒服’", reversed: false },
+    { id: 45, left: "Ti", right: "Te", lText: "私下思考问题时，我更在意把逻辑彻底理顺，哪怕花很长时间", rText: "私下思考问题时，我更在意尽快找到能用的解决方案", reversed: false },
+    { id: 46, left: "Ti", right: "Te", lText: "一个人时，我会反复推敲一个想法的内在一致性，直到完全满意", rText: "一个人时，我会快速行动试错，看看实际效果如何", reversed: true },
+    { id: 47, left: "Ni", right: "Ne", lText: "安静独处时，我的脑海常出现一个深刻的预感或顿悟，指向未来方向", rText: "安静独处时，我的脑海常跳出各种新奇的想法和可能性", reversed: false },
+    { id: 48, left: "Ni", right: "Ne", lText: "没人打扰时，我喜欢深入思考一件事情的本质和最终含义", rText: "没人打扰时，我喜欢让思维自由发散，联想各种有趣的事", reversed: false },
+    { id: 49, left: "Si", right: "Se", lText: "独处时，我更享受回忆过去的熟悉细节和感受，感觉安心", rText: "独处时，我更想尝试新鲜的感官体验（如听新歌、吃新东西）", reversed: false },
+    { id: 50, left: "Si", right: "Se", lText: "一个人在家时，我更喜欢按熟悉的节奏做事，感觉舒适", rText: "一个人在家时，我更想突然改变计划，做点刺激的事", reversed: true },
+    { id: 51, left: "Fi", right: "Te", lText: "私下做决定时，我最在意是否违背了自己的核心价值观", rText: "私下做决定时，我最在意是否能高效达成目标", reversed: false },
+    { id: 52, left: "Ni", right: "Te", lText: "独处反思时，我更关注事情的长远意义和潜在走向", rText: "独处反思时，我更关注如何实际执行和优化结果", reversed: false }
+];
+// ============ 2. 核心变量 ============
 let shuffledQuestions = [];
 let userAnswers = {};
-const STORAGE_KEY = 'mbti_eight_functions_offline';
+const STORAGE_KEY = 'mbti_eight_functions_v3_final';
 const TOTAL_QUESTIONS = rawQuestions.length;
 
+// ============ 3. 初始化 ============
 function startApp() {
     try {
         loadAnswers();
+        // 每次随机打乱
         shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
         renderQuestions();
         updateProgress();
     } catch (e) {
-        console.error("初始化失败，重试中...", e);
+        console.error("Init Error", e);
         setTimeout(startApp, 500);
     }
 }
@@ -162,14 +155,8 @@ function startApp() {
 function loadAnswers() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const data = JSON.parse(saved);
-            userAnswers = data.answers || {};
-        }
-    } catch (e) {
-        console.warn('进度加载失败，已重置');
-        userAnswers = {};
-    }
+        if (saved) userAnswers = JSON.parse(saved).answers || {};
+    } catch (e) { userAnswers = {}; }
 }
 
 function renderQuestions() {
@@ -181,25 +168,25 @@ function renderQuestions() {
         const rightText = q.reversed ? q.lText : q.rText;
 
         const div = document.createElement('div');
-        div.className = 'card bg-white p-8 rounded-3xl shadow-md border border-slate-100 fade-in fallback-card';
+        div.className = 'card bg-white p-6 md:p-8 rounded-3xl shadow-md border border-slate-100 fade-in';
         div.style.animationDelay = `${Math.min(idx * 0.04, 0.8)}s`;
 
         div.innerHTML = `
             <div class="flex justify-between items-center mb-6">
-                <span class="text-sm font-semibold px-4 py-2 bg-slate-100 text-slate-600 rounded-full">${idx + 1}/52</span>
+                <span class="text-sm font-semibold px-4 py-2 bg-slate-100 text-slate-600 rounded-full">${idx + 1}/${TOTAL_QUESTIONS}</span>
             </div>
-            <!-- 左右文字并排在上方，颜色加粗 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="text-base font-bold text-red-600 text-right leading-relaxed">${leftText}</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+                <div class="text-base font-bold text-red-600 text-left md:text-right leading-relaxed">${leftText}</div>
+                <div class="hidden md:block text-slate-300 text-center">vs</div>
                 <div class="text-base font-bold text-green-600 text-left leading-relaxed">${rightText}</div>
             </div>
-            <div class="py-6">
+            <div class="py-4">
                 <input type="range" min="0" max="10" value="${savedValue}" class="slider"
                        id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
-                <div class="flex justify-between mt-4 text-sm font-medium">
-                    <span class="text-red-600">强烈左倾</span>
-                    <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
-                    <span class="text-green-600">强烈右倾</span>
+                <div class="flex justify-between mt-4 text-xs md:text-sm font-medium">
+                    <span class="text-red-500">强烈左倾</span>
+                    <span id="val-q${q.id}" class="text-base font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
+                    <span class="text-green-500">强烈右倾</span>
                 </div>
             </div>
         `;
@@ -218,18 +205,11 @@ function getDisplayText(value) {
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    saveAnswer(id, value);
+    userAnswers[id] = value;
     document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
     updateProgress();
-}
-
-function saveAnswer(id, value) {
-    userAnswers[id] = value;
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: userAnswers, timestamp: new Date().toISOString() }));
-    } catch (e) {
-        console.warn('保存失败', e);
-    }
+    // 实时保存
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: userAnswers, timestamp: new Date().toISOString() }));
 }
 
 function updateProgress() {
@@ -241,54 +221,44 @@ function updateProgress() {
     document.getElementById('calculate-btn').disabled = answered < TOTAL_QUESTIONS;
 }
 
-// ============ 3. 计算与结果（保持完整逻辑） ============
-// （由于篇幅限制，这里省略 determineType, calculateResults, showModal, shareResults 等函数，但它们与之前终极版完全一致，可直接从旧文件复制）
+// ============ 4. 核心计算：能量拮抗法 ============
 function calculateResults() {
-    const answeredCount = Object.keys(userAnswers).length;
-    if (answeredCount < TOTAL_QUESTIONS) {
-        alert(`请完成所有题目！当前已答 ${answeredCount}/${TOTAL_QUESTIONS}`);
+    if (Object.keys(userAnswers).length < TOTAL_QUESTIONS) {
+        alert('请完成所有题目！');
         return;
-    }
-
-    // 验证答案有效性
-    for (const [id, val] of Object.entries(userAnswers)) {
-        if (isNaN(val) || val < 0 || val > 10) {
-            alert(`第 ${id} 题答案异常，请重新滑动选择`);
-            return;
-        }
     }
 
     let scores = { Ni:0, Ne:0, Si:0, Se:0, Ti:0, Te:0, Fi:0, Fe:0 };
 
-    try {
-        rawQuestions.forEach(q => {
-            const val = userAnswers[q.id] || 5;
-            let leftScore = 5 - Math.abs(val - 5);
-            let rightScore = 10 - leftScore;
+    rawQuestions.forEach(q => {
+        const val = userAnswers[q.id] || 5;
+        let diff = val - 5; // -5 ~ +5
+        if (q.reversed) diff = -diff;
 
-            if (q.reversed) {
-                scores[q.right] += leftScore;
-                scores[q.left] += rightScore;
-            } else {
-                scores[q.left] += leftScore;
-                scores[q.right] += rightScore;
-            }
-        });
+        // 核心修改：仅在偏离中立时加分，且对立面扣分
+        if (diff > 0) {
+            scores[q.right] += diff * 2;
+            scores[q.left] -= Math.abs(diff) * 0.5;
+        } else if (diff < 0) {
+            scores[q.left] += Math.abs(diff) * 2;
+            scores[q.right] -= Math.abs(diff) * 0.5;
+        }
+    });
 
-        const result = determineType(scores);
-        showModal(result, scores);
-    } catch (e) {
-        alert('计算过程出错，请刷新页面重试');
-        console.error(e);
-    }
+    // 归零保护
+    Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
+    
+    const result = determineType(scores);
+    showModal(result, scores);
 }
 
+// ============ 5. 类型判定（含高压提示） ============
 function determineType(scores) {
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
     const top = sorted[0][0];
     const second = sorted[1][0];
 
-   const stacks = {
+    const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
         ENTJ: ["Te","Ni","Se","Fi"], ENFJ: ["Fe","Ni","Se","Ti"],
         INTP: ["Ti","Ne","Si","Fe"], INFP: ["Fi","Ne","Si","Te"],
@@ -307,8 +277,9 @@ function determineType(scores) {
         let score = 0;
         if (stack[0] === top) score += 40;
         if (stack[1] === second) score += 30;
-        else if (stack[0] === second && stack[1] === top) score += 55; // 互换但对
+        else if (stack[0] === second && stack[1] === top) score += 55;
 
+        // 辅助校验
         if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
         if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
 
@@ -319,168 +290,96 @@ function determineType(scores) {
         }
     }
 
-    // 置信度计算修复
     const maxScore = 85;
     let confidence = Math.round((bestScore / maxScore) * 100);
-    if (bestScore < 40) confidence = Math.min(confidence, 50); // 无主导匹配，最高50%
+    if (bestScore < 40) confidence = Math.min(confidence, 50);
 
-    return { type: bestType, stack: bestStack, sorted, confidence, scores };
+    // 高压面具提示逻辑
+    let extraTip = "";
+    // 如果测出 ENTJ/ENTP 但 Fi/Ti 其实不低，或者 Te 异常高
+    if ((bestType === 'ENTJ' || bestType === 'ESTJ') && scores.Fi > 30) {
+        extraTip = `<div class="mt-6 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
+            <strong>⚠️ 深度解析：</strong> 您的结果显示出极高的执行力（Te），但您的内在价值（Fi）并未完全沉睡。
+            这种情况常出现在<strong>“高压职场中的 INFP/ISFP”</strong>身上。如果您感到虽然能把事情做好，但内心常常疲惫或空虚，
+            您可能并非天生的 ENTJ，而是一个正在努力适应环境的内倾情感者。
+        </div>`;
+    }
+
+    return { type: bestType, stack: bestStack, sorted, confidence, scores, extraTip };
 }
 
-// ============ 5. 结果展示与分享（保持美观） ============
-// （showModal 和 shareResults 同之前版本，仅置信度文字微调）
+// ============ 6. 结果展示 ============
 const typeFullDesc = {
-    INTJ: "独立、战略性思考者。拥有强大洞察力，擅长制定长期计划并预见未来趋势。追求效率与完美，理性而坚定，常被视为“建筑师”或“策划者”。",
-    INFJ: "理想主义、富有洞察力的咨询者。深刻理解人性，追求意义与和谐。具有强烈的使命感，常能预知他人需求，被称为“倡导者”或“先知”。",
-    ENTJ: "天生的领导者和组织者。果断、有远见，擅长指挥与执行复杂计划。目标导向，逻辑严密，常在管理与创业领域表现出色。",
-    ENFJ: "富有魅力、激励他人的导师。极具共情力，能调动群体热情。擅长协调人际关系，帮助他人成长，被称为“主人公”。",
-    INTP: "逻辑严谨、好奇的分析者。热爱探索抽象理论与系统原理。创新思维强，追求真理，常沉浸于智力挑战中。",
-    INFP: "理想主义、富有同理心的调解者。重视个人价值观与内在和谐。富有想象力，追求真实与意义，常通过艺术表达自我。",
-    ENTP: "机智、富有创意的辩论者。头脑风暴大师，喜欢挑战传统并探索各种可能性。外向而聪明，享受智力游戏。",
-    ENFP: "热情、充满可能性的激励者。富有感染力，想象力爆棚。热爱自由与新体验，擅长发现他人潜力。",
-    ISTJ: "务实、可靠的责任者。重视传统、规则与细节。忠诚而有条理，擅长执行既定计划，是社会的支柱。",
-    ISFJ: "温暖、尽责的保护者。极具责任感与同理心。关注他人需求，默默付出，重视和谐与传统。",
-    ESTJ: "高效、果断的管理者。擅长组织、监督与执行。逻辑清晰，重视秩序与结果，是天然的领导者。",
-    ESFJ: "热情、关心他人的供给者。重视群体和谐与传统。擅长照顾他人情绪，是优秀的协调者与主人。",
-    ISTP: "冷静、擅长动手的问题解决者。观察力强，喜欢拆解与修复事物。独立而灵活，享受技术与冒险。",
-    ISFP: "温柔、活在当下的艺术家。重视个人价值观与美感。灵活而富有同理心，常通过创作表达内心。",
-    ESTP: "大胆、反应迅速的实践者。擅长应对危机与抓住机会。现实而魅力十足，享受刺激与社交。",
-    ESFP: "外向、热情的表演者。热爱生活，感染力极强。活在当下，擅长带给他人欢乐，是天生的娱乐家。"
+    INTJ: "建筑师 - 独立、战略性思考者", INFJ: "提倡者 - 理想主义、深刻洞察",
+    ENTJ: "指挥官 - 大胆、果断的领导者", ENFJ: "主人公 - 魅力四射的激励者",
+    INTP: "逻辑学家 - 渴望知识的创新者", INFP: "调停者 - 诗意、善良的利他主义者",
+    ENTP: "辩论家 - 聪明好奇的思想家", ENFP: "竞选者 - 热情、有创造力的自由人",
+    ISTJ: "物流师 - 务实、注重事实", ISFJ: "守卫者 - 专注、温暖的守护者",
+    ESTJ: "总经理 - 出色的管理者", ESFJ: "执政官 - 极有同情心、受欢迎",
+    ISTP: "鉴赏家 - 大胆的实践者", ISFP: "探险家 - 灵活、有魅力的艺术家",
+    ESTP: "企业家 - 聪明、精力充沛", ESFP: "表演者 - 自发、精力充沛"
 };
 
 function showModal(res, scores) {
     const content = document.getElementById('result-content');
     const modal = document.getElementById('result-modal');
 
-    // 功能分数条
     const chartHtml = Object.entries(scores).map(([f, s]) => `
-        <div class="mb-4">
-            <div class="flex justify-between text-sm font-semibold mb-1">
-                <span>${f}</span>
-                <span class="text-indigo-600">${s}分</span>
+        <div class="mb-3">
+            <div class="flex justify-between text-xs font-bold mb-1">
+                <span>${f}</span><span>${s.toFixed(1)}</span>
             </div>
-            <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden">
-                <div class="bg-gradient-to-r from-indigo-400 to-purple-600 h-full transition-all duration-1000" style="width: ${(s/130)*100}%"></div>
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                <div class="bg-indigo-500 h-full" style="width: ${(s/100)*100}%"></div>
             </div>
         </div>
     `).join('');
 
-    // 功能排序
-    const rankHtml = res.sorted.map(([func, score], idx) => `
-        <div class="flex items-center p-4 rounded-xl ${idx < 4 ? 'bg-indigo-50 border border-indigo-200' : 'bg-slate-50'}">
-            <span class="text-lg font-black w-8 text-slate-600">${idx+1}</span>
-            <span class="text-xl font-black mx-3">${func}</span>
-            <div class="flex-1 mx-4 h-3 bg-slate-200 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-600" style="width: ${(score/130)*100}%"></div>
-            </div>
-            <span class="text-sm font-bold text-slate-600 ml-3">${score}分</span>
-        </div>
-    `).join('');
-
-    // 实际 vs 标准栈对比表
-    const compareTable = res.stack.map((expected, idx) => {
-        const actual = res.sorted[idx] ? res.sorted[idx][0] : '-';
-        const isMatch = actual === expected;
-        return `
-        <tr class="${isMatch ? 'bg-green-50' : 'bg-orange-50'}">
-            <td class="py-3 px-4 text-center font-bold">${idx+1}</td>
-            <td class="py-3 px-4 text-center font-bold text-indigo-600">${expected}</td>
-            <td class="py-3 px-4 text-center">→</td>
-            <td class="py-3 px-4 text-center font-bold ${isMatch ? 'text-green-600' : 'text-orange-600'}">${actual}</td>
-        </tr>
-        `;
-    }).join('');
+    const rankHtml = res.sorted.slice(0,4).map(([f,s], i) => 
+        `<div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2 border border-slate-100">
+            <span class="font-bold text-slate-500">#${i+1}</span>
+            <span class="font-black text-lg text-indigo-600">${f}</span>
+            <span class="text-sm font-medium text-slate-600">${s.toFixed(0)}</span>
+        </div>`
+    ).join('');
 
     content.innerHTML = `
-        <div class="text-center mb-12">
-            <h2 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-3">您的 MBTI 类型</h2>
-            <div class="text-7xl md:text-8xl font-black text-indigo-600 tracking-tight">${res.type}</div>
-            <p class="mt-6 text-lg leading-relaxed text-slate-700 max-w-3xl mx-auto">${typeFullDesc[res.type] || '独特的认知模式组合'}</p>
-            <div class="mt-6 inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-green-200 rounded-full">
-                <span class="text-green-700 font-bold mr-3">类型匹配度</span>
-                <span class="text-3xl font-black text-green-600">${res.confidence}%</span>
-            </div>
+        <div class="text-center mb-8">
+            <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">测评结果</h2>
+            <div class="text-6xl font-black text-indigo-600 mb-2">${res.type}</div>
+            <div class="text-lg text-slate-600 font-medium">${typeFullDesc[res.type]}</div>
+            <div class="mt-4 inline-block px-4 py-1 bg-green-50 text-green-700 rounded-full text-sm font-bold">匹配度: ${res.confidence}%</div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-10 mb-10">
+        <div class="grid md:grid-cols-2 gap-8">
+            <div><h3 class="font-bold mb-4 text-slate-700">八维强度</h3>${chartHtml}</div>
             <div>
-                <h3 class="text-xl font-bold text-slate-800 mb-5">八大认知功能强度</h3>
-                ${chartHtml}
-            </div>
-            <div>
-                <h3 class="text-xl font-bold text-slate-800 mb-5">实际功能排序（前8）</h3>
-                <div class="space-y-3">${rankHtml}</div>
-            </div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-10">
-            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-3xl border border-indigo-100">
-                <h3 class="text-xl font-bold text-slate-800 mb-6">标准认知功能栈（${res.type}）</h3>
-                <div class="grid grid-cols-4 gap-4 text-center">
-                    ${res.stack.map((f, i) => {
-                        const titles = ['主导', '辅助', '第三', '劣势'];
-                        const tips = ['最自然模式', '平衡内外', '发展中功能', '压力下易过度'];
-                        return `
-                        <div class="bg-white/70 p-4 rounded-2xl">
-                            <div class="text-xs text-slate-500 mb-1">${titles[i]}</div>
-                            <div class="text-2xl font-black text-indigo-600">${f}</div>
-                            <div class="text-xs text-slate-600 mt-2">${tips[i]}</div>
-                        </div>`;
-                    }).join('')}
+                <h3 class="font-bold mb-4 text-slate-700">核心功能排序</h3>
+                ${rankHtml}
+                <div class="mt-6 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800">
+                    <strong>功能堆栈：</strong> ${res.stack.join(' > ')}
                 </div>
             </div>
-
-            <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-3xl border border-amber-200">
-                <h3 class="text-xl font-bold text-slate-800 mb-6">实际排序 vs 标准栈对比</h3>
-                <table class="w-full text-sm">
-                    <thead class="text-slate-500 font-medium">
-                        <tr>
-                            <th class="py-2">位置</th>
-                            <th class="py-2">标准</th>
-                            <th></th>
-                            <th class="py-2">您的实际</th>
-                        </tr>
-                    </thead>
-                    <tbody>${compareTable}</tbody>
-                </table>
-                ${res.confidence < 75 ? `
-                <p class="mt-6 text-sm text-amber-700 leading-relaxed">
-                    <strong>提示：</strong>您的功能排列与标准模型有一定差异，可能正处于认知功能发展期、压力状态，或拥有独特的混合型人格。
-                </p>` : ''}
-            </div>
         </div>
+        ${res.extraTip}
     `;
-
     modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
 }
 
 function shareResults() {
-    const type = document.querySelector('.text-indigo-600.text-7xl')?.textContent || '未知';
-    const text = `我刚刚完成了一个超深入的MBTI八维认知功能测评，结果是：${type}！\n匹配度 ${document.querySelector('.text-green-600.text-3xl')?.textContent || ''}\n快来试试看你的真实认知模式～`;
-    if (navigator.share) {
-        navigator.share({ title: '我的MBTI八维测评结果', text, url: location.href });
-    } else {
-        navigator.clipboard.writeText(text + '\n' + location.href);
-        alert('结果文本已复制到剪贴板');
-    }
+    const type = document.querySelector('.text-6xl')?.textContent;
+    const text = `我的MBTI八维深度测评结果：${type}！\n快来测测你的真实人格：${location.href}`;
+    navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
 }
-
-// ============ 4. 多重初始化保障 ============
-if (document.readyState === "complete" || document.readyState === "interactive") {
-    startApp();
-} else {
-    document.addEventListener('DOMContentLoaded', startApp);
-}
-window.onload = startApp;
 
 function clearStorage() {
-    if (confirm('确定清除所有进度并重新开始吗？')) {
-        localStorage.removeItem(STORAGE_KEY);
-        location.reload();
-    }
+    if(confirm('确定重置？')) { localStorage.removeItem(STORAGE_KEY); location.reload(); }
 }
+
+// 启动
+if (document.readyState === "complete" || document.readyState === "interactive") startApp();
+else document.addEventListener('DOMContentLoaded', startApp);
+window.onload = startApp;
 </script>
 </body>
 </html>
-
