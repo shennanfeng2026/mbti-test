@@ -153,9 +153,10 @@ function updateProgress() {
     // 所有题答完才启用生成按钮
     document.getElementById('calculate-btn').disabled = answered < TOTAL_QUESTIONS;
 }
-// ============ 翻页核心逻辑（必须补全） ============
-const QUESTIONS_PER_PAGE = 8;  // 每页显示 8 题
-let currentPage = 0;           // 当前页，从 0 开始
+// ============ 翻页核心逻辑（完整版，必须放在 startApp() 上方） ============
+// ============ 翻页核心逻辑（完整、可直接运行版） ============
+const QUESTIONS_PER_PAGE = 8;  // 每页8题
+let currentPage = 0;           // 当前页码，从0开始
 
 function renderPage() {
     const container = document.getElementById('quiz-container');
@@ -196,8 +197,18 @@ function renderPage() {
     // 更新按钮状态
     document.getElementById('prev-btn').disabled = currentPage === 0;
     const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
-    document.getElementById('next-btn').innerHTML = currentPage === maxPage ? '完成测评' : '下一页';
-    document.getElementById('next-btn').onclick = currentPage === maxPage ? calculateResults : nextPage;
+    const nextBtn = document.getElementById('next-btn');
+    if (currentPage === maxPage) {
+        nextBtn.textContent = '完成测评 →';
+        nextBtn.onclick = calculateResults;
+        nextBtn.classList.remove('bg-slate-200');
+        nextBtn.classList.add('bg-gradient-to-r', 'from-indigo-500', 'to-purple-600', 'text-white');
+    } else {
+        nextBtn.textContent = '下一页 →';
+        nextBtn.onclick = nextPage;
+        nextBtn.classList.add('bg-slate-200');
+        nextBtn.classList.remove('bg-gradient-to-r', 'from-indigo-500', 'to-purple-600', 'text-white');
+    }
 
     // 更新进度
     document.getElementById('current-page').textContent = currentPage + 1;
@@ -402,7 +413,7 @@ function determineType(scores) {
     // 如果测出 ENTJ/ENTP 但 Fi/Ti 其实不低，或者 Te 异常高
     if ((bestType === 'ENTJ' || bestType === 'ESTJ') && scores.Fi > 30) {
         extraTip = `<div class="mt-6 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
-            <strong>⚠️ 深度解析：</strong> 您的结果显示出极高的执行力（Te），但您的内在价值（Fi）并未完全沉睡。
+            <strong⚠️ 深度解析：</strong> 您的结果显示出极高的执行力（Te），但您的内在价值（Fi）并未完全沉睡。
             这种情况常出现在<strong>“高压职场中的 INFP/ISFP”</strong>身上。如果您感到虽然能把事情做好，但内心常常疲惫或空虚，
             您可能并非天生的 ENTJ，而是一个正在努力适应环境的内倾情感者。
         </div>`;
@@ -484,6 +495,5 @@ document.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
-
 
 
