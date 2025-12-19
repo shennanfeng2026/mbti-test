@@ -206,10 +206,10 @@ function renderPage() {
     const nextBtn = document.getElementById('next-btn');
     if (currentPage === maxPage) {
         nextBtn.textContent = '完成测评';
-        nextBtn.onclick = calculateResults;
+    // nextBtn.onclick = calculateResults;
     } else {
         nextBtn.textContent = '下一页';
-        nextBtn.onclick = nextPage;
+    // nextBtn.onclick = nextPage;
     }
 
     document.getElementById('current-page').textContent = currentPage + 1;
@@ -287,7 +287,55 @@ function calculateResults() {
 // determineType, showModal, shareResults, clearStorage 保持你的原版
 
 // ============ 启动 ============
-document.addEventListener('DOMContentLoaded', startApp);
+// ... 之前的代码 ...
+
+// ============ 启动与事件绑定 ============
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. 绑定上一页按钮（之前遗漏的！）
+    const prevBtn = document.getElementById('prev-btn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', prevPage);
+    }
+    
+    // 2. 绑定下一页按钮（虽然 renderPage 会动态改，但初始化绑定更安全）
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            // 根据当前页码决定是翻页还是计算
+            const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+            if (currentPage === maxPage) {
+                calculateResults();
+            } else {
+                nextPage();
+            }
+        });
+    }
+
+    // 3. 启动应用
+    startApp();
+});
+
+// 注意：你需要把 renderPage 中动态修改 onclick 的那几行代码删掉，
+// 改为只修改 nextBtn.textContent，逻辑判断全放在上面的 addEventListener 里。
+    // ============ 修复翻页功能的关键代码 ============
+
+// 1. 确保上一页按钮能用
+document.getElementById('prev-btn').addEventListener('click', prevPage);
+
+// 2. 确保下一页按钮能用（虽然 renderPage 里写了，但这里加个双保险）
+document.getElementById('next-btn').addEventListener('click', function() {
+    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    if (currentPage < maxPage) {
+        nextPage();
+    } else {
+        calculateResults();
+    }
+});
+
+// 注意：请删除 renderPage 函数内部第 124 行左右的 nextBtn.onclick = ... 代码，
+// 防止逻辑冲突。让 renderPage 只负责更新按钮文字（下一页 vs 完成测评），
+// 而不要负责绑定事件。
 </script>
 </body>
 </html>
+
