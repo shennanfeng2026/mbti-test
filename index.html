@@ -153,7 +153,82 @@ function updateProgress() {
     // 所有题答完才启用生成按钮
     document.getElementById('calculate-btn').disabled = answered < TOTAL_QUESTIONS;
 }
+// ============ 分页核心逻辑（必须补全） ============
+const QUESTIONS_PER_PAGE = 8;  // 每页8题
+let currentPage = 0;           // 当前页码，从0开始
 
+function renderPage() {
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = '';
+    const start = currentPage * QUESTIONS_PER_PAGE;
+    const end = Math.min(start + QUESTIONS_PER_PAGE, shuffledQuestions.length);
+    const pageQuestions = shuffledQuestions.slice(start, end);
+
+    pageQuestions.forEach((q, idx) => {
+        const globalIdx = start + idx;
+        const savedValue = userAnswers[q.id] ?? 5;
+        const leftText = q.reversed ? q.rText : q.lText;
+        const rightText = q.reversed ? q.lText : q.rText;
+
+        const div = document.createElement('div');
+        div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm';
+        div.innerHTML = `
+            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/52</div>
+            <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
+                <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
+                <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
+                <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">${rightText}</div>
+            </div>
+            <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
+            <div class="py-4">
+                <input type="range" min="0" max="10" value="${savedValue}" class="slider"
+                       id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                <div class="flex justify-between mt-4 text-sm font-medium">
+                    <span class="text-red-600">强烈左倾</span>
+                    <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
+                    <span class="text-green-600">强烈右倾</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    // 更新按钮和进度
+    document.getElementById('prev-btn').disabled = currentPage === 0;
+    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    document.getElementById('next-btn').disabled = currentPage === maxPage;
+    document.getElementById('current-page').textContent = currentPage + 1;
+
+    // 检查是否所有题都答了
+    const allAnswered = shuffledQuestions.every(q => userAnswers[q.id] !== undefined);
+    document.getElementById('calculate-btn').disabled = !allAnswered;
+}
+
+function nextPage() {
+    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    if (currentPage < maxPage) {
+        currentPage++;
+        renderPage();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+}
+
+function prevPage() {
+    if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+}
+
+function updateProgress() {
+    const answered = Object.keys(userAnswers).length;
+    const percent = Math.round((answered / TOTAL_QUESTIONS) * 100);
+    document.getElementById('answered-count').textContent = answered;
+    document.getElementById('total-progress').style.width = `${percent}%`;
+}
 function startApp() {
     loadAnswers();
     shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
@@ -408,4 +483,5 @@ document.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
+
 
