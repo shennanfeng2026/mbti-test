@@ -118,11 +118,41 @@ const rawQuestions = [
 ];
 
 // 分页设置
+// 分页核心变量
 const QUESTIONS_PER_PAGE = 8;
 let currentPage = 0;
-let shuffledQuestions = [];
-let userAnswers = {};
-const STORAGE_KEY = 'mbti_paged_v1';
+
+// 翻页函数
+function nextPage() {
+    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    if (currentPage < maxPage) {
+        currentPage++;
+        renderPage();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+}
+
+function prevPage() {
+    if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+}
+
+// 更新进度显示
+function updateProgress() {
+    const answered = Object.keys(userAnswers).length;
+    const percent = Math.round((answered / TOTAL_QUESTIONS) * 100);
+    document.getElementById('answered-count').textContent = answered;
+    document.getElementById('total-progress').style.width = `${percent}%`;
+    document.getElementById('current-page').textContent = currentPage + 1;
+
+    // 所有题答完才启用生成按钮
+    document.getElementById('calculate-btn').disabled = answered < TOTAL_QUESTIONS;
+}
 
 function startApp() {
     loadAnswers();
@@ -378,3 +408,4 @@ document.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
+
