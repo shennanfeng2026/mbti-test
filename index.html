@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评（翻页·去伪装版）</title>
+    <title>MBTI 八维深度测评（最终修复版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -22,58 +22,58 @@
     <style>
         .slider { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: linear-gradient(to right, #ef4444, #fbbf24, #10b981); outline: none; transition: background 0.3s; }
         .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        .slider::-moz-range-thumb { width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .card { transition: all 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans min-h-screen">
-<div class="max-w-5xl mx-auto py-8 px-4">
+<div id="app" class="max-w-5xl mx-auto py-8 px-4 md:px-6">
     <header class="text-center mb-8">
-        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">MBTI 八维深度测评（翻页·去伪装版）</h1>
-        <p class="text-slate-600 mb-6">52 道私下本能题 · 翻页设计 · 结果更贴近真实自我</p>
-
-        <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-8">
-            <span class="text-lg font-semibold">第 <span id="current-page">1</span> / 7 页</span>
-            <span class="text-lg font-semibold">已答 <span id="answered-count">0</span>/52</span>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">MBTI 八维深度测评</h1>
+        <div class="h-1 w-24 bg-gradient-to-r from-indigo-500 to-purple-600 mx-auto mb-6 rounded-full"></div>
+        <p class="text-slate-600 max-w-3xl mx-auto mb-4">52 道深度题目 · 去伪装算法 · 能量拮抗计分</p>
+        
+        <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-8 mt-6">
+            <span class="text-lg font-semibold bg-white px-4 py-1 rounded-full shadow-sm">第 <span id="current-page">1</span> / 7 页</span>
             <div class="w-full md:w-64 bg-slate-200 rounded-full h-3">
                 <div id="total-progress" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-        </div>
-
-        <div class="block md:hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 text-sm">
-            <p class="font-bold text-amber-800 mb-2">答题提示：</p>
-            <p>• <span class="text-red-600 font-bold">红色端</span> = 更认同左侧描述</p>
-            <p>• <span class="text-green-600 font-bold">绿色端</span> = 更认同右侧描述</p>
-            <p>• <span class="font-bold">拖动幅度越大 = 认可度越强</span></p>
+            <span class="text-sm font-semibold text-slate-500">已答 <span id="answered-count">0</span>/52</span>
         </div>
     </header>
 
-    <div id="quiz-container" class="space-y-8"></div>
+    <div id="quiz-container" class="space-y-8 mb-12"></div>
 
-    <div class="flex justify-between mt-12">
-        <button id="prev-btn" class="px-8 py-4 bg-slate-200 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">上一页</button>
-        <button id="next-btn" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold">下一页</button>
+    <div class="flex justify-between items-center mt-12 px-2 md:px-10 pb-20">
+        <button id="prev-btn" class="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors">
+            上一页
+        </button>
+        <button id="next-btn" class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95">
+            下一页
+        </button>
     </div>
 
-    <div class="text-center mt-12">
-        <button id="calculate-btn" disabled class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xl font-bold py-5 px-20 rounded-3xl shadow-2xl disabled:opacity-50">
-            生成深度报告
-        </button>
-        <div class="mt-6">
-            <button onclick="clearStorage()" class="text-sm text-slate-500 hover:text-slate-700 underline">清除进度重新开始</button>
+    <div id="result-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl max-w-5xl w-full p-8 md:p-10 shadow-2xl overflow-y-auto max-h-[95vh]">
+            <div id="result-content"></div>
+            <div class="flex gap-4 mt-10">
+                <button onclick="clearStorage()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-bold transition">清除重测</button>
+                <button onclick="shareResults()" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-bold hover:opacity-90 transition">复制结果</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-// ============ 题库（你的去伪装版 52 题） ============
+// ============ 1. 深度优化题库 (含10道冲突校验题) ============
 const rawQuestions = [
-    // 保留原高质量题，同时替换/优化 10 道偏职场/社会化的题为“去伪装”私下本能题
-    // 前 42 道保留原题（核心经典题不变）
+    // --- N 维度 ---
     { id: 1, left: "Ni", right: "Ne", lText: "我常被事物的深层含义和最终走向所吸引", rText: "我常被事物引申出的无限可能性所吸引", reversed: false },
-    { id: 2, left: "Ni", right: "Ne", lText: "我倾向于寻找那个唯一的“真相”", rText: "我倾向于寻找多种有趣的替代方案", reversed: false },
-    { id: 3, left: "Ni", right: "Ne", lText: "灵感往往是内心突然的顿悟", rText: "灵感往往来自外界碰撞和交流", reversed: true },
-    { id: 4, left: "Ni", right: "Ne", lText: "我更在意宏大远景，哪怕现在模糊", rText: "我更在意当前的新机会，哪怕改变计划", reversed: false },
-    { id: 5, left: "Ni", right: "Ne", lText: "思考时我会不断深入核心", rText: "思考时我会不断向外扩展连接", reversed: false },
+    { id: 2, left: "Ni", right: "Ne", lText: "我倾向于收敛思维，寻找那个唯一的“真相”", rText: "我倾向于发散思维，寻找多种有趣的替代方案", reversed: false },
+    { id: 3, left: "Ni", right: "Ne", lText: "灵感往往是内心深处突然的顿悟", rText: "灵感往往来自与外界的碰撞和交流", reversed: true },
+    { id: 4, left: "Ni", right: "Ne", lText: "我更在意宏大远景，哪怕现在还很模糊", rText: "我更在意当前的新机会，哪怕要改变原计划", reversed: false },
+    { id: 5, left: "Ni", right: "Ne", lText: "思考时我会不断深入，直到触及核心", rText: "思考时我会不断扩展，连接各种不相关的事物", reversed: false },
     { id: 6, left: "Ni", right: "Ne", lText: "我常能预感事情的发展方向", rText: "我常能发现别人忽略的新奇点子", reversed: false },
     { id: 7, left: "Ni", right: "Ne", lText: "看电影时我更关注隐喻和结局伏笔", rText: "看电影时我更享受各种脑洞和反转", reversed: true },
     { id: 8, left: "Ni", right: "Ne", lText: "规划旅行时我喜欢提前想好主题和意义", rText: "规划旅行时我喜欢留白，随机探索", reversed: false },
@@ -83,6 +83,7 @@ const rawQuestions = [
     { id: 12, left: "Ni", right: "Ne", lText: "买东西时我会想象它未来的意义", rText: "买东西时我会被新奇功能吸引", reversed: true },
     { id: 13, left: "Ni", right: "Ne", lText: "我对“命运”和“使命感”话题很感兴趣", rText: "我对“可能性”和“选择分支”话题很感兴趣", reversed: false },
 
+    // --- S 维度 ---
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
     { id: 15, left: "Si", right: "Se", lText: "我注重细节、熟悉感和精确记忆", rText: "我注重感官冲击、现场氛围和即兴", reversed: false },
     { id: 16, left: "Si", right: "Se", lText: "我喜欢规律、可预测的生活节奏", rText: "我喜欢充满新鲜感和挑战的生活", reversed: true },
@@ -97,12 +98,13 @@ const rawQuestions = [
     { id: 25, left: "Si", right: "Se", lText: "我做决定常参考过去的相似案例", rText: "我做决定常根据当下具体情况调整", reversed: false },
     { id: 26, left: "Si", right: "Se", lText: "我喜欢传统节日按老规矩过", rText: "我喜欢传统节日加入新玩法", reversed: false },
 
+    // --- T 维度 ---
     { id: 27, left: "Ti", right: "Te", lText: "我追求知识体系的内在逻辑完美", rText: "我追求目标的高效达成和资源利用", reversed: false },
-    { id: 28, left: "Ti", right: "Te", lText: "解决问题时我必须先彻底弄懂原理", rText: "解决问题时我更关心办法是否实用", reversed: true },
+    { id: 28, left: "Ti", right: "Te", lText: "为了弄懂一个原理，我愿意耽误进度", rText: "为了赶上进度，我可以暂不求甚解", reversed: false },
     { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
     { id: 30, left: "Ti", right: "Te", lText: "我追求精准，哪怕耗时更长", rText: "我追求效率，哪怕细节妥协", reversed: false },
     { id: 31, left: "Ti", right: "Te", lText: "我喜欢构建抽象模型，哪怕暂时无用", rText: "我喜欢优化流程提升产出", reversed: true },
-    { id: 32, left: "Ti", right: "Te", lText: "辩论时我关注对方逻辑漏洞", rText: "辩论时我用事实数据说服对方", reversed: false },
+    { id: 32, left: "Ti", right: "Te", lText: "辩论是为了厘清概念定义", rText: "辩论是为了证明我是对的/达成共识", reversed: false },
     { id: 33, left: "Ti", right: "Te", lText: "我认为真理要经得起反复推敲", rText: "我认为真理要能解决实际问题", reversed: false },
     { id: 34, left: "Ti", right: "Te", lText: "组队时我更愿当分析者", rText: "组队时我更愿当组织协调者", reversed: true },
     { id: 35, left: "Ti", right: "Te", lText: "我喜欢拆解复杂概念理清结构", rText: "我喜欢制定清晰的执行计划", reversed: false },
@@ -111,26 +113,25 @@ const rawQuestions = [
     { id: 38, left: "Ti", right: "Te", lText: "我能花很长时间琢磨一个理论问题", rText: "我更倾向快速行动获取反馈", reversed: false },
     { id: 39, left: "Ti", right: "Te", lText: "批评时我指出系统性逻辑错误", rText: "批评时我指出具体可改进的指标", reversed: false },
 
-    { id: 40, left: "Fi", right: "Fe", lText: "决定时我先看是否违背内心真实感受", rText: "决定时我先看是否照顾多数人情绪", reversed: false },
+    // --- F 维度 (含去伪装题) ---
+    { id: 40, left: "Fi", right: "Te", lText: "一份高薪但违背我价值观的工作，会让我极其痛苦", rText: "一份高薪工作就是工作，我可以把自我和它分开", reversed: false },
     { id: 41, left: "Fi", right: "Fe", lText: "我的情感深沉私密，追求灵魂共鸣", rText: "我的情感温暖外显，追求群体和谐", reversed: true },
     { id: 42, left: "Fi", right: "Fe", lText: "我非常在意个体的独立和独特价值", rText: "我非常在意群体的凝聚与互助", reversed: false },
-
-    // ============ 以下 10 道为全新“去伪装”私下本能题，替换原偏职场/社会的题 ============
-    { id: 43, left: "Fi", right: "Fe", lText: "独处时，我更享受沉浸在自己的情感和回忆中，感觉被充电", rText: "独处时，我更想联系朋友或家人，感觉被充电", reversed: false },
-    { id: 44, left: "Fi", right: "Fe", lText: "没人看到时，我会完全按照内心真实感受行事，哪怕别人觉得奇怪", rText: "没人看到时，我还是会考虑‘这样做会不会让别人不舒服’", reversed: false },
-    { id: 45, left: "Ti", right: "Te", lText: "私下思考问题时，我更在意把逻辑彻底理顺，哪怕花很长时间", rText: "私下思考问题时，我更在意尽快找到能用的解决方案", reversed: false },
-    { id: 46, left: "Ti", right: "Te", lText: "一个人时，我会反复推敲一个想法的内在一致性，直到完全满意", rText: "一个人时，我会快速行动试错，看看实际效果如何", reversed: true },
-    { id: 47, left: "Ni", right: "Ne", lText: "安静独处时，我的脑海常出现一个深刻的预感或顿悟，指向未来方向", rText: "安静独处时，我的脑海常跳出各种新奇的想法和可能性", reversed: false },
-    { id: 48, left: "Ni", right: "Ne", lText: "没人打扰时，我喜欢深入思考一件事情的本质和最终含义", rText: "没人打扰时，我喜欢让思维自由发散，联想各种有趣的事", reversed: false },
-    { id: 49, left: "Si", right: "Se", lText: "独处时，我更享受回忆过去的熟悉细节和感受，感觉安心", rText: "独处时，我更想尝试新鲜的感官体验（如听新歌、吃新东西）", reversed: false },
-    { id: 50, left: "Si", right: "Se", lText: "一个人在家时，我更喜欢按熟悉的节奏做事，感觉舒适", rText: "一个人在家时，我更想突然改变计划，做点刺激的事", reversed: true },
-    { id: 51, left: "Fi", right: "Te", lText: "私下做决定时，我最在意是否违背了自己的核心价值观", rText: "私下做决定时，我最在意是否能高效达成目标", reversed: false },
-    { id: 52, left: "Ni", right: "Te", lText: "独处反思时，我更关注事情的长远意义和潜在走向", rText: "独处反思时，我更关注如何实际执行和优化结果", reversed: false }
+    { id: 43, left: "Fi", right: "Fe", lText: "独处时，我更享受沉浸在自己的情感中，感觉被充电", rText: "独处时，我更想联系朋友或家人，感觉被充电", reversed: false },
+    { id: 44, left: "Fi", right: "Fe", lText: "没人看到时，我会完全按照内心真实感受行事", rText: "没人看到时，我还是会考虑‘这样做会不会让别人不舒服’", reversed: false },
+    { id: 45, left: "Fi", right: "Fe", lText: "为了维持和谐而迎合他人，会让我感到‘内耗’", rText: "为了维持和谐而调节气氛，会让我感到‘有价值’", reversed: false },
+    { id: 46, left: "Fi", right: "Fe", lText: "聚会中我更在意是否找到灵魂知音", rText: "聚会中我更在意大家是否都开心", reversed: false },
+    { id: 47, left: "Fi", right: "Fe", lText: "我认为每个人应为自己情绪负责", rText: "我认为我们有责任照顾彼此情绪", reversed: true },
+    { id: 48, left: "Fi", right: "Fe", lText: "我通过艺术创作表达内心", rText: "我通过社交活动感受情感连接", reversed: false },
+    { id: 49, left: "Fi", right: "Te", lText: "如果方案伤害了自尊，即使有效我也可能反对", rText: "如果方案能解决大局问题，个人感受应当让步", reversed: false },
+    { id: 50, left: "Fi", right: "Fe", lText: "我需要独处时间整理真实感受", rText: "我通过与人互动理解自己情绪", reversed: true },
+    { id: 51, left: "Fi", right: "Fe", lText: "送礼时我更在意是否符合对方个性", rText: "送礼时我更在意是否让对方当场开心", reversed: false },
+    { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
-const STORAGE_KEY = 'mbti_paged_final';
+const STORAGE_KEY = 'mbti_final_v5';
 
 let shuffledQuestions = [];
 let userAnswers = {};
@@ -139,8 +140,10 @@ let currentPage = 0;
 // ============ 初始化 ============
 function startApp() {
     loadAnswers();
-    shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
-    currentPage = 0;
+    if (shuffledQuestions.length === 0) {
+        shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
+    }
+    currentPage = currentPage || 0;
     renderPage();
 }
 
@@ -151,10 +154,9 @@ function loadAnswers() {
             const data = JSON.parse(saved);
             userAnswers = data.answers || {};
             currentPage = data.currentPage || 0;
+            // 如果保存了题目顺序，也可以恢复，这里简单起见重新随机或保持
         }
-    } catch (e) {
-        userAnswers = {};
-    }
+    } catch (e) { userAnswers = {}; }
 }
 
 function saveProgress() {
@@ -167,10 +169,13 @@ function saveProgress() {
 function renderPage() {
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
+    
+    // 计算分页
     const start = currentPage * QUESTIONS_PER_PAGE;
     const end = Math.min(start + QUESTIONS_PER_PAGE, shuffledQuestions.length);
     const pageQuestions = shuffledQuestions.slice(start, end);
 
+    // 渲染卡片
     pageQuestions.forEach((q, idx) => {
         const globalIdx = start + idx;
         const savedValue = userAnswers[q.id] ?? 5;
@@ -178,9 +183,10 @@ function renderPage() {
         const rightText = q.reversed ? q.lText : q.rText;
 
         const div = document.createElement('div');
-        div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm';
+        div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in';
+        div.style.animationDelay = `${idx * 0.05}s`;
         div.innerHTML = `
-            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/52</div>
+            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/${TOTAL_QUESTIONS}</div>
             <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
                 <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
                 <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
@@ -200,29 +206,44 @@ function renderPage() {
         container.appendChild(div);
     });
 
-    // 按钮状态
-    document.getElementById('prev-btn').disabled = currentPage === 0;
-    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    // 按钮状态更新 (只改文字，不绑事件)
+    const prevBtn = document.getElementById('prev-btn');
+    if (prevBtn) prevBtn.disabled = currentPage === 0;
+
     const nextBtn = document.getElementById('next-btn');
-    if (currentPage === maxPage) {
-        nextBtn.textContent = '完成测评';
-    // nextBtn.onclick = calculateResults;
-    } else {
-        nextBtn.textContent = '下一页';
-    // nextBtn.onclick = nextPage;
+    if (nextBtn) {
+        const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+        const answered = Object.keys(userAnswers).length;
+        
+        if (currentPage >= maxPage) {
+            // 是最后一页
+            if (answered < TOTAL_QUESTIONS) {
+                nextBtn.textContent = `完成 (${answered}/${TOTAL_QUESTIONS})`;
+                nextBtn.classList.remove('from-indigo-500', 'to-purple-600');
+                nextBtn.classList.add('bg-slate-400', 'cursor-not-allowed'); // 视觉变灰
+            } else {
+                nextBtn.textContent = '生成报告';
+                nextBtn.classList.add('from-indigo-500', 'to-purple-600');
+                nextBtn.classList.remove('bg-slate-400', 'cursor-not-allowed');
+            }
+        } else {
+            nextBtn.textContent = '下一页';
+            nextBtn.classList.add('from-indigo-500', 'to-purple-600');
+        }
     }
 
+    // 进度条
     document.getElementById('current-page').textContent = currentPage + 1;
     updateProgress();
+    window.scrollTo(0, 0);
 }
 
-// ============ 翻页 ============
+// ============ 翻页逻辑 ============
 function nextPage() {
     const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
     if (currentPage < maxPage) {
         currentPage++;
         renderPage();
-        window.scrollTo(0, 0);
     }
 }
 
@@ -230,11 +251,10 @@ function prevPage() {
     if (currentPage > 0) {
         currentPage--;
         renderPage();
-        window.scrollTo(0, 0);
     }
 }
 
-// ============ 答题 ============
+// ============ 交互逻辑 ============
 function getDisplayText(value) {
     value = parseInt(value);
     if (value <= 2) return "强烈左倾";
@@ -250,6 +270,20 @@ function onSliderChange(input, id) {
     userAnswers[id] = value;
     saveProgress();
     updateProgress();
+    
+    // 如果在最后一页，操作滑块时实时刷新按钮文字(更新进度数字)
+    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    if (currentPage === maxPage) {
+        const nextBtn = document.getElementById('next-btn');
+        const answered = Object.keys(userAnswers).length;
+        if (answered < TOTAL_QUESTIONS) {
+             nextBtn.textContent = `完成 (${answered}/${TOTAL_QUESTIONS})`;
+        } else {
+             nextBtn.textContent = '生成报告';
+             nextBtn.classList.add('from-indigo-500', 'to-purple-600');
+             nextBtn.classList.remove('bg-slate-400');
+        }
+    }
 }
 
 function updateProgress() {
@@ -257,16 +291,14 @@ function updateProgress() {
     const percent = Math.round((answered / TOTAL_QUESTIONS) * 100);
     document.getElementById('answered-count').textContent = answered;
     document.getElementById('total-progress').style.width = `${percent}%`;
-    document.getElementById('calculate-btn').disabled = answered < TOTAL_QUESTIONS;
 }
 
-// ============ 计算与结果（你的能量拮抗逻辑） ============
+// ============ 计算逻辑 (能量拮抗版) ============
 function calculateResults() {
     let scores = { Ni:0, Ne:0, Si:0, Se:0, Ti:0, Te:0, Fi:0, Fe:0 };
-
     rawQuestions.forEach(q => {
         const val = userAnswers[q.id] || 5;
-        let diff = val - 5;
+        let diff = val - 5; 
         if (q.reversed) diff = -diff;
 
         if (diff > 0) {
@@ -277,65 +309,166 @@ function calculateResults() {
             scores[q.right] -= Math.abs(diff) * 0.5;
         }
     });
-
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
-
     const result = determineType(scores);
     showModal(result, scores);
 }
 
-// determineType, showModal, shareResults, clearStorage 保持你的原版
+// ============ 类型判定 (含 Te-grip 提示) ============
+function determineType(scores) {
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    const top = sorted[0][0];
+    const second = sorted[1][0];
 
-// ============ 启动 ============
-// ... 之前的代码 ...
+    const stacks = {
+        INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
+        ENTJ: ["Te","Ni","Se","Fi"], ENFJ: ["Fe","Ni","Se","Ti"],
+        INTP: ["Ti","Ne","Si","Fe"], INFP: ["Fi","Ne","Si","Te"],
+        ENTP: ["Ne","Ti","Fe","Si"], ENFP: ["Ne","Fi","Te","Si"],
+        ISTJ: ["Si","Te","Fi","Ne"], ISFJ: ["Si","Fe","Ti","Ne"],
+        ESTJ: ["Te","Si","Ne","Fi"], ESFJ: ["Fe","Si","Ne","Ti"],
+        ISTP: ["Ti","Se","Ni","Fe"], ISFP: ["Fi","Se","Ni","Te"],
+        ESTP: ["Se","Ti","Fe","Ni"], ESFP: ["Se","Fi","Te","Ni"]
+    };
 
-// ============ 启动与事件绑定 ============
+    let bestType = "未知";
+    let bestStack = [];
+    let bestScore = -1;
+
+    for (const [type, stack] of Object.entries(stacks)) {
+        let score = 0;
+        if (stack[0] === top) score += 40;
+        if (stack[1] === second) score += 30;
+        else if (stack[0] === second && stack[1] === top) score += 55;
+
+        if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
+        if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestType = type;
+            bestStack = stack;
+        }
+    }
+
+    const maxScore = 85;
+    let confidence = Math.round((bestScore / maxScore) * 100);
+    if (bestScore < 40) confidence = Math.min(confidence, 50);
+
+    let extraTip = "";
+    if ((bestType === 'ENTJ' || bestType === 'ESTJ' || bestType === 'ENTP') && scores.Fi > 30) {
+        extraTip = `<div class="mt-6 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
+            <strong>⚠️ 深度解析：</strong> 检测到您具有很强的执行力（Te/Ne），但内在情感（Fi）依然活跃。
+            这可能意味着您并非天生的 ${bestType}，而是一位在社会压力下被迫发展出强大外壳的 <strong>INFP/ISFP</strong>。
+            请回顾：在完全没有外界要求时，您是更想“赢”，还是更想“忠于自我”？
+        </div>`;
+    }
+
+    return { type: bestType, stack: bestStack, sorted, confidence, scores, extraTip };
+}
+
+// ============ 结果展示 ============
+const typeFullDesc = {
+    INTJ: "建筑师 - 独立、战略性思考者", INFJ: "提倡者 - 理想主义、深刻洞察",
+    ENTJ: "指挥官 - 大胆、果断的领导者", ENFJ: "主人公 - 魅力四射的激励者",
+    INTP: "逻辑学家 - 渴望知识的创新者", INFP: "调停者 - 诗意、善良的利他主义者",
+    ENTP: "辩论家 - 聪明好奇的思想家", ENFP: "竞选者 - 热情、有创造力的自由人",
+    ISTJ: "物流师 - 务实、注重事实", ISFJ: "守卫者 - 专注、温暖的守护者",
+    ESTJ: "总经理 - 出色的管理者", ESFJ: "执政官 - 极有同情心、受欢迎",
+    ISTP: "鉴赏家 - 大胆的实践者", ISFP: "探险家 - 灵活、有魅力的艺术家",
+    ESTP: "企业家 - 聪明、精力充沛", ESFP: "表演者 - 自发、精力充沛"
+};
+
+function showModal(res, scores) {
+    const content = document.getElementById('result-content');
+    const modal = document.getElementById('result-modal');
+
+    const chartHtml = Object.entries(scores).map(([f, s]) => `
+        <div class="mb-3">
+            <div class="flex justify-between text-xs font-bold mb-1">
+                <span>${f}</span><span>${s.toFixed(1)}</span>
+            </div>
+            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
+                <div class="bg-indigo-500 h-full" style="width: ${(s/100)*100}%"></div>
+            </div>
+        </div>
+    `).join('');
+
+    const rankHtml = res.sorted.slice(0,4).map(([f,s], i) => 
+        `<div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2 border border-slate-100">
+            <span class="font-bold text-slate-500">#${i+1}</span>
+            <span class="font-black text-lg text-indigo-600">${f}</span>
+            <span class="text-sm font-medium text-slate-600">${s.toFixed(0)}</span>
+        </div>`
+    ).join('');
+
+    content.innerHTML = `
+        <div class="text-center mb-8">
+            <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">测评结果</h2>
+            <div class="text-6xl font-black text-indigo-600 mb-2">${res.type}</div>
+            <div class="text-lg text-slate-600 font-medium">${typeFullDesc[res.type]}</div>
+            <div class="mt-4 inline-block px-4 py-1 bg-green-50 text-green-700 rounded-full text-sm font-bold">匹配度: ${res.confidence}%</div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div><h3 class="font-bold mb-4 text-slate-700">八维强度</h3>${chartHtml}</div>
+            <div>
+                <h3 class="font-bold mb-4 text-slate-700">核心功能排序</h3>
+                ${rankHtml}
+                <div class="mt-6 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800">
+                    <strong>功能堆栈：</strong> ${res.stack.join(' > ')}
+                </div>
+            </div>
+        </div>
+        ${res.extraTip}
+    `;
+    modal.classList.remove('hidden');
+}
+
+function shareResults() {
+    const type = document.querySelector('.text-6xl')?.textContent || "未知";
+    const text = `我的MBTI八维深度测评结果：${type}！\n快来测测你的真实人格：${location.href}`;
+    navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
+}
+
+function clearStorage() {
+    if(confirm('确定清除进度并重测？')) { 
+        localStorage.removeItem(STORAGE_KEY); 
+        location.reload(); 
+    }
+}
+
+// ============ 核心事件绑定 (最稳妥的修复) ============
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 绑定上一页按钮（之前遗漏的！）
+    // 1. 绑定上一页
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) {
         prevBtn.addEventListener('click', prevPage);
     }
     
-    // 2. 绑定下一页按钮（虽然 renderPage 会动态改，但初始化绑定更安全）
+    // 2. 绑定下一页 (逻辑总控)
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            // 根据当前页码决定是翻页还是计算
             const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
-            if (currentPage === maxPage) {
-                calculateResults();
+            
+            // 如果在最后一页
+            if (currentPage >= maxPage) {
+                const answered = Object.keys(userAnswers).length;
+                if (answered < TOTAL_QUESTIONS) {
+                    alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成。\n请点击“上一页”检查漏做的题目。`);
+                } else {
+                    calculateResults();
+                }
             } else {
                 nextPage();
             }
         });
     }
 
-    // 3. 启动应用
+    // 3. 启动
     startApp();
 });
-
-// 注意：你需要把 renderPage 中动态修改 onclick 的那几行代码删掉，
-// 改为只修改 nextBtn.textContent，逻辑判断全放在上面的 addEventListener 里。
-    // ============ 修复翻页功能的关键代码 ============
-
-// 1. 确保上一页按钮能用
-document.getElementById('prev-btn').addEventListener('click', prevPage);
-
-// 2. 确保下一页按钮能用（虽然 renderPage 里写了，但这里加个双保险）
-document.getElementById('next-btn').addEventListener('click', function() {
-    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
-    if (currentPage < maxPage) {
-        nextPage();
-    } else {
-        calculateResults();
-    }
-});
-
-// 注意：请删除 renderPage 函数内部第 124 行左右的 nextBtn.onclick = ... 代码，
-// 防止逻辑冲突。让 renderPage 只负责更新按钮文字（下一页 vs 完成测评），
-// 而不要负责绑定事件。
 </script>
 </body>
 </html>
-
