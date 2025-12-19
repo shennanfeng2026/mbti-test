@@ -31,7 +31,6 @@
         <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">MBTI 八维深度测评（翻页·去伪装版）</h1>
         <p class="text-slate-600 mb-6">52 道私下本能题 · 翻页设计 · 结果更贴近真实自我</p>
 
-        <!-- 进度显示 -->
         <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-8">
             <span class="text-lg font-semibold">第 <span id="current-page">1</span> / 7 页</span>
             <span class="text-lg font-semibold">已答 <span id="answered-count">0</span>/52</span>
@@ -40,18 +39,16 @@
             </div>
         </div>
 
-        <!-- 手机端引导提示 -->
         <div class="block md:hidden bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 text-sm">
             <p class="font-bold text-amber-800 mb-2">答题提示：</p>
             <p>• <span class="text-red-600 font-bold">红色端</span> = 更认同左侧描述</p>
             <p>• <span class="text-green-600 font-bold">绿色端</span> = 更认同右侧描述</p>
-            <p>• <span class="font-bold">拖动幅度越大 = 认可度越强</span>（中立 = 不偏向）</p>
+            <p>• <span class="font-bold">拖动幅度越大 = 认可度越强</span></p>
         </div>
     </header>
 
     <div id="quiz-container" class="space-y-8"></div>
 
-    <!-- 翻页按钮 -->
     <div class="flex justify-between mt-12">
         <button id="prev-btn" class="px-8 py-4 bg-slate-200 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed">上一页</button>
         <button id="next-btn" class="px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold">下一页</button>
@@ -130,7 +127,7 @@ const rawQuestions = [
     { id: 51, left: "Fi", right: "Te", lText: "私下做决定时，我最在意是否违背了自己的核心价值观", rText: "私下做决定时，我最在意是否能高效达成目标", reversed: false },
     { id: 52, left: "Ni", right: "Te", lText: "独处反思时，我更关注事情的长远意义和潜在走向", rText: "独处反思时，我更关注如何实际执行和优化结果", reversed: false }
 ];
-    
+
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
 const STORAGE_KEY = 'mbti_paged_final';
@@ -145,7 +142,6 @@ function startApp() {
     shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
     currentPage = 0;
     renderPage();
-    updateProgress();
 }
 
 function loadAnswers() {
@@ -154,11 +150,9 @@ function loadAnswers() {
         if (saved) {
             const data = JSON.parse(saved);
             userAnswers = data.answers || {};
-            // 如果有保存的页码，恢复（可选）
             currentPage = data.currentPage || 0;
         }
     } catch (e) {
-        console.warn('加载失败，已重置');
         userAnswers = {};
     }
 }
@@ -166,9 +160,7 @@ function loadAnswers() {
 function saveProgress() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: userAnswers, currentPage }));
-    } catch (e) {
-        console.warn('保存失败');
-    }
+    } catch (e) {}
 }
 
 // ============ 渲染页面 ============
@@ -208,7 +200,7 @@ function renderPage() {
         container.appendChild(div);
     });
 
-    // 更新按钮
+    // 按钮状态
     document.getElementById('prev-btn').disabled = currentPage === 0;
     const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
     const nextBtn = document.getElementById('next-btn');
@@ -224,7 +216,7 @@ function renderPage() {
     updateProgress();
 }
 
-// ============ 翻页函数 ============
+// ============ 翻页 ============
 function nextPage() {
     const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
     if (currentPage < maxPage) {
@@ -242,7 +234,7 @@ function prevPage() {
     }
 }
 
-// ============ 答题与进度 ============
+// ============ 答题 ============
 function getDisplayText(value) {
     value = parseInt(value);
     if (value <= 2) return "强烈左倾";
@@ -268,7 +260,7 @@ function updateProgress() {
     document.getElementById('calculate-btn').disabled = answered < TOTAL_QUESTIONS;
 }
 
-// ============ 计算结果（能量拮抗计分法） ============
+// ============ 计算与结果（你的能量拮抗逻辑） ============
 function calculateResults() {
     let scores = { Ni:0, Ne:0, Si:0, Se:0, Ti:0, Te:0, Fi:0, Fe:0 };
 
@@ -284,7 +276,6 @@ function calculateResults() {
             scores[q.left] += Math.abs(diff) * 2;
             scores[q.right] -= Math.abs(diff) * 0.5;
         }
-        // 中立不加分
     });
 
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
@@ -293,8 +284,7 @@ function calculateResults() {
     showModal(result, scores);
 }
 
-// ============ 类型判定与结果展示（保持原逻辑） ============
-// determineType, showModal, shareResults, clearStorage 等函数保持你的原版
+// determineType, showModal, shareResults, clearStorage 保持你的原版
 
 // ============ 启动 ============
 document.addEventListener('DOMContentLoaded', startApp);
