@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>（最终测试版）MBTI 八维深度测评</title>
+    <title>MBTI 八维深度测评（纯净版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -30,7 +30,7 @@
             transition: background 0.3s;
         }
         .slider::-webkit-slider-thumb { 
-            -webkit-appearance: none; 
+            -webkit-appearance: none;
             width: 28px; 
             height: 28px; 
             border-radius: 50%; 
@@ -43,9 +43,8 @@
         .slider::-webkit-slider-thumb:active {
             transform: scale(1.1);
         }
-        .card { transition: all 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans min-h-screen">
@@ -63,21 +62,17 @@
         </div>
         <div class="block bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-2 text-sm text-left shadow-sm">
             <p class="font-bold text-amber-800 mb-2 text-center">💡 答题小贴士：</p>
-            <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span> (强度 1-5)</p>
-            <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span> (强度 1-5)</p>
-            <p>• <span class="font-bold">中间(0)</span> = 难以抉择/中立</p>
+            <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span></p>
+            <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span></p>
+            <p class="mb-1">• <span class="font-bold text-indigo-600">双高复选框</span> = 对两侧都有强烈共鸣 (不扣分，双倍加分)</p>
         </div>
     </header>
 
     <div id="quiz-container" class="space-y-8 mb-12"></div>
 
     <div class="flex justify-between items-center mt-12 px-2 md:px-10 pb-20">
-        <button id="prev-btn" class="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors">
-            上一页
-        </button>
-        <button id="next-btn" class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95">
-            下一页
-        </button>
+        <button id="prev-btn" class="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors">上一页</button>
+        <button id="next-btn" class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95">下一页</button>
     </div>
 
     <div id="tie-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4 z-50">
@@ -86,7 +81,6 @@
                 <div class="inline-block p-3 bg-amber-100 text-amber-600 rounded-full mb-4 text-2xl">⚖️</div>
                 <h2 class="text-2xl font-black text-slate-800">进入终极决胜局</h2>
                 <p class="text-slate-600 mt-2">系统检测到您的 <span id="tie-names" class="font-bold text-indigo-600"></span> 功能难分伯仲。</p>
-                <p class="text-sm text-slate-500 mt-1">请凭第一直觉，在以下情境中做出唯一的选择。</p>
             </div>
             <div id="tie-question-container" class="space-y-4"></div>
         </div>
@@ -104,13 +98,10 @@
 </div>
 
 <script>
-// ============ 1. 静态固定题库 (已穿插打乱 + 55%左倾固定) ============
-// 注意：这里已经移除了 startApp 中的 shuffle 逻辑
-// 下面的顺序是固定的：N -> S -> T -> F 循环，避免连续同一维度
-// reversed 属性也是固定的，确保约 55% 为 false (左即左), 45% 为 true (反转)
+// ============ 1. 优化题库 (含 S 人通俗化修改) ============
 const rawQuestions = [
     // 1-4
-    { id: 1, left: "Ni", right: "Ne", lText: "我常忍不住去想事情背后的“征兆”或“寓意", rText: "我常忍不住由一个点子联想到好几种“新玩法”", reversed: false },
+    { id: 1, left: "Ni", right: "Ne", lText: "我常忍不住去想事情背后的“征兆”或“寓意”", rText: "我常忍不住由一个点子联想到好几种“新玩法”", reversed: false },
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
     { id: 27, left: "Ti", right: "Te", lText: "我一定要搞清楚背后的原理，哪怕慢一点", rText: "只要方法管用能最快搞定就行，原理不重要", reversed: false },
     { id: 40, left: "Fi", right: "Te", lText: "让我做一件虽然赚钱但心里觉得“不对味”的事，我会难受得睡不着", rText: "工作就是工作，只要钱给够，我可以把个人喜好放一边", reversed: false },
@@ -188,7 +179,6 @@ const rawQuestions = [
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
-// ============ 1-A. 加赛题库 ============
 const tieBreakerPool = {
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
@@ -214,26 +204,15 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
-const STORAGE_KEY = 'mbti_final_v8_fixed'; // 更新key避免旧数据冲突
-const RESULT_KEY = 'mbti_final_report_data_v8'; 
+const STORAGE_KEY = 'mbti_final_v9_pure'; // 更新 key 避免旧缓存冲突
+const RESULT_KEY = 'mbti_final_report_v9';
 
 let userAnswers = {};
 let currentPage = 0;
 let tempScores = {}; 
 let tieAdjustments = {};
 
-// ============ 3. 初始化 ============
 function startApp() {
-    const savedReport = localStorage.getItem(RESULT_KEY);
-    if (savedReport) {
-        try {
-            const reportData = JSON.parse(savedReport);
-            tempScores = reportData.scores; 
-            showModal(reportData, reportData.scores);
-            return; 
-        } catch(e) { console.error("Report load failed", e); }
-    }
-
     loadAnswers();
     renderPage();
 }
@@ -255,51 +234,55 @@ function saveProgress() {
     } catch (e) {}
 }
 
-// ============ 4. 渲染页面 (含视觉优化) ============
-function renderPage() {
-    // 2. 强制瞬间回到顶部 (修复翻页不置顶问题)
-    window.scrollTo(0, 0);
+function getDisplayText(value) {
+    value = parseInt(value);
+    if (value <= 2) return "强烈左倾";
+    if (value <= 4) return "倾向左侧";
+    if (value === 5) return "完全中立";
+    if (value <= 7) return "倾向右侧";
+    return "强烈右倾";
+}
 
+function renderPage() {
+    window.scrollTo(0, 0);
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
+    
     const start = currentPage * QUESTIONS_PER_PAGE;
-    // 使用固定的 rawQuestions，不再使用 shuffled
     const end = Math.min(start + QUESTIONS_PER_PAGE, rawQuestions.length);
     const pageQuestions = rawQuestions.slice(start, end);
-    
+
     pageQuestions.forEach((q, idx) => {
         const globalIdx = start + idx;
         const savedValue = userAnswers[q.id] ?? 5; 
-        const displayScore = Math.abs(savedValue - 5); 
-
         const leftText = q.reversed ? q.rText : q.lText;
         const rightText = q.reversed ? q.lText : q.rText;
+        const isDual = userAnswers[`dual_${q.id}`] || false;
 
         const div = document.createElement('div');
         div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in';
         div.style.animationDelay = `${idx * 0.05}s`;
-        
-        // 检查当前题目是否被标记为“双高”
-        const isDual = userAnswers[`dual_${q.id}`] || false;
 
         div.innerHTML = `
-            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/${TOTAL_QUESTIONS}</div>
-            
+            <div class="text-sm font-semibold text-slate-500 mb-4 flex justify-between">
+                <span>题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
+            </div>
             <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
                 <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
                 <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
                 <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">${rightText}</div>
             </div>
-            
             <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
             
             <div class="py-4 transition-opacity duration-300 ${isDual ? 'opacity-50 pointer-events-none' : 'opacity-100'}">
-                <input type="range" min="0" max="10" value="${savedValue}" class="slider"
-                       id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
-                <div class="flex justify-between mt-4 text-sm font-medium">
-                    <span class="text-red-600">强烈左倾</span>
-                    <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
-                    <span class="text-green-600">强烈右倾</span>
+                <div class="relative w-full h-8 flex items-center">
+                    <input type="range" min="0" max="10" value="${savedValue}" class="slider"
+                           id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                </div>
+                <div class="flex justify-between mt-2 text-xs font-medium text-slate-400">
+                    <span class="text-red-500">强烈左倾</span>
+                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">${getDisplayText(savedValue)}</span>
+                    <span class="text-green-500">强烈右倾</span>
                 </div>
             </div>
 
@@ -322,37 +305,30 @@ function renderPage() {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-        const answered = Object.keys(userAnswers).length;
+        const answered = Object.keys(userAnswers).length; // 简单计算，暂不排除 dual keys
+        
+        // 修正 answered 计数，排除 dual_ key
+        const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
+
         if (currentPage >= maxPage) {
-            nextBtn.textContent = (answered < TOTAL_QUESTIONS) ? `完成 (${answered}/${TOTAL_QUESTIONS})` : '生成报告';
-            nextBtn.className = (answered < TOTAL_QUESTIONS) ?
-                "px-8 py-3 bg-slate-400 text-white rounded-xl font-bold cursor-not-allowed" : 
-                "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
+            nextBtn.textContent = (validAnswers < TOTAL_QUESTIONS) ? `完成 (${validAnswers}/${TOTAL_QUESTIONS})` : '生成报告';
+            nextBtn.className = (validAnswers < TOTAL_QUESTIONS) ? "px-8 py-3 bg-slate-400 text-white rounded-xl font-bold cursor-not-allowed" : "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
         } else {
             nextBtn.textContent = '下一页';
             nextBtn.className = "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
         }
     }
-
     document.getElementById('current-page').textContent = currentPage + 1;
     updateProgress();
 }
-// 缺失的辅助函数：将分数转换为文字
-function getDisplayText(value) {
-    value = parseInt(value);
-    if (value <= 2) return "强烈左倾";
-    if (value <= 4) return "倾向左侧";
-    if (value === 5) return "完全中立";
-    if (value <= 7) return "倾向右侧";
-    return "强烈右倾";
-}
+
 function updateSliderVisual(input, val) {
     const value = parseInt(val);
     if (value < 5) {
-        const intensity = (5 - value) / 5; 
+        const intensity = (5 - value) / 5;
         input.style.background = `linear-gradient(to right, rgba(220, 38, 38, ${0.3 + intensity*0.7}), #e2e8f0 ${50 + (5-value)*10}%)`;
     } else if (value > 5) {
-        const intensity = (value - 5) / 5; 
+        const intensity = (value - 5) / 5;
         input.style.background = `linear-gradient(to right, #e2e8f0 ${50 - (value-5)*10}%, rgba(22, 163, 74, ${0.3 + intensity*0.7}))`;
     } else {
         input.style.background = '#e2e8f0';
@@ -361,45 +337,25 @@ function updateSliderVisual(input, val) {
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    const displayScore = Math.abs(value - 5);
-    document.getElementById(`val-q${id}`).textContent = displayScore;
+    // 修复：拖动时显示文字而非数字
+    document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
     updateSliderVisual(input, value);
-
     userAnswers[id] = value;
     saveProgress();
     updateProgress();
-    
-    const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-    if (currentPage === maxPage) {
-        const nextBtn = document.getElementById('next-btn');
-        const answered = Object.keys(userAnswers).length;
-        if (answered < TOTAL_QUESTIONS) {
-             nextBtn.textContent = `完成 (${answered}/${TOTAL_QUESTIONS})`;
-             nextBtn.className = "px-8 py-3 bg-slate-400 text-white rounded-xl font-bold cursor-not-allowed";
-        } else {
-             nextBtn.textContent = '生成报告';
-             nextBtn.className = "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
-        }
-    }
+    renderPage(); // 刷新按钮状态
 }
-// 处理双高复选框的变化
+
 function onDualChange(checkbox, id) {
-    // 记录状态：key 为 "dual_题目ID"
     userAnswers[`dual_${id}`] = checkbox.checked;
-    
-    // 视觉反馈：重新渲染该题（让滑块变灰/恢复）
-    // 为了体验流畅，我们只切换样式，不重绘整个页面，但简单起见可以直接调用 renderPage
-    // 或者更简单的：保存后刷新进度条即可，不用立刻重绘（滑块变灰是锦上添花）
     saveProgress();
-    
-    // 强制刷新当前页以更新滑块的禁用状态
     renderPage();
 }
     
 function updateProgress() {
-    const answered = Object.keys(userAnswers).length;
-    const percent = Math.round((answered / TOTAL_QUESTIONS) * 100);
-    document.getElementById('answered-count').textContent = answered;
+    const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
+    const percent = Math.round((validAnswers / TOTAL_QUESTIONS) * 100);
+    document.getElementById('answered-count').textContent = validAnswers;
     document.getElementById('total-progress').style.width = `${percent}%`;
 }
 
@@ -411,55 +367,42 @@ function prevPage() {
     if (currentPage > 0) { currentPage--; renderPage(); }
 }
 
-// ============ 5. 核心计算 ============
+// ============ 核心计算 (纯净版) ============
 function calculateResults() {
-    const answered = Object.keys(userAnswers).length;
-    if(answered < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成`); return; }
+    const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
+    if(validAnswers < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - validAnswers} 道题未完成`); return; }
 
-    // 设置基础分，避免0分
-    let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 }; // 建议基础分升至30
+    let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
 
     rawQuestions.forEach(q => {
-        // 1. 先检查是否开启了“双高模式”
         const isDual = userAnswers[`dual_${q.id}`];
-
         if (isDual) {
-            // ⭐ 双高模式核心逻辑：
-            // 不扣分，两边同时给予高分奖励！
-            // 建议 +12 分（相当于单边选 8-9 分的强度，但两边都加）
             scores[q.left] += 12;
             scores[q.right] += 12;
-            
         } else {
-            // 2. 普通模式：走原来的能量拮抗逻辑
             const val = userAnswers[q.id] || 5;
             let diff = val - 5;
             if(q.reversed) diff = -diff;
 
             if (diff > 0) {
-                scores[q.right] += diff * 2;       // 加分权重 2.0
-                scores[q.left] -= Math.abs(diff) * 0.3; // 扣分权重 0.3
+                scores[q.right] += diff * 2;
+                scores[q.left] -= Math.abs(diff) * 0.3;
             } else if (diff < 0) {
                 scores[q.left] += Math.abs(diff) * 2;
                 scores[q.right] -= Math.abs(diff) * 0.3;
             }
         }
     });
+
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
     tempScores = scores; 
-
     const tiePair = checkForTies(scores);
-    if (tiePair) {
-        startTieBreaker(tiePair);
-    } else {
-        finalizeAndShow(scores);
-    }
+    if (tiePair) { startTieBreaker(tiePair); } else { finalizeAndShow(scores); }
 }
 
 function checkForTies(scores) {
     const pairs = [['Ti', 'Fi'], ['Ne', 'Se'], ['Ni', 'Si'], ['Te', 'Fe']];
     const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
-    
     for (let pair of pairs) {
         const s1 = scores[pair[0]];
         const s2 = scores[pair[1]];
@@ -497,7 +440,6 @@ function startTieBreaker(pair) {
     const submitDiv = document.createElement('div');
     submitDiv.innerHTML = `<button onclick="resolveTieBreaker()" class="w-full mt-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">提交决胜选择</button>`;
     container.appendChild(submitDiv);
-
     modal.classList.remove('hidden');
     tieAdjustments = {}; 
 }
@@ -510,39 +452,30 @@ function handleTieChoice(winner, loser, btn) {
     });
     btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
     btn.classList.remove('border-slate-300');
-
     tieAdjustments[winner] = (tieAdjustments[winner] || 0) + 10;
     tieAdjustments[loser] = (tieAdjustments[loser] || 0) - 5;
 }
 
 function resolveTieBreaker() {
-    for (let [func, adjustment] of Object.entries(tieAdjustments)) {
-        tempScores[func] += adjustment;
-    }
+    for (let [func, adjustment] of Object.entries(tieAdjustments)) { tempScores[func] += adjustment; }
     document.getElementById('tie-modal').classList.add('hidden');
     finalizeAndShow(tempScores);
 }
 
-// ============ 7. 最终判定 (优化双高修正 & Grip逻辑) ============
+// ============ 最终判定 (纯净逻辑版) ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
-    try {
-        localStorage.setItem(RESULT_KEY, JSON.stringify(result));
-    } catch(e) {}
-
     showModal(result, scores);
 }
 
 function determineType(scores) {
-    // 1. 简单的分数排序
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
     let top = sorted[0][0];
     let second = sorted[1][0];
 
-    // 已删除：所有的 INFP/INTP 混淆修正、Ni/Ti 修正等补丁代码。
-    // 现在完全信任“双高复选框”带来的分数准确性。
+    // 纯净版：无任何 Ti/Fi 或 Ni/Ti 修正补丁
+    // 完全信任双高复选框和能量拮抗算法的结果
 
-    // 2. 匹配 16 人格堆栈
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
         ENTJ: ["Te","Ni","Se","Fi"], ENFJ: ["Fe","Ni","Se","Ti"],
@@ -560,17 +493,13 @@ function determineType(scores) {
 
     for (const [type, stack] of Object.entries(stacks)) {
         let score = 0;
-        // 核心权重大幅提升，主导功能必须对得上
         if (stack[0] === top) score += 50; 
         if (stack[1] === second) score += 25;
-        // 允许前两名互换（应对内倾型/外倾型发展均衡的情况）
         else if (stack[0] === second && stack[1] === top) score += 40;
 
-        // 辅助加分：第三/第四功能如果在前列也加分
         if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
         if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
 
-        // 扣分项：如果劣势功能（第4功能）比主导功能还高，说明不匹配
         const inferiorFunc = stack[3];
         const domFunc = stack[0];
         if (scores[inferiorFunc] > scores[domFunc]) score -= 15;
@@ -586,10 +515,7 @@ function determineType(scores) {
     let confidence = Math.round((bestScore / maxScore) * 100);
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
-    // ============ 3. 结果提示 (仅保留描述性提示，不干预结果) ============
     let extraTip = "";
-    
-    // 提示1：压力状态检测 (Grip)
     const inferior = bestStack[3];
     if (scores[inferior] > 70) {
         extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
@@ -598,8 +524,6 @@ function determineType(scores) {
             <br>这通常出现在极度压力或被迫“扮演角色”的情况下。
         </div>`;
     }
-
-    // 提示2：双高现象解读
     if (scores.Ti > 60 && scores.Fi > 60) {
         extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
             <strong>💡 深度解析：</strong> 您的逻辑(Ti)与情感(Fi)都很强。这说明您不仅拥有严密的自我逻辑体系，也坚守着核心价值观，这是一种非常高阶的心理状态。
@@ -623,7 +547,6 @@ const typeFullDesc = {
 function showModal(res, scores) {
     const content = document.getElementById('result-content');
     const modal = document.getElementById('result-modal');
-    
     const chartHtml = Object.entries(scores).map(([f, s]) => `
         <div class="mb-3">
             <div class="flex justify-between text-xs font-bold mb-1">
@@ -634,7 +557,6 @@ function showModal(res, scores) {
             </div>
         </div>
     `).join('');
-
     const rankHtml = res.sorted.slice(0,4).map(([f,s], i) => 
         `<div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2 border border-slate-100">
             <span class="font-bold text-slate-500">#${i+1}</span>
@@ -642,7 +564,6 @@ function showModal(res, scores) {
             <span class="text-sm font-medium text-slate-600">${s.toFixed(0)}</span>
         </div>`
     ).join('');
-
     content.innerHTML = `
         <div class="text-center mb-8">
             <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">测评结果</h2>
@@ -650,7 +571,6 @@ function showModal(res, scores) {
             <div class="text-lg text-slate-600 font-medium">${typeFullDesc[res.type]}</div>
             <div class="mt-4 inline-block px-4 py-1 bg-green-50 text-green-700 rounded-full text-sm font-bold">匹配度: ${res.confidence}%</div>
         </div>
-
         <div class="grid md:grid-cols-2 gap-8">
             <div><h3 class="font-bold mb-4 text-slate-700">八维强度</h3>${chartHtml}</div>
             <div>
@@ -682,28 +602,17 @@ function clearStorage() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
-    if (prevBtn) {
-        prevBtn.addEventListener('click', prevPage);
-    }
+    if (prevBtn) { prevBtn.addEventListener('click', prevPage); }
     
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-            if (currentPage >= maxPage) {
-                calculateResults();
-            } else {
-                nextPage();
-            }
+            if (currentPage >= maxPage) { calculateResults(); } else { nextPage(); }
         });
     }
-
     startApp();
 });
 </script>
 </body>
 </html>
-
-
-
-
