@@ -526,37 +526,15 @@ function finalizeAndShow(scores) {
 }
 
 function determineType(scores) {
+    // 1. 简单的分数排序
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
     let top = sorted[0][0];
     let second = sorted[1][0];
 
-    // --- 双高修正 ---
-    const diff = Math.abs(scores[top] - scores[second]);
-    
-    // Case 1: Ti/Fi 混淆
-    const isJiDomTie = (top === 'Ti' && second === 'Fi') || (top === 'Fi' && second === 'Ti');
-    if (isJiDomTie && diff < 15) {
-        if (scores.Ne > scores.Se) {
-            if (top === 'Ti') { top = 'Fi'; second = 'Ne'; }
-        }
-    }
+    // 已删除：所有的 INFP/INTP 混淆修正、Ni/Ti 修正等补丁代码。
+    // 现在完全信任“双高复选框”带来的分数准确性。
 
-    // Case 2: Ni/Ti 混淆
-    if ((top === 'Ni' && second === 'Ti') || (top === 'Ti' && second === 'Ni')) {
-        if (scores.Fe > scores.Te) {
-            top = 'Ni'; second = 'Fe';
-        }
-    }
-
-    // Case 3: Ne/Fe 混淆
-    if ((top === 'Ne' && second === 'Fe') || (top === 'Fe' && second === 'Ne')) {
-        if (scores.Ti > scores.Fi) {
-            top = 'Ne'; second = 'Ti'; 
-        } else {
-            top = 'Fe'; second = 'Ni'; 
-        }
-    }
-
+    // 2. 匹配 16 人格堆栈
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
         ENTJ: ["Te","Ni","Se","Fi"], ENFJ: ["Fe","Ni","Se","Ti"],
@@ -574,15 +552,20 @@ function determineType(scores) {
 
     for (const [type, stack] of Object.entries(stacks)) {
         let score = 0;
+        // 核心权重大幅提升，主导功能必须对得上
         if (stack[0] === top) score += 50; 
         if (stack[1] === second) score += 25;
+        // 允许前两名互换（应对内倾型/外倾型发展均衡的情况）
         else if (stack[0] === second && stack[1] === top) score += 40;
-        
+
+        // 辅助加分：第三/第四功能如果在前列也加分
         if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
         if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
-        
+
+        // 扣分项：如果劣势功能（第4功能）比主导功能还高，说明不匹配
         const inferiorFunc = stack[3];
-        if (scores[inferiorFunc] > scores[stack[0]]) score -= 15;
+        const domFunc = stack[0];
+        if (scores[inferiorFunc] > scores[domFunc]) score -= 15;
 
         if (score > bestScore) {
             bestScore = score;
@@ -595,22 +578,23 @@ function determineType(scores) {
     let confidence = Math.round((bestScore / maxScore) * 100);
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
+    // ============ 3. 结果提示 (仅保留描述性提示，不干预结果) ============
     let extraTip = "";
-    const inferior = bestStack[3];
-    const dominant = bestStack[0];
     
-    if (scores[inferior] > 70 || scores[inferior] > scores[dominant] * 0.9) {
+    // 提示1：压力状态检测 (Grip)
+    const inferior = bestStack[3];
+    if (scores[inferior] > 70) {
         extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
-            <strong>⚠️ 压力与 Grip 状态预警：</strong><br>
-            虽然您的主导人格倾向于 <strong>${bestType}</strong>，但系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
-            <br>这通常发生在极度压力下，表现为“性情大变”。请关注近期是否压力过大。
+            <strong>⚠️ 状态提示：</strong><br>
+            系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
+            <br>这通常出现在极度压力或被迫“扮演角色”的情况下。
         </div>`;
     }
 
+    // 提示2：双高现象解读
     if (scores.Ti > 60 && scores.Fi > 60) {
         extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
-            <strong>🤔 复杂性解析：</strong> 您的 <strong>Ti (逻辑)</strong> 和 <strong>Fi (价值)</strong> 都极高。
-            这常出现在高阶 <strong>INFP</strong> 身上，或是 <strong>INTP</strong> 的情感爆发期。
+            <strong>💡 深度解析：</strong> 您的逻辑(Ti)与情感(Fi)都很强。这说明您不仅拥有严密的自我逻辑体系，也坚守着核心价值观，这是一种非常高阶的心理状态。
         </div>`;
     }
 
@@ -711,4 +695,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
