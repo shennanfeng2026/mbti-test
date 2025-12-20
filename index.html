@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>（小白自测版）MBTI 八维深度测评</title>
+    <title>（最终完善版）MBTI 八维深度测评</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,13 +20,12 @@
         }
     </script>
     <style>
-        /* 2. 视觉优化：Slider 样式升级 */
         .slider { 
             -webkit-appearance: none;
             width: 100%; 
             height: 14px; 
             border-radius: 7px; 
-            background: #e2e8f0; /* 默认灰色，JS动态覆盖 */
+            background: #e2e8f0; 
             outline: none; 
             transition: background 0.3s;
         }
@@ -64,9 +63,9 @@
         </div>
         <div class="block bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-2 text-sm text-left shadow-sm">
             <p class="font-bold text-amber-800 mb-2 text-center">💡 答题小贴士：</p>
-            <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span> (分值 0-4)</p>
-            <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span> (分值 6-10)</p>
-            <p>• <span class="font-bold">中间(5)</span> = 难以抉择/中立</p>
+            <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span> (强度 1-5)</p>
+            <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span> (强度 1-5)</p>
+            <p>• <span class="font-bold">中间(0)</span> = 难以抉择/中立</p>
         </div>
     </header>
 
@@ -195,7 +194,7 @@ const tieBreakerPool = {
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
 const STORAGE_KEY = 'mbti_final_v7_complete';
-const RESULT_KEY = 'mbti_final_report_data'; // 3. 结果持久化Key
+const RESULT_KEY = 'mbti_final_report_data'; 
 
 let shuffledQuestions = [];
 let userAnswers = {};
@@ -205,15 +204,13 @@ let tieAdjustments = {};
 
 // ============ 3. 初始化 ============
 function startApp() {
-    // 3. 检查是否有已保存的结果
     const savedReport = localStorage.getItem(RESULT_KEY);
     if (savedReport) {
         try {
             const reportData = JSON.parse(savedReport);
-            // 恢复内存中的分数，以便UI渲染
             tempScores = reportData.scores; 
             showModal(reportData, reportData.scores);
-            return; // 直接显示结果，不进入答题逻辑
+            return; 
         } catch(e) { console.error("Report load failed", e); }
     }
 
@@ -231,7 +228,6 @@ function loadAnswers() {
             const data = JSON.parse(saved);
             userAnswers = data.answers || {};
             currentPage = data.currentPage || 0;
-            // 如果已保存顺序，应恢复顺序逻辑(此处简化，重排不影响分数计算)
         }
     } catch (e) { userAnswers = {}; }
 }
@@ -244,7 +240,7 @@ function saveProgress() {
 
 // ============ 4. 渲染页面 (含视觉优化) ============
 function renderPage() {
-    // 2. 翻页回到顶部
+    // 翻页回到顶部
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const container = document.getElementById('quiz-container');
@@ -255,7 +251,10 @@ function renderPage() {
     
     pageQuestions.forEach((q, idx) => {
         const globalIdx = start + idx;
-        const savedValue = userAnswers[q.id] ?? 5;
+        const savedValue = userAnswers[q.id] ?? 5; // 默认值5 (中立)
+        // 视觉分：0-10 -> 转换为 5-0-5 (绝对值)
+        const displayScore = Math.abs(savedValue - 5); 
+
         const leftText = q.reversed ? q.rText : q.lText;
         const rightText = q.reversed ? q.lText : q.rText;
 
@@ -263,10 +262,10 @@ function renderPage() {
         div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in';
         div.style.animationDelay = `${idx * 0.05}s`;
         
+        // 优化1：移除右上角的功能标签 (Fi vs Fe 等)
         div.innerHTML = `
             <div class="text-sm font-semibold text-slate-500 mb-4 flex justify-between">
                 <span>题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
-                <span class="text-indigo-400 font-bold">${q.left} vs ${q.right}</span>
             </div>
             <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
                 <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
@@ -280,9 +279,9 @@ function renderPage() {
                         id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
                 </div>
                 <div class="flex justify-between mt-2 text-xs font-medium text-slate-400">
-                    <span class="text-red-500">强烈左倾 (0)</span>
-                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">${savedValue}</span>
-                    <span class="text-green-500">强烈右倾 (10)</span>
+                    <span class="text-red-500">5 (强烈)</span>
+                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">${displayScore}</span>
+                    <span class="text-green-500">5 (强烈)</span>
                 </div>
             </div>
         `;
@@ -291,6 +290,7 @@ function renderPage() {
         updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
     });
 
+    // 按钮逻辑不变
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) prevBtn.disabled = currentPage === 0;
 
@@ -313,19 +313,15 @@ function renderPage() {
     updateProgress();
 }
 
-// 2. 视觉反馈强化：动态更新滑块背景与数值显示
 function updateSliderVisual(input, val) {
     const value = parseInt(val);
-    const percent = value * 10;
-    
     // 动态背景：0(红) -> 5(灰) -> 10(绿)
-    let colorStart, colorEnd;
     if (value < 5) {
-        // 偏红：深红 -> 浅灰
-        const intensity = (5 - value) / 5; // 1.0 ~ 0.2
+        // 偏红
+        const intensity = (5 - value) / 5; 
         input.style.background = `linear-gradient(to right, rgba(220, 38, 38, ${0.3 + intensity*0.7}), #e2e8f0 ${50 + (5-value)*10}%)`;
     } else if (value > 5) {
-        // 偏绿：浅灰 -> 深绿
+        // 偏绿
         const intensity = (value - 5) / 5; 
         input.style.background = `linear-gradient(to right, #e2e8f0 ${50 - (value-5)*10}%, rgba(22, 163, 74, ${0.3 + intensity*0.7}))`;
     } else {
@@ -335,7 +331,10 @@ function updateSliderVisual(input, val) {
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    document.getElementById(`val-q${id}`).textContent = value;
+    
+    // 优化3：动态更新数值显示为 5-0-5
+    const displayScore = Math.abs(value - 5);
+    document.getElementById(`val-q${id}`).textContent = displayScore;
     
     // 视觉更新
     updateSliderVisual(input, value);
@@ -411,7 +410,6 @@ function checkForTies(scores) {
     for (let pair of pairs) {
         const s1 = scores[pair[0]];
         const s2 = scores[pair[1]];
-        // 阈值15，且必须是前3名的高分项
         if (s1 > 50 && s2 > 50 && Math.abs(s1 - s2) < 15) { 
             const rank1 = sorted.findIndex(x => x[0] === pair[0]);
             const rank2 = sorted.findIndex(x => x[0] === pair[1]);
@@ -475,8 +473,6 @@ function resolveTieBreaker() {
 // ============ 7. 最终判定 (优化双高修正 & Grip逻辑) ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
-    
-    // 3. 结果持久化保存
     try {
         localStorage.setItem(RESULT_KEY, JSON.stringify(result));
     } catch(e) {}
@@ -489,37 +485,30 @@ function determineType(scores) {
     let top = sorted[0][0];
     let second = sorted[1][0];
 
-    // --- 5. 双高修正优化 (Multiple Fixes) ---
+    // --- 双高修正 ---
     const diff = Math.abs(scores[top] - scores[second]);
     
     // Case 1: Ti/Fi 混淆 (INFP/INTP)
     const isJiDomTie = (top === 'Ti' && second === 'Fi') || (top === 'Fi' && second === 'Ti');
     if (isJiDomTie && diff < 15) {
         if (scores.Ne > scores.Se) {
-            // Ne高，通常是INFP误认Ti (因为Fi价值观有时候很像逻辑)
             if (top === 'Ti') { top = 'Fi'; second = 'Ne'; }
         }
     }
 
-    // Case 2: Ni/Ti 混淆 (INTJ vs ISTP vs INFJ loop)
-    // 如果 Ni 和 Ti 极高，但 Te/Fe 较低，可能是 INFJ (Ni-Ti loop) 或 ISTP
+    // Case 2: Ni/Ti 混淆
     if ((top === 'Ni' && second === 'Ti') || (top === 'Ti' && second === 'Ni')) {
-        // 看 Fe vs Te
         if (scores.Fe > scores.Te) {
-            // 更像 INFJ (Ni-Fe-Ti)
             top = 'Ni'; second = 'Fe';
-        } else {
-            // 更像 INTJ (Ni-Te) 或 ISTP
-            // 如果 Se > Ne，倾向 ISTP；如果 Te > Se，倾向 INTJ
         }
     }
 
-    // Case 3: Ne/Fe 混淆 (ENTP vs ENFJ)
+    // Case 3: Ne/Fe 混淆
     if ((top === 'Ne' && second === 'Fe') || (top === 'Fe' && second === 'Ne')) {
         if (scores.Ti > scores.Fi) {
-            top = 'Ne'; second = 'Ti'; // ENTP
+            top = 'Ne'; second = 'Ti'; 
         } else {
-            top = 'Fe'; second = 'Ni'; // ENFJ
+            top = 'Fe'; second = 'Ni'; 
         }
     }
 
@@ -547,9 +536,8 @@ function determineType(scores) {
         if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
         if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
         
-        // 惩罚项：如果劣势功能过高 (Grip检测的一环)
         const inferiorFunc = stack[3];
-        if (scores[inferiorFunc] > scores[stack[0]]) score -= 15; // 劣势比主导还高，扣分
+        if (scores[inferiorFunc] > scores[stack[0]]) score -= 15;
 
         if (score > bestScore) {
             bestScore = score;
@@ -562,27 +550,22 @@ function determineType(scores) {
     let confidence = Math.round((bestScore / maxScore) * 100);
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
-    // --- 4. 劣势功能 (Grip) 提示逻辑优化 ---
     let extraTip = "";
-    
-    // 找出最终判定类型的劣势功能
     const inferior = bestStack[3];
     const dominant = bestStack[0];
     
-    // Grip 判定条件：劣势功能分数极高 (>70) 或者 劣势功能 >= 主导功能 * 0.9
     if (scores[inferior] > 70 || scores[inferior] > scores[dominant] * 0.9) {
         extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
             <strong>⚠️ 压力与 Grip 状态预警：</strong><br>
-            虽然您的主导人格傾向於 <strong>${bestType}</strong>，但系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
-            <br>这通常发生在极度压力下，表现为“性情大变”（例如理性的 INTP 突然情绪失控爆炸，或温和的 ISFJ 突然对灾难充满悲观预测）。请关注近期是否压力过大。
+            虽然您的主导人格倾向于 <strong>${bestType}</strong>，但系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
+            <br>这通常发生在极度压力下，表现为“性情大变”。请关注近期是否压力过大。
         </div>`;
     }
 
-    // Ti/Fi 双高提示 (保留)
     if (scores.Ti > 60 && scores.Fi > 60) {
         extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
             <strong>🤔 复杂性解析：</strong> 您的 <strong>Ti (逻辑)</strong> 和 <strong>Fi (价值)</strong> 都极高。
-            这常出现在高阶 <strong>INFP</strong> 身上（对信念的严密坚守常被误认为是逻辑洁癖），或是 <strong>INTP</strong> 的情感爆发期。
+            这常出现在高阶 <strong>INFP</strong> 身上，或是 <strong>INTP</strong> 的情感爆发期。
         </div>`;
     }
 
@@ -604,7 +587,6 @@ function showModal(res, scores) {
     const content = document.getElementById('result-content');
     const modal = document.getElementById('result-modal');
     
-    // 渲染图表
     const chartHtml = Object.entries(scores).map(([f, s]) => `
         <div class="mb-3">
             <div class="flex justify-between text-xs font-bold mb-1">
@@ -656,12 +638,11 @@ function shareResults() {
 function clearStorage() {
     if(confirm('确定清除进度并重测？')) { 
         localStorage.removeItem(STORAGE_KEY); 
-        localStorage.removeItem(RESULT_KEY); // 清除结果缓存
+        localStorage.removeItem(RESULT_KEY); 
         location.reload();
     }
 }
 
-// ============ 8. 启动与事件绑定 ============
 document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) {
