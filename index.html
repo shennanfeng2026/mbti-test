@@ -110,10 +110,10 @@
 // reversed 属性也是固定的，确保约 55% 为 false (左即左), 45% 为 true (反转)
 const rawQuestions = [
     // 1-4
-    { id: 1, left: "Ni", right: "Ne", lText: "我常被事物的深层含义和最终走向所吸引", rText: "我常被事物引申出的无限可能性所吸引", reversed: false },
+    { id: 1, left: "Ni", right: "Ne", lText: "我常忍不住去想事情背后的“征兆”或“寓意", rText: "我常忍不住由一个点子联想到好几种“新玩法”", reversed: false },
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
-    { id: 27, left: "Ti", right: "Te", lText: "我追求知识体系的内在逻辑完美", rText: "我追求目标的高效达成和资源利用", reversed: false },
-    { id: 40, left: "Fi", right: "Te", lText: "一份高薪但违背我价值观的工作，会让我极其痛苦", rText: "一份高薪工作就是工作，我可以把自我和它分开", reversed: false },
+    { id: 27, left: "Ti", right: "Te", lText: "我一定要搞清楚背后的原理，哪怕慢一点", rText: "只要方法管用能最快搞定就行，原理不重要", reversed: false },
+    { id: 40, left: "Fi", right: "Te", lText: "让我做一件虽然赚钱但心里觉得“不对味”的事，我会难受得睡不着", rText: "工作就是工作，只要钱给够，我可以把个人喜好放一边", reversed: false },
     
     // 5-8
     { id: 2, left: "Ni", right: "Ne", lText: "我倾向于收敛思维，寻找那个唯一的“真相”", rText: "我倾向于发散思维，寻找多种有趣的替代方案", reversed: false },
@@ -122,7 +122,7 @@ const rawQuestions = [
     { id: 41, left: "Fi", right: "Fe", lText: "我的情感深沉私密，追求灵魂共鸣", rText: "我的情感温暖外显，追求群体和谐", reversed: true },
 
     // 9-12
-    { id: 3, left: "Ni", right: "Ne", lText: "灵感往往是内心深处突然的顿悟", rText: "灵感往往来自与外界的碰撞和交流", reversed: true },
+    { id: 3, left: "Ni", right: "Ne", lText: "灵感通常是发呆时突然“蹦”出来的答案", rText: "灵感通常是和人聊着聊着突然“碰”出来的", reversed: true },
     { id: 15, left: "Si", right: "Se", lText: "我注重细节、熟悉感和精确记忆", rText: "我注重感官冲击、现场氛围和即兴", reversed: false },
     { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
     { id: 42, left: "Fi", right: "Fe", lText: "我非常在意个体的独立和独特价值", rText: "我非常在意群体的凝聚与互助", reversed: false },
@@ -130,7 +130,7 @@ const rawQuestions = [
     // 13-16
     { id: 4, left: "Ni", right: "Ne", lText: "我更在意宏大远景，哪怕现在还很模糊", rText: "我更在意当前的新机会，哪怕要改变原计划", reversed: false },
     { id: 19, left: "Si", right: "Se", lText: "我喜欢保留有纪念意义的物品", rText: "我喜欢追逐最新潮的体验和物品", reversed: true },
-    { id: 30, left: "Ti", right: "Te", lText: "我追求精准，哪怕耗时更长", rText: "我追求效率，哪怕细节妥协", reversed: false },
+    { id: 30, left: "Ti", right: "Te", lText: "在这个问题没弄懂之前，我很难继续下一步", rText: "为了进度，我可以先照着说明书做，以后再懂", reversed: false },
     { id: 43, left: "Fi", right: "Fe", lText: "独处时，我更享受沉浸在自己的情感中，感觉被充电", rText: "独处时，我更想联系朋友或家人，感觉被充电", reversed: false },
 
     // 17-20
@@ -170,7 +170,7 @@ const rawQuestions = [
     { id: 48, left: "Fi", right: "Fe", lText: "我通过艺术创作表达内心", rText: "我通过社交活动感受情感连接", reversed: false },
 
     // 41-44
-    { id: 10, left: "Ni", right: "Ne", lText: "我更喜欢系统化的框架思考", rText: "我更喜欢自由跳跃的联想", reversed: false },
+    { id: 10, left: "Ni", right: "Ne", lText: "我喜欢把新知识纳入我已有的“体系”中", rText: "我喜欢在各种看似无关的新知识间建立“连线”", reversed: false },
     { id: 23, left: "Si", right: "Se", lText: "我擅长回忆过去的具体细节", rText: "我擅长捕捉当下的细微变化", reversed: false },
     { id: 36, left: "Ti", right: "Te", lText: "看说明书时我会挑毛病找不一致", rText: "看说明书时我会快速找最优操作", reversed: false },
     { id: 49, left: "Fi", right: "Te", lText: "如果方案伤害了自尊，即使有效我也可能反对", rText: "如果方案能解决大局问题，个人感受应当让步", reversed: false },
@@ -695,5 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
