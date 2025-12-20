@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>（最终完善版）MBTI 八维深度测评</title>
+    <title>（最终测试版）MBTI 八维深度测评</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -104,70 +104,91 @@
 </div>
 
 <script>
-// ============ 1. 深度优化题库 ============
+// ============ 1. 静态固定题库 (已穿插打乱 + 55%左倾固定) ============
+// 注意：这里已经移除了 startApp 中的 shuffle 逻辑
+// 下面的顺序是固定的：N -> S -> T -> F 循环，避免连续同一维度
+// reversed 属性也是固定的，确保约 55% 为 false (左即左), 45% 为 true (反转)
 const rawQuestions = [
-    // --- N 维度 ---
+    // 1-4
     { id: 1, left: "Ni", right: "Ne", lText: "我常被事物的深层含义和最终走向所吸引", rText: "我常被事物引申出的无限可能性所吸引", reversed: false },
-    { id: 2, left: "Ni", right: "Ne", lText: "我倾向于收敛思维，寻找那个唯一的“真相”", rText: "我倾向于发散思维，寻找多种有趣的替代方案", reversed: false },
-    { id: 3, left: "Ni", right: "Ne", lText: "灵感往往是内心深处突然的顿悟", rText: "灵感往往来自与外界的碰撞和交流", reversed: true },
-    { id: 4, left: "Ni", right: "Ne", lText: "我更在意宏大远景，哪怕现在还很模糊", rText: "我更在意当前的新机会，哪怕要改变原计划", reversed: false },
-    { id: 5, left: "Ni", right: "Ne", lText: "思考时我会不断深入，直到触及核心", rText: "思考时我会不断扩展，连接各种不相关的事物", reversed: false },
-    { id: 6, left: "Ni", right: "Ne", lText: "我常能预感事情的发展方向", rText: "我常能发现别人忽略的新奇点子", reversed: false },
-    { id: 7, left: "Ni", right: "Ne", lText: "看电影时我更关注隐喻和结局伏笔", rText: "看电影时我更享受各种脑洞和反转", reversed: true },
-    { id: 8, left: "Ni", right: "Ne", lText: "规划旅行时我喜欢提前想好主题和意义", rText: "规划旅行时我喜欢留白，随机探索", reversed: false },
-    { id: 9, left: "Ni", right: "Ne", lText: "我相信现象背后有根本规律", rText: "我相信现象可以有无数解释角度", reversed: true },
-    { id: 10, left: "Ni", right: "Ne", lText: "我更喜欢系统化的框架思考", rText: "我更喜欢自由跳跃的联想", reversed: false },
-    { id: 11, left: "Ni", right: "Ne", lText: "聊天时我常把话题引向深层本质", rText: "聊天时我常把话题引向各种有趣分支", reversed: false },
-    { id: 12, left: "Ni", right: "Ne", lText: "买东西时我会想象它未来的意义", rText: "买东西时我会被新奇功能吸引", reversed: true },
-    { id: 13, left: "Ni", right: "Ne", lText: "我对“命运”和“使命感”话题很感兴趣", rText: "我对“可能性”和“选择分支”话题很感兴趣", reversed: false },
-
-    // --- S 维度 ---
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
-    { id: 15, left: "Si", right: "Se", lText: "我注重细节、熟悉感和精确记忆", rText: "我注重感官冲击、现场氛围和即兴", reversed: false },
-    { id: 16, left: "Si", right: "Se", lText: "我喜欢规律、可预测的生活节奏", rText: "我喜欢充满新鲜感和挑战的生活", reversed: true },
-    { id: 17, left: "Si", right: "Se", lText: "面对新事物我会先对比旧经验", rText: "面对新事物我会立刻投入当下", reversed: false },
-    { id: 18, left: "Si", right: "Se", lText: "我信任被时间验证的品牌和习惯", rText: "我容易被新奇包装和功能吸引", reversed: false },
-    { id: 19, left: "Si", right: "Se", lText: "我喜欢保留有纪念意义的物品", rText: "我喜欢追逐最新潮的体验和物品", reversed: true },
-    { id: 20, left: "Si", right: "Se", lText: "学习时我依赖循序渐进和重复练习", rText: "学习时我需要动手尝试和亲身体验", reversed: false },
-    { id: 21, left: "Si", right: "Se", lText: "安全感和稳定性对我最重要", rText: "刺激感和自由感对我最重要", reversed: true },
-    { id: 22, left: "Si", right: "Se", lText: "吃饭时我更在意熟悉的口味", rText: "吃饭时我更想尝试新奇的菜式", reversed: false },
-    { id: 23, left: "Si", right: "Se", lText: "我擅长回忆过去的具体细节", rText: "我擅长捕捉当下的细微变化", reversed: false },
-    { id: 24, left: "Si", right: "Se", lText: "周末我更想待在熟悉的环境休息", rText: "周末我更想出去探索未知的地方", reversed: true },
-    { id: 25, left: "Si", right: "Se", lText: "我做决定常参考过去的相似案例", rText: "我做决定常根据当下具体情况调整", reversed: false },
-    { id: 26, left: "Si", right: "Se", lText: "我喜欢传统节日按老规矩过", rText: "我喜欢传统节日加入新玩法", reversed: false },
-
-    // --- T 维度 ---
     { id: 27, left: "Ti", right: "Te", lText: "我追求知识体系的内在逻辑完美", rText: "我追求目标的高效达成和资源利用", reversed: false },
-    { id: 28, left: "Ti", right: "Te", lText: "为了弄懂一个原理，我愿意耽误进度", rText: "为了赶上进度，我可以暂不求甚解", reversed: false },
-    { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
-    { id: 30, left: "Ti", right: "Te", lText: "我追求精准，哪怕耗时更长", rText: "我追求效率，哪怕细节妥协", reversed: false },
-    { id: 31, left: "Ti", right: "Te", lText: "我喜欢构建抽象模型，哪怕暂时无用", rText: "我喜欢优化流程提升产出", reversed: true },
-    { id: 32, left: "Ti", right: "Te", lText: "辩论是为了厘清概念定义", rText: "辩论是为了证明我是对的/达成共识", reversed: false },
-    { id: 33, left: "Ti", right: "Te", lText: "我认为真理要经得起反复推敲", rText: "我认为真理要能解决实际问题", reversed: false },
-    { id: 34, left: "Ti", right: "Te", lText: "组队时我更愿当分析者", rText: "组队时我更愿当组织协调者", reversed: true },
-    { id: 35, left: "Ti", right: "Te", lText: "我喜欢拆解复杂概念理清结构", rText: "我喜欢制定清晰的执行计划", reversed: false },
-    { id: 36, left: "Ti", right: "Te", lText: "看说明书时我会挑毛病找不一致", rText: "看说明书时我会快速找最优操作", reversed: false },
-    { id: 37, left: "Ti", right: "Te", lText: "我更在意事情“为什么是对的”", rText: "我更在意事情“如何做最有效”", reversed: true },
-    { id: 38, left: "Ti", right: "Te", lText: "我能花很长时间琢磨一个理论问题", rText: "我更倾向快速行动获取反馈", reversed: false },
-    { id: 39, left: "Ti", right: "Te", lText: "批评时我指出系统性逻辑错误", rText: "批评时我指出具体可改进的指标", reversed: false },
-
-    // --- F 维度 ---
     { id: 40, left: "Fi", right: "Te", lText: "一份高薪但违背我价值观的工作，会让我极其痛苦", rText: "一份高薪工作就是工作，我可以把自我和它分开", reversed: false },
+    
+    // 5-8
+    { id: 2, left: "Ni", right: "Ne", lText: "我倾向于收敛思维，寻找那个唯一的“真相”", rText: "我倾向于发散思维，寻找多种有趣的替代方案", reversed: false },
+    { id: 16, left: "Si", right: "Se", lText: "我喜欢规律、可预测的生活节奏", rText: "我喜欢充满新鲜感和挑战的生活", reversed: true },
+    { id: 31, left: "Ti", right: "Te", lText: "我喜欢构建抽象模型，哪怕暂时无用", rText: "我喜欢优化流程提升产出", reversed: true },
     { id: 41, left: "Fi", right: "Fe", lText: "我的情感深沉私密，追求灵魂共鸣", rText: "我的情感温暖外显，追求群体和谐", reversed: true },
+
+    // 9-12
+    { id: 3, left: "Ni", right: "Ne", lText: "灵感往往是内心深处突然的顿悟", rText: "灵感往往来自与外界的碰撞和交流", reversed: true },
+    { id: 15, left: "Si", right: "Se", lText: "我注重细节、熟悉感和精确记忆", rText: "我注重感官冲击、现场氛围和即兴", reversed: false },
+    { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
     { id: 42, left: "Fi", right: "Fe", lText: "我非常在意个体的独立和独特价值", rText: "我非常在意群体的凝聚与互助", reversed: false },
+
+    // 13-16
+    { id: 4, left: "Ni", right: "Ne", lText: "我更在意宏大远景，哪怕现在还很模糊", rText: "我更在意当前的新机会，哪怕要改变原计划", reversed: false },
+    { id: 19, left: "Si", right: "Se", lText: "我喜欢保留有纪念意义的物品", rText: "我喜欢追逐最新潮的体验和物品", reversed: true },
+    { id: 30, left: "Ti", right: "Te", lText: "我追求精准，哪怕耗时更长", rText: "我追求效率，哪怕细节妥协", reversed: false },
     { id: 43, left: "Fi", right: "Fe", lText: "独处时，我更享受沉浸在自己的情感中，感觉被充电", rText: "独处时，我更想联系朋友或家人，感觉被充电", reversed: false },
-    { id: 44, left: "Fi", right: "Fe", lText: "没人看到时，我会完全按照内心真实感受行事", rText: "没人看到时，我还是会考虑‘这样做会不会让别人不舒服’", reversed: false },
-    { id: 45, left: "Fi", right: "Fe", lText: "为了维持和谐而迎合他人，会让我感到‘内耗’", rText: "为了维持和谐而调节气氛，会让我感到‘有价值’", reversed: false },
-    { id: 46, left: "Fi", right: "Fe", lText: "聚会中我更在意是否找到灵魂知音", rText: "聚会中我更在意大家是否都开心", reversed: false },
+
+    // 17-20
+    { id: 5, left: "Ni", right: "Ne", lText: "思考时我会不断深入，直到触及核心", rText: "思考时我会不断扩展，连接各种不相关的事物", reversed: false },
+    { id: 21, left: "Si", right: "Se", lText: "安全感和稳定性对我最重要", rText: "刺激感和自由感对我最重要", reversed: true },
+    { id: 34, left: "Ti", right: "Te", lText: "组队时我更愿当分析者", rText: "组队时我更愿当组织协调者", reversed: true },
     { id: 47, left: "Fi", right: "Fe", lText: "我认为每个人应为自己情绪负责", rText: "我认为我们有责任照顾彼此情绪", reversed: true },
-    { id: 48, left: "Fi", right: "Fe", lText: "我通过艺术创作表达内心", rText: "我通过社交活动感受情感连接", reversed: false },
-    { id: 49, left: "Fi", right: "Te", lText: "如果方案伤害了自尊，即使有效我也可能反对", rText: "如果方案能解决大局问题，个人感受应当让步", reversed: false },
+
+    // 21-24
+    { id: 6, left: "Ni", right: "Ne", lText: "我常能预感事情的发展方向", rText: "我常能发现别人忽略的新奇点子", reversed: false },
+    { id: 17, left: "Si", right: "Se", lText: "面对新事物我会先对比旧经验", rText: "面对新事物我会立刻投入当下", reversed: false },
+    { id: 32, left: "Ti", right: "Te", lText: "辩论是为了厘清概念定义", rText: "辩论是为了证明我是对的/达成共识", reversed: false },
+    { id: 44, left: "Fi", right: "Fe", lText: "没人看到时，我会完全按照内心真实感受行事", rText: "没人看到时，我还是会考虑‘这样做会不会让别人不舒服’", reversed: false },
+
+    // 25-28
+    { id: 7, left: "Ni", right: "Ne", lText: "看电影时我更关注隐喻和结局伏笔", rText: "看电影时我更享受各种脑洞和反转", reversed: true },
+    { id: 24, left: "Si", right: "Se", lText: "周末我更想待在熟悉的环境休息", rText: "周末我更想出去探索未知的地方", reversed: true },
+    { id: 37, left: "Ti", right: "Te", lText: "我更在意事情“为什么是对的”", rText: "我更在意事情“如何做最有效”", reversed: true },
     { id: 50, left: "Fi", right: "Fe", lText: "我需要独处时间整理真实感受", rText: "我通过与人互动理解自己情绪", reversed: true },
+
+    // 29-32
+    { id: 8, left: "Ni", right: "Ne", lText: "规划旅行时我喜欢提前想好主题和意义", rText: "规划旅行时我喜欢留白，随机探索", reversed: false },
+    { id: 18, left: "Si", right: "Se", lText: "我信任被时间验证的品牌和习惯", rText: "我容易被新奇包装和功能吸引", reversed: false },
+    { id: 28, left: "Ti", right: "Te", lText: "为了弄懂一个原理，我愿意耽误进度", rText: "为了赶上进度，我可以暂不求甚解", reversed: false },
+    { id: 45, left: "Fi", right: "Fe", lText: "为了维持和谐而迎合他人，会让我感到‘内耗’", rText: "为了维持和谐而调节气氛，会让我感到‘有价值’", reversed: false },
+
+    // 33-36
+    { id: 9, left: "Ni", right: "Ne", lText: "我相信现象背后有根本规律", rText: "我相信现象可以有无数解释角度", reversed: true },
+    { id: 20, left: "Si", right: "Se", lText: "学习时我依赖循序渐进和重复练习", rText: "学习时我需要动手尝试和亲身体验", reversed: false },
+    { id: 33, left: "Ti", right: "Te", lText: "我认为真理要经得起反复推敲", rText: "我认为真理要能解决实际问题", reversed: false },
+    { id: 46, left: "Fi", right: "Fe", lText: "聚会中我更在意是否找到灵魂知音", rText: "聚会中我更在意大家是否都开心", reversed: false },
+
+    // 37-40
+    { id: 12, left: "Ni", right: "Ne", lText: "买东西时我会想象它未来的意义", rText: "买东西时我会被新奇功能吸引", reversed: true },
+    { id: 22, left: "Si", right: "Se", lText: "吃饭时我更在意熟悉的口味", rText: "吃饭时我更想尝试新奇的菜式", reversed: false },
+    { id: 35, left: "Ti", right: "Te", lText: "我喜欢拆解复杂概念理清结构", rText: "我喜欢制定清晰的执行计划", reversed: false },
+    { id: 48, left: "Fi", right: "Fe", lText: "我通过艺术创作表达内心", rText: "我通过社交活动感受情感连接", reversed: false },
+
+    // 41-44
+    { id: 10, left: "Ni", right: "Ne", lText: "我更喜欢系统化的框架思考", rText: "我更喜欢自由跳跃的联想", reversed: false },
+    { id: 23, left: "Si", right: "Se", lText: "我擅长回忆过去的具体细节", rText: "我擅长捕捉当下的细微变化", reversed: false },
+    { id: 36, left: "Ti", right: "Te", lText: "看说明书时我会挑毛病找不一致", rText: "看说明书时我会快速找最优操作", reversed: false },
+    { id: 49, left: "Fi", right: "Te", lText: "如果方案伤害了自尊，即使有效我也可能反对", rText: "如果方案能解决大局问题，个人感受应当让步", reversed: false },
+
+    // 45-48
+    { id: 11, left: "Ni", right: "Ne", lText: "聊天时我常把话题引向深层本质", rText: "聊天时我常把话题引向各种有趣分支", reversed: false },
+    { id: 25, left: "Si", right: "Se", lText: "我做决定常参考过去的相似案例", rText: "我做决定常根据当下具体情况调整", reversed: false },
+    { id: 38, left: "Ti", right: "Te", lText: "我能花很长时间琢磨一个理论问题", rText: "我更倾向快速行动获取反馈", reversed: false },
     { id: 51, left: "Fi", right: "Fe", lText: "送礼时我更在意是否符合对方个性", rText: "送礼时我更在意是否让对方当场开心", reversed: false },
+
+    // 49-52
+    { id: 13, left: "Ni", right: "Ne", lText: "我对“命运”和“使命感”话题很感兴趣", rText: "我对“可能性”和“选择分支”话题很感兴趣", reversed: false },
+    { id: 26, left: "Si", right: "Se", lText: "我喜欢传统节日按老规矩过", rText: "我喜欢传统节日加入新玩法", reversed: false },
+    { id: 39, left: "Ti", right: "Te", lText: "批评时我指出系统性逻辑错误", rText: "批评时我指出具体可改进的指标", reversed: false },
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
-// ============ 1-A. 加赛题库 (已按要求扩充至3题) ============
+// ============ 1-A. 加赛题库 ============
 const tieBreakerPool = {
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
@@ -193,10 +214,9 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
-const STORAGE_KEY = 'mbti_final_v7_complete';
-const RESULT_KEY = 'mbti_final_report_data'; 
+const STORAGE_KEY = 'mbti_final_v8_fixed'; // 更新key避免旧数据冲突
+const RESULT_KEY = 'mbti_final_report_data_v8'; 
 
-let shuffledQuestions = [];
 let userAnswers = {};
 let currentPage = 0;
 let tempScores = {}; 
@@ -215,9 +235,6 @@ function startApp() {
     }
 
     loadAnswers();
-    if (shuffledQuestions.length === 0) {
-        shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
-    }
     renderPage();
 }
 
@@ -240,19 +257,19 @@ function saveProgress() {
 
 // ============ 4. 渲染页面 (含视觉优化) ============
 function renderPage() {
-    // 翻页回到顶部
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 2. 强制瞬间回到顶部 (修复翻页不置顶问题)
+    window.scrollTo(0, 0);
 
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
     const start = currentPage * QUESTIONS_PER_PAGE;
-    const end = Math.min(start + QUESTIONS_PER_PAGE, shuffledQuestions.length);
-    const pageQuestions = shuffledQuestions.slice(start, end);
+    // 使用固定的 rawQuestions，不再使用 shuffled
+    const end = Math.min(start + QUESTIONS_PER_PAGE, rawQuestions.length);
+    const pageQuestions = rawQuestions.slice(start, end);
     
     pageQuestions.forEach((q, idx) => {
         const globalIdx = start + idx;
-        const savedValue = userAnswers[q.id] ?? 5; // 默认值5 (中立)
-        // 视觉分：0-10 -> 转换为 5-0-5 (绝对值)
+        const savedValue = userAnswers[q.id] ?? 5; 
         const displayScore = Math.abs(savedValue - 5); 
 
         const leftText = q.reversed ? q.rText : q.lText;
@@ -262,7 +279,6 @@ function renderPage() {
         div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in';
         div.style.animationDelay = `${idx * 0.05}s`;
         
-        // 优化1：移除右上角的功能标签 (Fi vs Fe 等)
         div.innerHTML = `
             <div class="text-sm font-semibold text-slate-500 mb-4 flex justify-between">
                 <span>题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
@@ -286,17 +302,15 @@ function renderPage() {
             </div>
         `;
         container.appendChild(div);
-        // 初始化颜色
         updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
     });
 
-    // 按钮逻辑不变
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) prevBtn.disabled = currentPage === 0;
 
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
-        const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+        const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
         const answered = Object.keys(userAnswers).length;
         if (currentPage >= maxPage) {
             nextBtn.textContent = (answered < TOTAL_QUESTIONS) ? `完成 (${answered}/${TOTAL_QUESTIONS})` : '生成报告';
@@ -315,13 +329,10 @@ function renderPage() {
 
 function updateSliderVisual(input, val) {
     const value = parseInt(val);
-    // 动态背景：0(红) -> 5(灰) -> 10(绿)
     if (value < 5) {
-        // 偏红
         const intensity = (5 - value) / 5; 
         input.style.background = `linear-gradient(to right, rgba(220, 38, 38, ${0.3 + intensity*0.7}), #e2e8f0 ${50 + (5-value)*10}%)`;
     } else if (value > 5) {
-        // 偏绿
         const intensity = (value - 5) / 5; 
         input.style.background = `linear-gradient(to right, #e2e8f0 ${50 - (value-5)*10}%, rgba(22, 163, 74, ${0.3 + intensity*0.7}))`;
     } else {
@@ -331,20 +342,15 @@ function updateSliderVisual(input, val) {
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    
-    // 优化3：动态更新数值显示为 5-0-5
     const displayScore = Math.abs(value - 5);
     document.getElementById(`val-q${id}`).textContent = displayScore;
-    
-    // 视觉更新
     updateSliderVisual(input, value);
 
     userAnswers[id] = value;
     saveProgress();
     updateProgress();
     
-    // 检查按钮状态
-    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
     if (currentPage === maxPage) {
         const nextBtn = document.getElementById('next-btn');
         const answered = Object.keys(userAnswers).length;
@@ -366,7 +372,7 @@ function updateProgress() {
 }
 
 function nextPage() {
-    const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+    const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
     if (currentPage < maxPage) { currentPage++; renderPage(); }
 }
 function prevPage() {
@@ -488,7 +494,7 @@ function determineType(scores) {
     // --- 双高修正 ---
     const diff = Math.abs(scores[top] - scores[second]);
     
-    // Case 1: Ti/Fi 混淆 (INFP/INTP)
+    // Case 1: Ti/Fi 混淆
     const isJiDomTie = (top === 'Ti' && second === 'Fi') || (top === 'Fi' && second === 'Ti');
     if (isJiDomTie && diff < 15) {
         if (scores.Ne > scores.Se) {
@@ -652,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
+            const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
             if (currentPage >= maxPage) {
                 calculateResults();
             } else {
