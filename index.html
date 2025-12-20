@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评（小白自测版）</title>
+    <title>（小白自测版）免费MBTI 八维深度测评</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -317,8 +317,8 @@ function calculateResults() {
     const answered = Object.keys(userAnswers).length;
     if(answered < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成`); return; }
 
-    // 设置基础分，避免0分
-    let scores = { Ni:20, Ne:20, Si:20, Se:20, Ti:20, Te:20, Fi:20, Fe:20 };
+    // 设置基础分：提升至 30，让图表看起来更均衡
+let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
 
     rawQuestions.forEach(q => {
         const val = userAnswers[q.id] || 5;
@@ -601,6 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
