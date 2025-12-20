@@ -20,8 +20,30 @@
         }
     </script>
     <style>
-        .slider { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: linear-gradient(to right, #ef4444, #fbbf24, #10b981); outline: none; transition: background 0.3s; }
-        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; border-radius: 50%; background: #4f46e5; cursor: pointer; border: 5px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        /* 2. 视觉优化：Slider 样式升级 */
+        .slider { 
+            -webkit-appearance: none;
+            width: 100%; 
+            height: 14px; 
+            border-radius: 7px; 
+            background: #e2e8f0; /* 默认灰色，JS动态覆盖 */
+            outline: none; 
+            transition: background 0.3s;
+        }
+        .slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            background: #ffffff;
+            cursor: pointer; 
+            border: 4px solid #4f46e5; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .slider::-webkit-slider-thumb:active {
+            transform: scale(1.1);
+        }
         .card { transition: all 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeIn 0.5s ease forwards; }
@@ -40,11 +62,11 @@
             </div>
             <span class="text-sm font-semibold text-slate-500">已答 <span id="answered-count">0</span>/52</span>
         </div>
-        <div class="block bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-2 text-sm text-left">
+        <div class="block bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-2 text-sm text-left shadow-sm">
             <p class="font-bold text-amber-800 mb-2 text-center">💡 答题小贴士：</p>
-            <p class="mb-1">• <span class="text-red-600 font-bold">红色端</span> = 更认同 <span class="font-bold">左侧</span> 描述</p>
-            <p class="mb-1">• <span class="text-green-600 font-bold">绿色端</span> = 更认同 <span class="font-bold">右侧</span> 描述</p>
-            <p>• <span class="font-bold">拖动幅度越大</span> = 认同程度越强烈</p>
+            <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span> (分值 0-4)</p>
+            <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span> (分值 6-10)</p>
+            <p>• <span class="font-bold">中间(5)</span> = 难以抉择/中立</p>
         </div>
     </header>
 
@@ -83,7 +105,7 @@
 </div>
 
 <script>
-// ============ 1. 深度优化题库 (52题完整版) ============
+// ============ 1. 深度优化题库 ============
 const rawQuestions = [
     // --- N 维度 ---
     { id: 1, left: "Ni", right: "Ne", lText: "我常被事物的深层含义和最终走向所吸引", rText: "我常被事物引申出的无限可能性所吸引", reversed: false },
@@ -146,30 +168,34 @@ const rawQuestions = [
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
-// ============ 2. 加赛题库 ============
+// ============ 1-A. 加赛题库 (已按要求扩充至3题) ============
 const tieBreakerPool = {
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
-        { q: "你最无法忍受别人评价你什么？", A: "说我“脑子不清楚、逻辑混乱”", funcA: "Ti", B: "说我“虚伪、没有原则”", funcB: "Fi" },
-        { q: "在夜深人静时，你更多在思考？", A: "构建或修正一个理论/系统的内部架构", funcA: "Ti", B: "回味某种细腻的情绪或审视自我价值观", funcB: "Fi" }
+        { q: "你最无法忍受别人评价你什么？", A: "说我“脑子不清楚、逻辑混乱”", funcA: "Ti", B: "说我“虚伪、没有原则、随波逐流”", funcB: "Fi" },
+        { q: "在夜深人静思考人生时，你更多在？", A: "试图构建一个解释世界的理论模型", funcA: "Ti", B: "审视自己的真实感受和核心价值观", funcB: "Fi" }
     ],
     "Ne-Se": [
-        { q: "看到一个新物体时，你通常先关注？", A: "它像什么？它能引申出什么概念？", funcA: "Ne", B: "它的颜色、质地、声音等物理细节", funcB: "Se" },
-        { q: "让你感到最无聊的情况是？", A: "被困在琐碎的具体事务中，无法想象未来", funcA: "Ne", B: "长时间坐着空想理论，没有实际体验", funcB: "Se" }
+        { q: "看到一个苹果，你第一反应是？", A: "联想到牛顿、白雪公主、科技公司（发散联想）", funcA: "Ne", B: "这个苹果很红、很圆、看起来很脆（物理属性）", funcB: "Se" },
+        { q: "让你感到最无聊的情况是？", A: "被困在琐碎的具体事务中，无法想象未来", funcA: "Ne", B: "长时间坐着空想理论，没有实际体验", funcB: "Se" },
+        { q: "如果让你去旅游，你更倾向于？", A: "去一个充满文化隐喻和未知的奇幻之地", funcA: "Ne", B: "去一个风景绝美、可以冲浪滑雪的度假地", funcB: "Se" }
     ],
     "Ni-Si": [
         { q: "做决定时，你更依赖？", A: "一种说不清道不明的“直觉”或预感", funcA: "Ni", B: "过去类似的具体经验和数据", funcB: "Si" },
-        { q: "回忆过去时，你通常？", A: "只记得模糊的大概轮廓和意义", funcA: "Ni", B: "能清晰回忆起具体的画面和细节", funcB: "Si" }
+        { q: "回忆过去时，你通常？", A: "只记得模糊的大概轮廓和当时的意义", funcA: "Ni", B: "能清晰回忆起具体的画面、声音和细节", funcB: "Si" },
+        { q: "面对困境，你的本能反应是？", A: "预测未来可能的走向，调整大方向", funcA: "Ni", B: "回顾以前是怎么解决类似问题的", funcB: "Si" }
     ],
     "Te-Fe": [
         { q: "作为组长，当组员犯错影响进度时，你倾向于？", A: "直接指出问题并修正，效率第一", funcA: "Te", B: "先安抚情绪，委婉提醒，关系第一", funcB: "Fe" },
-        { q: "你认为什么是“成功”？", A: "达成客观目标，获取资源和地位", funcA: "Te", B: "获得群体的认可，人际关系和谐", funcB: "Fe" }
+        { q: "你认为什么是“成功”？", A: "达成客观目标，获取资源和地位", funcA: "Te", B: "获得群体的认可，人际关系和谐", funcB: "Fe" },
+        { q: "当你看到朋友在做一件低效的事，你会？", A: "忍不住告诉他更高效的方法", funcA: "Te", B: "怕伤他面子，先观察他的情绪再决定说不说", funcB: "Fe" }
     ]
 };
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
 const STORAGE_KEY = 'mbti_final_v7_complete';
+const RESULT_KEY = 'mbti_final_report_data'; // 3. 结果持久化Key
 
 let shuffledQuestions = [];
 let userAnswers = {};
@@ -179,6 +205,18 @@ let tieAdjustments = {};
 
 // ============ 3. 初始化 ============
 function startApp() {
+    // 3. 检查是否有已保存的结果
+    const savedReport = localStorage.getItem(RESULT_KEY);
+    if (savedReport) {
+        try {
+            const reportData = JSON.parse(savedReport);
+            // 恢复内存中的分数，以便UI渲染
+            tempScores = reportData.scores; 
+            showModal(reportData, reportData.scores);
+            return; // 直接显示结果，不进入答题逻辑
+        } catch(e) { console.error("Report load failed", e); }
+    }
+
     loadAnswers();
     if (shuffledQuestions.length === 0) {
         shuffledQuestions = [...rawQuestions].sort(() => Math.random() - 0.5);
@@ -193,6 +231,7 @@ function loadAnswers() {
             const data = JSON.parse(saved);
             userAnswers = data.answers || {};
             currentPage = data.currentPage || 0;
+            // 如果已保存顺序，应恢复顺序逻辑(此处简化，重排不影响分数计算)
         }
     } catch (e) { userAnswers = {}; }
 }
@@ -203,15 +242,17 @@ function saveProgress() {
     } catch (e) {}
 }
 
-// ============ 4. 渲染页面 ============
+// ============ 4. 渲染页面 (含视觉优化) ============
 function renderPage() {
+    // 2. 翻页回到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
-    
     const start = currentPage * QUESTIONS_PER_PAGE;
     const end = Math.min(start + QUESTIONS_PER_PAGE, shuffledQuestions.length);
     const pageQuestions = shuffledQuestions.slice(start, end);
-
+    
     pageQuestions.forEach((q, idx) => {
         const globalIdx = start + idx;
         const savedValue = userAnswers[q.id] ?? 5;
@@ -221,28 +262,35 @@ function renderPage() {
         const div = document.createElement('div');
         div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in';
         div.style.animationDelay = `${idx * 0.05}s`;
+        
         div.innerHTML = `
-            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/${TOTAL_QUESTIONS}</div>
+            <div class="text-sm font-semibold text-slate-500 mb-4 flex justify-between">
+                <span>题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
+                <span class="text-indigo-400 font-bold">${q.left} vs ${q.right}</span>
+            </div>
             <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
                 <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
                 <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
                 <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">${rightText}</div>
             </div>
-            <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
+            
             <div class="py-4">
-                <input type="range" min="0" max="10" value="${savedValue}" class="slider"
-                       id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
-                <div class="flex justify-between mt-4 text-sm font-medium">
-                    <span class="text-red-600">强烈左倾</span>
-                    <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
-                    <span class="text-green-600">强烈右倾</span>
+                <div class="relative w-full h-8 flex items-center">
+                    <input type="range" min="0" max="10" value="${savedValue}" class="slider"
+                        id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                </div>
+                <div class="flex justify-between mt-2 text-xs font-medium text-slate-400">
+                    <span class="text-red-500">强烈左倾 (0)</span>
+                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">${savedValue}</span>
+                    <span class="text-green-500">强烈右倾 (10)</span>
                 </div>
             </div>
         `;
         container.appendChild(div);
+        // 初始化颜色
+        updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
     });
 
-    // 按钮逻辑
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) prevBtn.disabled = currentPage === 0;
 
@@ -252,7 +300,7 @@ function renderPage() {
         const answered = Object.keys(userAnswers).length;
         if (currentPage >= maxPage) {
             nextBtn.textContent = (answered < TOTAL_QUESTIONS) ? `完成 (${answered}/${TOTAL_QUESTIONS})` : '生成报告';
-            nextBtn.className = (answered < TOTAL_QUESTIONS) ? 
+            nextBtn.className = (answered < TOTAL_QUESTIONS) ?
                 "px-8 py-3 bg-slate-400 text-white rounded-xl font-bold cursor-not-allowed" : 
                 "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
         } else {
@@ -263,26 +311,40 @@ function renderPage() {
 
     document.getElementById('current-page').textContent = currentPage + 1;
     updateProgress();
-    window.scrollTo(0, 0);
 }
 
-function getDisplayText(value) {
-    value = parseInt(value);
-    if (value <= 2) return "强烈左倾";
-    if (value <= 4) return "倾向左侧";
-    if (value === 5) return "完全中立";
-    if (value <= 7) return "倾向右侧";
-    return "强烈右倾";
+// 2. 视觉反馈强化：动态更新滑块背景与数值显示
+function updateSliderVisual(input, val) {
+    const value = parseInt(val);
+    const percent = value * 10;
+    
+    // 动态背景：0(红) -> 5(灰) -> 10(绿)
+    let colorStart, colorEnd;
+    if (value < 5) {
+        // 偏红：深红 -> 浅灰
+        const intensity = (5 - value) / 5; // 1.0 ~ 0.2
+        input.style.background = `linear-gradient(to right, rgba(220, 38, 38, ${0.3 + intensity*0.7}), #e2e8f0 ${50 + (5-value)*10}%)`;
+    } else if (value > 5) {
+        // 偏绿：浅灰 -> 深绿
+        const intensity = (value - 5) / 5; 
+        input.style.background = `linear-gradient(to right, #e2e8f0 ${50 - (value-5)*10}%, rgba(22, 163, 74, ${0.3 + intensity*0.7}))`;
+    } else {
+        input.style.background = '#e2e8f0';
+    }
 }
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
+    document.getElementById(`val-q${id}`).textContent = value;
+    
+    // 视觉更新
+    updateSliderVisual(input, value);
+
     userAnswers[id] = value;
     saveProgress();
     updateProgress();
     
-    // 实时更新按钮状态
+    // 检查按钮状态
     const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
     if (currentPage === maxPage) {
         const nextBtn = document.getElementById('next-btn');
@@ -312,32 +374,28 @@ function prevPage() {
     if (currentPage > 0) { currentPage--; renderPage(); }
 }
 
-// ============ 5. 核心计算（优化版：基础分+温柔扣分） ============
+// ============ 5. 核心计算 ============
 function calculateResults() {
     const answered = Object.keys(userAnswers).length;
     if(answered < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成`); return; }
 
-    // 设置基础分：提升至 30，让图表看起来更均衡
-let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
-
+    let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
     rawQuestions.forEach(q => {
         const val = userAnswers[q.id] || 5;
         let diff = val - 5;
         if(q.reversed) diff = -diff;
 
         if (diff > 0) {
-            scores[q.right] += diff * 2;       // 加分权重 2.0
-            scores[q.left] -= Math.abs(diff) * 0.3; // 扣分权重 0.3 (温柔拮抗)
+            scores[q.right] += diff * 2;       
+            scores[q.left] -= Math.abs(diff) * 0.3; 
         } else if (diff < 0) {
             scores[q.left] += Math.abs(diff) * 2;
             scores[q.right] -= Math.abs(diff) * 0.3;
         }
     });
-
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
     tempScores = scores; 
 
-    // 检测死结 (阈值 15)
     const tiePair = checkForTies(scores);
     if (tiePair) {
         startTieBreaker(tiePair);
@@ -353,22 +411,19 @@ function checkForTies(scores) {
     for (let pair of pairs) {
         const s1 = scores[pair[0]];
         const s2 = scores[pair[1]];
-        // 阈值设为15，更敏感
+        // 阈值15，且必须是前3名的高分项
         if (s1 > 50 && s2 > 50 && Math.abs(s1 - s2) < 15) { 
             const rank1 = sorted.findIndex(x => x[0] === pair[0]);
             const rank2 = sorted.findIndex(x => x[0] === pair[1]);
-            // 且必须是前3名的高分项
             if (rank1 < 3 && rank2 < 3) return pair;
         }
     }
     return null;
 }
 
-// ============ 6. 加赛逻辑 ============
 function startTieBreaker(pair) {
     const key = `${pair[0]}-${pair[1]}`;
     const questions = tieBreakerPool[key] || tieBreakerPool[`${pair[1]}-${pair[0]}`];
-    
     if (!questions) { finalizeAndShow(tempScores); return; }
 
     const modal = document.getElementById('tie-modal');
@@ -388,7 +443,6 @@ function startTieBreaker(pair) {
         `;
         container.appendChild(div);
     });
-
     const submitDiv = document.createElement('div');
     submitDiv.innerHTML = `<button onclick="resolveTieBreaker()" class="w-full mt-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">提交决胜选择</button>`;
     container.appendChild(submitDiv);
@@ -418,9 +472,15 @@ function resolveTieBreaker() {
     finalizeAndShow(tempScores);
 }
 
-// ============ 7. 最终判定与展示（含 INFP Ti/Fi 修正） ============
+// ============ 7. 最终判定 (优化双高修正 & Grip逻辑) ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
+    
+    // 3. 结果持久化保存
+    try {
+        localStorage.setItem(RESULT_KEY, JSON.stringify(result));
+    } catch(e) {}
+
     showModal(result, scores);
 }
 
@@ -429,13 +489,37 @@ function determineType(scores) {
     let top = sorted[0][0];
     let second = sorted[1][0];
 
-    // INFP/INTP 混淆修正
-    // 逻辑：如果 Ti 和 Fi 是前两名，且分差小（用户分不清逻辑一致性与价值一致性）
+    // --- 5. 双高修正优化 (Multiple Fixes) ---
+    const diff = Math.abs(scores[top] - scores[second]);
+    
+    // Case 1: Ti/Fi 混淆 (INFP/INTP)
     const isJiDomTie = (top === 'Ti' && second === 'Fi') || (top === 'Fi' && second === 'Ti');
-    if (isJiDomTie && Math.abs(scores.Ti - scores.Fi) < 15) {
-        // 如果 Ne > Se，更倾向于是 INFP (因为 Ti 是 INFP 的魔鬼功能，常被误认为是主导)
+    if (isJiDomTie && diff < 15) {
         if (scores.Ne > scores.Se) {
-            if (top === 'Ti') { top = 'Fi'; second = 'Ne'; } // 强制修正
+            // Ne高，通常是INFP误认Ti (因为Fi价值观有时候很像逻辑)
+            if (top === 'Ti') { top = 'Fi'; second = 'Ne'; }
+        }
+    }
+
+    // Case 2: Ni/Ti 混淆 (INTJ vs ISTP vs INFJ loop)
+    // 如果 Ni 和 Ti 极高，但 Te/Fe 较低，可能是 INFJ (Ni-Ti loop) 或 ISTP
+    if ((top === 'Ni' && second === 'Ti') || (top === 'Ti' && second === 'Ni')) {
+        // 看 Fe vs Te
+        if (scores.Fe > scores.Te) {
+            // 更像 INFJ (Ni-Fe-Ti)
+            top = 'Ni'; second = 'Fe';
+        } else {
+            // 更像 INTJ (Ni-Te) 或 ISTP
+            // 如果 Se > Ne，倾向 ISTP；如果 Te > Se，倾向 INTJ
+        }
+    }
+
+    // Case 3: Ne/Fe 混淆 (ENTP vs ENFJ)
+    if ((top === 'Ne' && second === 'Fe') || (top === 'Fe' && second === 'Ne')) {
+        if (scores.Ti > scores.Fi) {
+            top = 'Ne'; second = 'Ti'; // ENTP
+        } else {
+            top = 'Fe'; second = 'Ni'; // ENFJ
         }
     }
 
@@ -459,13 +543,13 @@ function determineType(scores) {
         if (stack[0] === top) score += 50; 
         if (stack[1] === second) score += 25;
         else if (stack[0] === second && stack[1] === top) score += 40;
-
+        
         if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
         if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
-
-        // 惩罚项：如果劣势功能过高
+        
+        // 惩罚项：如果劣势功能过高 (Grip检测的一环)
         const inferiorFunc = stack[3];
-        if (scores[inferiorFunc] > 70) score -= 20;
+        if (scores[inferiorFunc] > scores[stack[0]]) score -= 15; // 劣势比主导还高，扣分
 
         if (score > bestScore) {
             bestScore = score;
@@ -478,19 +562,27 @@ function determineType(scores) {
     let confidence = Math.round((bestScore / maxScore) * 100);
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
+    // --- 4. 劣势功能 (Grip) 提示逻辑优化 ---
     let extraTip = "";
-    // Ti/Fi 双高提示
-    if (scores.Ti > 60 && scores.Fi > 60) {
-        extraTip = `<div class="mt-6 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
-            <strong>🤔 深度解析：</strong> 检测到您的 <strong>Ti (逻辑)</strong> 和 <strong>Fi (价值)</strong> 都极高。
-            这常出现在高阶 <strong>INFP</strong> 身上（对信念的严密坚守常被误认为是逻辑洁癖），或是 <strong>INTP</strong> 的情感爆发期。
-            系统已结合辅助功能为您做出了最可能的判定。
+    
+    // 找出最终判定类型的劣势功能
+    const inferior = bestStack[3];
+    const dominant = bestStack[0];
+    
+    // Grip 判定条件：劣势功能分数极高 (>70) 或者 劣势功能 >= 主导功能 * 0.9
+    if (scores[inferior] > 70 || scores[inferior] > scores[dominant] * 0.9) {
+        extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
+            <strong>⚠️ 压力与 Grip 状态预警：</strong><br>
+            虽然您的主导人格傾向於 <strong>${bestType}</strong>，但系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
+            <br>这通常发生在极度压力下，表现为“性情大变”（例如理性的 INTP 突然情绪失控爆炸，或温和的 ISFJ 突然对灾难充满悲观预测）。请关注近期是否压力过大。
         </div>`;
     }
-    // Te-grip 提示
-    if ((bestType === 'ENTJ' || bestType === 'ESTJ') && scores.Fi > 30) {
-        extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
-            <strong>⚠️ 压力提示：</strong> 您展现出极高的执行力(Te)，但内在情感(Fi)依然活跃。这可能是 <strong>INFP/ISFP</strong> 在高压环境下形成的“防御性人格”。
+
+    // Ti/Fi 双高提示 (保留)
+    if (scores.Ti > 60 && scores.Fi > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
+            <strong>🤔 复杂性解析：</strong> 您的 <strong>Ti (逻辑)</strong> 和 <strong>Fi (价值)</strong> 都极高。
+            这常出现在高阶 <strong>INFP</strong> 身上（对信念的严密坚守常被误认为是逻辑洁癖），或是 <strong>INTP</strong> 的情感爆发期。
         </div>`;
     }
 
@@ -511,7 +603,8 @@ const typeFullDesc = {
 function showModal(res, scores) {
     const content = document.getElementById('result-content');
     const modal = document.getElementById('result-modal');
-
+    
+    // 渲染图表
     const chartHtml = Object.entries(scores).map(([f, s]) => `
         <div class="mb-3">
             <div class="flex justify-between text-xs font-bold mb-1">
@@ -563,46 +656,32 @@ function shareResults() {
 function clearStorage() {
     if(confirm('确定清除进度并重测？')) { 
         localStorage.removeItem(STORAGE_KEY); 
-        location.reload(); 
+        localStorage.removeItem(RESULT_KEY); // 清除结果缓存
+        location.reload();
     }
 }
 
 // ============ 8. 启动与事件绑定 ============
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 绑定上一页
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) {
         prevBtn.addEventListener('click', prevPage);
     }
     
-    // 2. 绑定下一页 (逻辑总控)
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             const maxPage = Math.ceil(shuffledQuestions.length / QUESTIONS_PER_PAGE) - 1;
-            
-            // 如果在最后一页
             if (currentPage >= maxPage) {
-                const answered = Object.keys(userAnswers).length;
-                if (answered < TOTAL_QUESTIONS) {
-                    alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成。\n请点击“上一页”检查漏做的题目。`);
-                } else {
-                    calculateResults();
-                }
+                calculateResults();
             } else {
                 nextPage();
             }
         });
     }
 
-    // 3. 启动
     startApp();
 });
 </script>
 </body>
 </html>
-
-
-
-
-
