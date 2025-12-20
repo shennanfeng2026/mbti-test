@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评</title>
+    <title>MBTI 八维深度测评（小白自测版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -77,7 +77,7 @@
 </div>
 
 <script>
-// ============ 1. 深度优化题库 (52题) ============
+// ============ 1. 深度优化题库 (52题完整版) ============
 const rawQuestions = [
     // --- N 维度 ---
     { id: 1, left: "Ni", right: "Ne", lText: "我常被事物的深层含义和最终走向所吸引", rText: "我常被事物引申出的无限可能性所吸引", reversed: false },
@@ -109,7 +109,7 @@ const rawQuestions = [
     { id: 25, left: "Si", right: "Se", lText: "我做决定常参考过去的相似案例", rText: "我做决定常根据当下具体情况调整", reversed: false },
     { id: 26, left: "Si", right: "Se", lText: "我喜欢传统节日按老规矩过", rText: "我喜欢传统节日加入新玩法", reversed: false },
 
-    // --- T 维度 (含冲突校验) ---
+    // --- T 维度 ---
     { id: 27, left: "Ti", right: "Te", lText: "我追求知识体系的内在逻辑完美", rText: "我追求目标的高效达成和资源利用", reversed: false },
     { id: 28, left: "Ti", right: "Te", lText: "为了弄懂一个原理，我愿意耽误进度", rText: "为了赶上进度，我可以暂不求甚解", reversed: false },
     { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
@@ -124,7 +124,7 @@ const rawQuestions = [
     { id: 38, left: "Ti", right: "Te", lText: "我能花很长时间琢磨一个理论问题", rText: "我更倾向快速行动获取反馈", reversed: false },
     { id: 39, left: "Ti", right: "Te", lText: "批评时我指出系统性逻辑错误", rText: "批评时我指出具体可改进的指标", reversed: false },
 
-    // --- F 维度 (含去伪装题) ---
+    // --- F 维度 ---
     { id: 40, left: "Fi", right: "Te", lText: "一份高薪但违背我价值观的工作，会让我极其痛苦", rText: "一份高薪工作就是工作，我可以把自我和它分开", reversed: false },
     { id: 41, left: "Fi", right: "Fe", lText: "我的情感深沉私密，追求灵魂共鸣", rText: "我的情感温暖外显，追求群体和谐", reversed: true },
     { id: 42, left: "Fi", right: "Fe", lText: "我非常在意个体的独立和独特价值", rText: "我非常在意群体的凝聚与互助", reversed: false },
@@ -163,7 +163,7 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length;
-const STORAGE_KEY = 'mbti_final_v6';
+const STORAGE_KEY = 'mbti_final_v7_complete';
 
 let shuffledQuestions = [];
 let userAnswers = {};
@@ -236,7 +236,7 @@ function renderPage() {
         container.appendChild(div);
     });
 
-    // 按钮逻辑 (仅UI)
+    // 按钮逻辑
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) prevBtn.disabled = currentPage === 0;
 
@@ -306,23 +306,32 @@ function prevPage() {
     if (currentPage > 0) { currentPage--; renderPage(); }
 }
 
-// ============ 5. 核心计算与加赛检测 ============
+// ============ 5. 核心计算（优化版：基础分+温柔扣分） ============
 function calculateResults() {
     const answered = Object.keys(userAnswers).length;
     if(answered < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成`); return; }
 
-    let scores = { Ni:0, Ne:0, Si:0, Se:0, Ti:0, Te:0, Fi:0, Fe:0 };
+    // 设置基础分，避免0分
+    let scores = { Ni:20, Ne:20, Si:20, Se:20, Ti:20, Te:20, Fi:20, Fe:20 };
+
     rawQuestions.forEach(q => {
         const val = userAnswers[q.id] || 5;
         let diff = val - 5;
         if(q.reversed) diff = -diff;
-        if(diff > 0) { scores[q.right] += diff*2; scores[q.left] -= Math.abs(diff)*0.5; }
-        else if(diff < 0) { scores[q.left] += Math.abs(diff)*2; scores[q.right] -= Math.abs(diff)*0.5; }
+
+        if (diff > 0) {
+            scores[q.right] += diff * 2;       // 加分权重 2.0
+            scores[q.left] -= Math.abs(diff) * 0.3; // 扣分权重 0.3 (温柔拮抗)
+        } else if (diff < 0) {
+            scores[q.left] += Math.abs(diff) * 2;
+            scores[q.right] -= Math.abs(diff) * 0.3;
+        }
     });
+
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
     tempScores = scores; 
 
-    // 检测死结 (阈值放宽至 15)
+    // 检测死结 (阈值 15)
     const tiePair = checkForTies(scores);
     if (tiePair) {
         startTieBreaker(tiePair);
@@ -335,14 +344,14 @@ function checkForTies(scores) {
     const pairs = [['Ti', 'Fi'], ['Ne', 'Se'], ['Ni', 'Si'], ['Te', 'Fe']];
     const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
     
-    // 如果前两名是易混淆对子，且分差 < 15
     for (let pair of pairs) {
         const s1 = scores[pair[0]];
         const s2 = scores[pair[1]];
-        if (s1 > 50 && s2 > 50 && Math.abs(s1 - s2) < 15) { // 阈值调整为15
-            // 且这两个必须是高分项（前3名内）
+        // 阈值设为15，更敏感
+        if (s1 > 50 && s2 > 50 && Math.abs(s1 - s2) < 15) { 
             const rank1 = sorted.findIndex(x => x[0] === pair[0]);
             const rank2 = sorted.findIndex(x => x[0] === pair[1]);
+            // 且必须是前3名的高分项
             if (rank1 < 3 && rank2 < 3) return pair;
         }
     }
@@ -374,17 +383,15 @@ function startTieBreaker(pair) {
         container.appendChild(div);
     });
 
-    // 提交按钮
     const submitDiv = document.createElement('div');
     submitDiv.innerHTML = `<button onclick="resolveTieBreaker()" class="w-full mt-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">提交决胜选择</button>`;
     container.appendChild(submitDiv);
 
     modal.classList.remove('hidden');
-    tieAdjustments = {}; // 重置
+    tieAdjustments = {}; 
 }
 
 function handleTieChoice(winner, loser, btn) {
-    // 简单的视觉切换
     const parent = btn.parentElement;
     Array.from(parent.children).forEach(b => {
         b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
@@ -393,7 +400,6 @@ function handleTieChoice(winner, loser, btn) {
     btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
     btn.classList.remove('border-slate-300');
 
-    // 记录
     tieAdjustments[winner] = (tieAdjustments[winner] || 0) + 10;
     tieAdjustments[loser] = (tieAdjustments[loser] || 0) - 5;
 }
@@ -406,7 +412,7 @@ function resolveTieBreaker() {
     finalizeAndShow(tempScores);
 }
 
-// ============ 7. 最终判定与展示 ============
+// ============ 7. 最终判定与展示（含 INFP Ti/Fi 修正） ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
     showModal(result, scores);
@@ -414,8 +420,18 @@ function finalizeAndShow(scores) {
 
 function determineType(scores) {
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    const top = sorted[0][0];
-    const second = sorted[1][0];
+    let top = sorted[0][0];
+    let second = sorted[1][0];
+
+    // INFP/INTP 混淆修正
+    // 逻辑：如果 Ti 和 Fi 是前两名，且分差小（用户分不清逻辑一致性与价值一致性）
+    const isJiDomTie = (top === 'Ti' && second === 'Fi') || (top === 'Fi' && second === 'Ti');
+    if (isJiDomTie && Math.abs(scores.Ti - scores.Fi) < 15) {
+        // 如果 Ne > Se，更倾向于是 INFP (因为 Ti 是 INFP 的魔鬼功能，常被误认为是主导)
+        if (scores.Ne > scores.Se) {
+            if (top === 'Ti') { top = 'Fi'; second = 'Ne'; } // 强制修正
+        }
+    }
 
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
@@ -434,12 +450,16 @@ function determineType(scores) {
 
     for (const [type, stack] of Object.entries(stacks)) {
         let score = 0;
-        if (stack[0] === top) score += 40;
-        if (stack[1] === second) score += 30;
-        else if (stack[0] === second && stack[1] === top) score += 55;
+        if (stack[0] === top) score += 50; 
+        if (stack[1] === second) score += 25;
+        else if (stack[0] === second && stack[1] === top) score += 40;
 
         if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
         if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
+
+        // 惩罚项：如果劣势功能过高
+        const inferiorFunc = stack[3];
+        if (scores[inferiorFunc] > 70) score -= 20;
 
         if (score > bestScore) {
             bestScore = score;
@@ -448,14 +468,24 @@ function determineType(scores) {
         }
     }
 
-    const maxScore = 85;
+    const maxScore = 90;
     let confidence = Math.round((bestScore / maxScore) * 100);
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
-    // 动态提示
     let extraTip = "";
+    // Ti/Fi 双高提示
+    if (scores.Ti > 60 && scores.Fi > 60) {
+        extraTip = `<div class="mt-6 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
+            <strong>🤔 深度解析：</strong> 检测到您的 <strong>Ti (逻辑)</strong> 和 <strong>Fi (价值)</strong> 都极高。
+            这常出现在高阶 <strong>INFP</strong> 身上（对信念的严密坚守常被误认为是逻辑洁癖），或是 <strong>INTP</strong> 的情感爆发期。
+            系统已结合辅助功能为您做出了最可能的判定。
+        </div>`;
+    }
+    // Te-grip 提示
     if ((bestType === 'ENTJ' || bestType === 'ESTJ') && scores.Fi > 30) {
-        extraTip = `<div class="mt-6 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200"><strong>⚠️ 解析：</strong>检测到 Te 极高但 Fi 不低，可能是高压下的 INFP。</div>`;
+        extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
+            <strong>⚠️ 压力提示：</strong> 您展现出极高的执行力(Te)，但内在情感(Fi)依然活跃。这可能是 <strong>INFP/ISFP</strong> 在高压环境下形成的“防御性人格”。
+        </div>`;
     }
 
     return { type: bestType, stack: bestStack, sorted, confidence, scores, extraTip };
@@ -531,7 +561,7 @@ function clearStorage() {
     }
 }
 
-// ============ 8. 启动与事件绑定 (手机端翻页修复版) ============
+// ============ 8. 启动与事件绑定 ============
 document.addEventListener('DOMContentLoaded', () => {
     // 1. 绑定上一页
     const prevBtn = document.getElementById('prev-btn');
