@@ -337,7 +337,15 @@ function renderPage() {
     document.getElementById('current-page').textContent = currentPage + 1;
     updateProgress();
 }
-
+// 缺失的辅助函数：将分数转换为文字
+function getDisplayText(value) {
+    value = parseInt(value);
+    if (value <= 2) return "强烈左倾";
+    if (value <= 4) return "倾向左侧";
+    if (value === 5) return "完全中立";
+    if (value <= 7) return "倾向右侧";
+    return "强烈右倾";
+}
 function updateSliderVisual(input, val) {
     const value = parseInt(val);
     if (value < 5) {
@@ -695,6 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
