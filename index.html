@@ -279,26 +279,37 @@ function renderPage() {
         div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in';
         div.style.animationDelay = `${idx * 0.05}s`;
         
+        // 检查当前题目是否被标记为“双高”
+        const isDual = userAnswers[`dual_${q.id}`] || false;
+
         div.innerHTML = `
-            <div class="text-sm font-semibold text-slate-500 mb-4 flex justify-between">
-                <span>题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
-            </div>
+            <div class="text-sm font-semibold text-slate-500 mb-4">${globalIdx + 1}/${TOTAL_QUESTIONS}</div>
+            
             <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
                 <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
                 <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
                 <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">${rightText}</div>
             </div>
             
-            <div class="py-4">
-                <div class="relative w-full h-8 flex items-center">
-                    <input type="range" min="0" max="10" value="${savedValue}" class="slider"
-                        id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+            <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
+            
+            <div class="py-4 transition-opacity duration-300 ${isDual ? 'opacity-50 pointer-events-none' : 'opacity-100'}">
+                <input type="range" min="0" max="10" value="${savedValue}" class="slider"
+                       id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                <div class="flex justify-between mt-4 text-sm font-medium">
+                    <span class="text-red-600">强烈左倾</span>
+                    <span id="val-q${q.id}" class="text-lg font-bold text-indigo-600">${getDisplayText(savedValue)}</span>
+                    <span class="text-green-600">强烈右倾</span>
                 </div>
-                <div class="flex justify-between mt-2 text-xs font-medium text-slate-400">
-                    <span class="text-red-500">5 (强烈)</span>
-                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">${displayScore}</span>
-                    <span class="text-green-500">5 (强烈)</span>
-                </div>
+            </div>
+
+            <div class="mt-6 flex items-center justify-center bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                <label class="inline-flex items-center cursor-pointer select-none">
+                    <input type="checkbox" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300"
+                           ${isDual ? 'checked' : ''} 
+                           onchange="onDualChange(this, ${q.id})">
+                    <span class="ml-3 text-sm font-bold text-indigo-700">我对两者都有强烈共鸣 (双高模式)</span>
+                </label>
             </div>
         `;
         container.appendChild(div);
@@ -363,7 +374,20 @@ function onSliderChange(input, id) {
         }
     }
 }
-
+// 处理双高复选框的变化
+function onDualChange(checkbox, id) {
+    // 记录状态：key 为 "dual_题目ID"
+    userAnswers[`dual_${id}`] = checkbox.checked;
+    
+    // 视觉反馈：重新渲染该题（让滑块变灰/恢复）
+    // 为了体验流畅，我们只切换样式，不重绘整个页面，但简单起见可以直接调用 renderPage
+    // 或者更简单的：保存后刷新进度条即可，不用立刻重绘（滑块变灰是锦上添花）
+    saveProgress();
+    
+    // 强制刷新当前页以更新滑块的禁用状态
+    renderPage();
+}
+    
 function updateProgress() {
     const answered = Object.keys(userAnswers).length;
     const percent = Math.round((answered / TOTAL_QUESTIONS) * 100);
@@ -384,18 +408,33 @@ function calculateResults() {
     const answered = Object.keys(userAnswers).length;
     if(answered < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - answered} 道题未完成`); return; }
 
-    let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
-    rawQuestions.forEach(q => {
-        const val = userAnswers[q.id] || 5;
-        let diff = val - 5;
-        if(q.reversed) diff = -diff;
+    // 设置基础分，避免0分
+    let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 }; // 建议基础分升至30
 
-        if (diff > 0) {
-            scores[q.right] += diff * 2;       
-            scores[q.left] -= Math.abs(diff) * 0.3; 
-        } else if (diff < 0) {
-            scores[q.left] += Math.abs(diff) * 2;
-            scores[q.right] -= Math.abs(diff) * 0.3;
+    rawQuestions.forEach(q => {
+        // 1. 先检查是否开启了“双高模式”
+        const isDual = userAnswers[`dual_${q.id}`];
+
+        if (isDual) {
+            // ⭐ 双高模式核心逻辑：
+            // 不扣分，两边同时给予高分奖励！
+            // 建议 +12 分（相当于单边选 8-9 分的强度，但两边都加）
+            scores[q.left] += 12;
+            scores[q.right] += 12;
+            
+        } else {
+            // 2. 普通模式：走原来的能量拮抗逻辑
+            const val = userAnswers[q.id] || 5;
+            let diff = val - 5;
+            if(q.reversed) diff = -diff;
+
+            if (diff > 0) {
+                scores[q.right] += diff * 2;       // 加分权重 2.0
+                scores[q.left] -= Math.abs(diff) * 0.3; // 扣分权重 0.3
+            } else if (diff < 0) {
+                scores[q.left] += Math.abs(diff) * 2;
+                scores[q.right] -= Math.abs(diff) * 0.3;
+            }
         }
     });
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
@@ -672,3 +711,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
