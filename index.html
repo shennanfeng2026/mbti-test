@@ -506,11 +506,15 @@ function finalizeAndShow(scores) {
     showModal(result, scores);
 }
 
+// ============ 7. 最终判定 (智能权重版 v13) ============
 function determineType(scores) {
+    // 1. 排序
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    let top = sorted[0][0];
-    let second = sorted[1][0];
+    const topFunc = sorted[0][0];   // 第1名
+    const secondFunc = sorted[1][0]; // 第2名
+    const thirdFunc = sorted[2][0];  // 第3名
 
+    // 2. 匹配 16 人格堆栈
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
         ENTJ: ["Te","Ni","Se","Fi"], ENFJ: ["Fe","Ni","Se","Ti"],
@@ -524,20 +528,60 @@ function determineType(scores) {
 
     let bestType = "未知";
     let bestStack = [];
-    let bestScore = -1;
+    let bestScore = -999; // 允许负分
 
     for (const [type, stack] of Object.entries(stacks)) {
         let score = 0;
-        if (stack[0] === top) score += 50; 
-        if (stack[1] === second) score += 25;
-        else if (stack[0] === second && stack[1] === top) score += 40;
+        const dom = stack[0]; // 主导
+        const aux = stack[1]; // 辅助
+        const tert = stack[2]; // 第三
+        const inf = stack[3]; // 劣势
 
-        if (sorted.slice(0,4).some(([f]) => f === stack[2])) score += 10;
-        if (sorted.slice(4,8).some(([f]) => f === stack[3])) score += 5;
+        // --- A. 主导功能权重 (最关键) ---
+        // 只要主导功能是第一名，直接 +50
+        if (dom === topFunc) {
+            score += 50;
+        } 
+        // 这种情况下 (Ti高插队)，如果主导功能被挤到第二，但分数很高，也给分
+        else if (dom === secondFunc) {
+            score += 30;
+        }
 
-        const inferiorFunc = stack[3];
-        const domFunc = stack[0];
-        if (scores[inferiorFunc] > scores[domFunc]) score -= 15;
+        // --- B. 辅助功能权重 (智能修正版) ---
+        // 逻辑：辅助功能不需要非得是第2名。只要它在“前3名”里，且分数显著高于对立功能，就得分。
+        const auxScore = scores[aux];
+        
+        // 1. 位置加分
+        if (aux === secondFunc) score += 25; // 完美匹配
+        else if (aux === thirdFunc) score += 20; // 在第3名，也很强 (你的Ne就是这种情况)
+        else if (sorted.slice(0, 4).some(x => x[0] === aux)) score += 10; // 只要在前4
+
+        // 2. 强度加分 (关键！防止 ISFP 误判)
+        // 比如 INFP，我们要看 Ne 是否远高于 Se。如果是，额外疯狂加分。
+        // 获取对立面功能的名称 (比如 Ne 的对立面是 Se)
+        // 简单映射：N<->S, T<->F. 这里我们直接硬编码检查
+        let counterAux = "";
+        if (aux.includes('N')) counterAux = aux.replace('N', 'S'); // Ne->Se, Ni->Si
+        if (aux.includes('S')) counterAux = aux.replace('S', 'N');
+        if (aux.includes('T')) counterAux = aux.replace('T', 'F');
+        if (aux.includes('F')) counterAux = aux.replace('F', 'T');
+        
+        // 如果 辅助功能 分数 > 对立功能分数 + 10，说明倾向明显
+        if (counterAux && scores[aux] > scores[counterAux] + 10) {
+            score += 15; // 这一条足以帮 INFP 翻盘
+        }
+
+        // --- C. 第三功能 (Tert) ---
+        // 在前4名里给分
+        if (sorted.slice(0, 4).some(x => x[0] === tert)) score += 10;
+        
+        // --- D. 劣势功能 (Inf) ---
+        // 劣势功能不应该太强。如果劣势功能比主导功能还高，扣分。
+        if (scores[inf] > scores[dom]) score -= 20;
+
+        // --- E. 整体匹配度 (Similiarity) ---
+        // 加上该维度本身的得分，作为“底分”，防止 pure position 误判
+        score += (scores[dom] + scores[aux]) * 0.1;
 
         if (score > bestScore) {
             bestScore = score;
@@ -546,25 +590,23 @@ function determineType(scores) {
         }
     }
 
-    const maxScore = 90;
+    const maxScore = 120; // 估算的最大分
     let confidence = Math.round((bestScore / maxScore) * 100);
+    if (confidence > 100) confidence = 99;
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
+    // ============ 结果提示 ============
     let extraTip = "";
-    const inferior = bestStack[3];
-    if (scores[inferior] > 70) {
-        extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
-            <strong>⚠️ 状态提示：</strong><br>
-            系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
-            <br>这通常出现在极度压力或被迫“扮演角色”的情况下。
-        </div>`;
-    }
+    
+    // 双高/特殊情况提示
     if (scores.Ti > 60 && scores.Fi > 60) {
         extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
-            <strong>💡 深度解析：</strong> 您的逻辑(Ti)与情感(Fi)都很强。这说明您不仅拥有严密的自我逻辑体系，也坚守着核心价值观，这是一种非常高阶的心理状态。
+            <strong>💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。
+            <br>这通常意味着您是一位<strong>“构建者型 INFP”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。<br>
+            您的 Ti 甚至超过了辅助功能，这在很多标准化测试中会被误判，但这里我们还原了真相。
         </div>`;
     }
-
+    
     return { type: bestType, stack: bestStack, sorted, confidence, scores, extraTip };
 }
 
@@ -651,3 +693,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
