@@ -666,12 +666,32 @@ function determineType(scores) {
     if (confidence > 100) confidence = 99;
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
+   // ============ 结果提示修正版 (替换原 669-676 行) ============
     let extraTip = "";
-    if (scores.Ti > 60 && scores.Fi > 60) {
+
+    // 1. 压力状态检测 (Grip) - 补回缺失的压力提示
+    const inferior = bestStack[3];
+    if (scores[inferior] > 70) {
+        extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
+            <strong>⚠️ 状态提示：</strong><br>
+            系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
+            <br>这通常出现在极度压力或被迫“扮演角色”的情况下。
+        </div>`;
+    }
+
+    // 2. 高阶解析修正版 (增加类型限制，防止 ISTJ 被误判为 INFP)
+    // 只有当主类型是 INFP/ISFP 时，才显示“构建者型”解析
+    if ((bestType === 'INFP' || bestType === 'ISFP') && scores.Ti > 60 && scores.Fi > 60) {
         extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
             <strong>💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。
-            <br>这通常意味着您是一位<strong>“构建者型 INFP”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。<br>
-            您的 Ti 甚至超过了辅助功能，这在很多标准化测试中会被误判，但这里我们还原了真相。
+            <br>这通常意味着您是一位<strong>“构建者型 ${bestType}”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。
+        </div>`;
+    }
+    // 3. 新增：针对 ISTJ/ESTJ 但 Fi 很高的情况 (您爱人的专属治愈语)
+    else if ((bestType === 'ISTJ' || bestType === 'ESTJ') && scores.Fi > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-rose-50 rounded-xl text-sm text-rose-800 border border-rose-200">
+            <strong>🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。
+            <br>对于理性的 ${bestType} 来说，这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序 (Si/Te)，更是在守护内心某种不愿妥协的感觉。这是一种非常疲惫但坚韧的状态。
         </div>`;
     }
     
@@ -766,3 +786,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
