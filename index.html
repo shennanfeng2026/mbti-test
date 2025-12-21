@@ -403,17 +403,27 @@ function prevPage() {
 }
 
 // ============ 3. 核心计算 (纯净版) ============
+// ============ 3. 核心计算 (温和双高版) ============
 function calculateResults() {
     const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
-    if(validAnswers < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - validAnswers} 道题未完成`); return; }
+    
+    // 弹窗确认逻辑保持不变
+    if(validAnswers < TOTAL_QUESTIONS) { 
+        const remaining = TOTAL_QUESTIONS - validAnswers;
+        const confirmSubmit = confirm(`系统检测到您还有 ${remaining} 道题未进行滑动操作。\n\n这些题目将默认视为“完全中立 (5分)”。\n\n是否确认生成报告？`);
+        if (!confirmSubmit) return; 
+    }
 
     let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
 
     rawQuestions.forEach(q => {
         const isDual = userAnswers[`dual_${q.id}`];
         if (isDual) {
-            scores[q.left] += 12;
-            scores[q.right] += 12;
+            // ⭐ 修改点：从 +12 改为 +6
+            // 逻辑：+6 分相当于“比较认同”，既体现了强度，又不会因为选多了导致分数通货膨胀。
+            // 同时，这里没有减法操作，所以完美实现了“不触发扣分”。
+            scores[q.left] += 6;
+            scores[q.right] += 6;
         } else {
             const val = userAnswers[q.id] || 5;
             let diff = val - 5;
@@ -421,13 +431,19 @@ function calculateResults() {
 
             if (diff > 0) {
                 scores[q.right] += diff * 2;
-                scores[q.left] -= Math.abs(diff) * 0.3;
+                scores[q.left] -= Math.abs(diff) * 0.3; // 滑块依然有扣分，保持区分度
             } else if (diff < 0) {
                 scores[q.left] += Math.abs(diff) * 2;
                 scores[q.right] -= Math.abs(diff) * 0.3;
             }
         }
     });
+
+    Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
+    tempScores = scores; 
+    const tiePair = checkForTies(scores);
+    if (tiePair) { startTieBreaker(tiePair); } else { finalizeAndShow(scores); }
+}
 
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
     tempScores = scores; 
@@ -648,3 +664,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
