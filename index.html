@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评（纯净版）</title>
+    <title>MBTI 八维深度测评（最终专业版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -64,7 +64,7 @@
             <p class="font-bold text-amber-800 mb-2 text-center">💡 答题小贴士：</p>
             <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span></p>
             <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span></p>
-            <p class="mb-1">• <span class="font-bold text-indigo-600">双高复选框</span> = 对两侧都有强烈共鸣 (不扣分，双倍加分)</p>
+            <p class="mb-1">• <span class="font-bold text-indigo-600">点击下方按钮</span> = 开启“双高模式” (两边都强)</p>
         </div>
     </header>
 
@@ -98,6 +98,7 @@
 </div>
 
 <script>
+// ============ 1. 题库配置 ============
 // ============ 1. 优化题库 (含 S 人通俗化修改) ============
 const rawQuestions = [
     // 1-4
@@ -179,6 +180,7 @@ const rawQuestions = [
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
+// 加赛题库 (保持不变)
 const tieBreakerPool = {
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
@@ -203,9 +205,9 @@ const tieBreakerPool = {
 };
 
 const QUESTIONS_PER_PAGE = 8;
-const TOTAL_QUESTIONS = rawQuestions.length;
-const STORAGE_KEY = 'mbti_final_v9_pure'; // 更新 key 避免旧缓存冲突
-const RESULT_KEY = 'mbti_final_report_v9';
+const TOTAL_QUESTIONS = rawQuestions.length; // 注意：如果上面数组为空这里会报错，请务必填入题目
+const STORAGE_KEY = 'mbti_final_v10_pro'; 
+const RESULT_KEY = 'mbti_final_report_v10';
 
 let userAnswers = {};
 let currentPage = 0;
@@ -214,6 +216,10 @@ let tieAdjustments = {};
 
 function startApp() {
     loadAnswers();
+    if(rawQuestions.length === 0) {
+        alert("请先在代码中填入题目数据 (rawQuestions)！");
+        return;
+    }
     renderPage();
 }
 
@@ -243,6 +249,7 @@ function getDisplayText(value) {
     return "强烈右倾";
 }
 
+// ============ 2. 渲染核心 (含新版按钮 & 视觉条) ============
 function renderPage() {
     window.scrollTo(0, 0);
     const container = document.getElementById('quiz-container');
@@ -274,29 +281,50 @@ function renderPage() {
             </div>
             <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
             
-            <div class="py-4 transition-opacity duration-300 ${isDual ? 'opacity-50 pointer-events-none' : 'opacity-100'}">
+            <div class="py-4 transition-all duration-300">
                 <div class="relative w-full h-8 flex items-center">
-                    <input type="range" min="0" max="10" value="${savedValue}" class="slider"
+                    ${isDual ? `
+                        <div class="w-full h-[14px] rounded-full bg-gradient-to-r from-red-500 via-indigo-100 to-green-500 shadow-inner flex items-center justify-center border-2 border-indigo-200">
+                            <span class="text-xs font-bold text-indigo-600 bg-white/80 px-2 py-0.5 rounded-full shadow-sm">⚡ 双核驱动中 ⚡</span>
+                        </div>
+                    ` : `
+                        <input type="range" min="0" max="10" value="${savedValue}" class="slider"
                            id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                    `}
                 </div>
+                
                 <div class="flex justify-between mt-2 text-xs font-medium text-slate-400">
-                    <span class="text-red-500">强烈左倾</span>
-                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">${getDisplayText(savedValue)}</span>
-                    <span class="text-green-500">强烈右倾</span>
+                    <span class="${isDual ? 'text-red-600 font-bold scale-110' : 'text-red-500'}">强烈左倾</span>
+                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">
+                        ${isDual ? '双高 (Both)' : getDisplayText(savedValue)}
+                    </span>
+                    <span class="${isDual ? 'text-green-600 font-bold scale-110' : 'text-green-500'}">强烈右倾</span>
                 </div>
             </div>
 
-            <div class="mt-6 flex items-center justify-center bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-                <label class="inline-flex items-center cursor-pointer select-none">
-                    <input type="checkbox" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300"
-                           ${isDual ? 'checked' : ''} 
-                           onchange="onDualChange(this, ${q.id})">
-                    <span class="ml-3 text-sm font-bold text-indigo-700">我对两者都有强烈共鸣 (双高模式)</span>
-                </label>
+            <div class="mt-8 flex justify-center">
+                <button onclick="toggleDual(${q.id})" 
+                    class="relative group overflow-hidden px-6 py-3 rounded-full transition-all duration-300 ease-out 
+                    ${isDual 
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-600 ring-offset-2 transform scale-105' 
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200 hover:shadow-sm'}">
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">${isDual ? '⚡' : '⚪'}</span>
+                        <span class="font-bold text-sm tracking-wide">
+                            ${isDual ? '已开启双高模式 (两边都强)' : '我对两者都有强烈共鸣'}
+                        </span>
+                    </div>
+                    ${isDual ? '<div class="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>' : ''}
+                </button>
             </div>
         `;
         container.appendChild(div);
-        updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
+        
+        // 只有在非双高模式下才渲染普通滑块的颜色
+        if (!isDual) {
+            updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
+        }
     });
 
     const prevBtn = document.getElementById('prev-btn');
@@ -305,9 +333,7 @@ function renderPage() {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-        const answered = Object.keys(userAnswers).length; // 简单计算，暂不排除 dual keys
-        
-        // 修正 answered 计数，排除 dual_ key
+        // 计算有效答题数 (排除 dual_ 标记)
         const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
 
         if (currentPage >= maxPage) {
@@ -323,6 +349,7 @@ function renderPage() {
 }
 
 function updateSliderVisual(input, val) {
+    if (!input) return; // 防错
     const value = parseInt(val);
     if (value < 5) {
         const intensity = (5 - value) / 5;
@@ -337,7 +364,6 @@ function updateSliderVisual(input, val) {
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    // 修复：拖动时显示文字而非数字
     document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
     updateSliderVisual(input, value);
     userAnswers[id] = value;
@@ -346,10 +372,12 @@ function onSliderChange(input, id) {
     renderPage(); // 刷新按钮状态
 }
 
-function onDualChange(checkbox, id) {
-    userAnswers[`dual_${id}`] = checkbox.checked;
+// 切换双高模式
+function toggleDual(id) {
+    const currentStatus = userAnswers[`dual_${id}`] || false;
+    userAnswers[`dual_${id}`] = !currentStatus;
     saveProgress();
-    renderPage();
+    renderPage(); // 重新渲染以切换滑块/彩虹条
 }
     
 function updateProgress() {
@@ -367,7 +395,7 @@ function prevPage() {
     if (currentPage > 0) { currentPage--; renderPage(); }
 }
 
-// ============ 核心计算 (纯净版) ============
+// ============ 3. 核心计算 (纯净版) ============
 function calculateResults() {
     const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
     if(validAnswers < TOTAL_QUESTIONS) { alert(`还有 ${TOTAL_QUESTIONS - validAnswers} 道题未完成`); return; }
@@ -462,7 +490,7 @@ function resolveTieBreaker() {
     finalizeAndShow(tempScores);
 }
 
-// ============ 最终判定 (纯净逻辑版) ============
+// ============ 4. 最终判定 (纯净逻辑版) ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
     showModal(result, scores);
@@ -472,9 +500,6 @@ function determineType(scores) {
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
     let top = sorted[0][0];
     let second = sorted[1][0];
-
-    // 纯净版：无任何 Ti/Fi 或 Ni/Ti 修正补丁
-    // 完全信任双高复选框和能量拮抗算法的结果
 
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
