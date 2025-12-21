@@ -180,7 +180,7 @@ const rawQuestions = [
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
-// 加赛题库 (保持不变)
+// 加赛题库
 const tieBreakerPool = {
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
@@ -205,9 +205,9 @@ const tieBreakerPool = {
 };
 
 const QUESTIONS_PER_PAGE = 8;
-const TOTAL_QUESTIONS = rawQuestions.length; // 注意：如果上面数组为空这里会报错，请务必填入题目
-const STORAGE_KEY = 'mbti_final_v10_pro'; 
-const RESULT_KEY = 'mbti_final_report_v10';
+const TOTAL_QUESTIONS = rawQuestions.length; 
+const STORAGE_KEY = 'mbti_final_v11_fix'; 
+const RESULT_KEY = 'mbti_final_report_v11';
 
 let userAnswers = {};
 let currentPage = 0;
@@ -249,9 +249,9 @@ function getDisplayText(value) {
     return "强烈右倾";
 }
 
-// ============ 2. 渲染核心 (含新版按钮 & 视觉条) ============
+// ============ 2. 渲染核心 (修复跳页问题) ============
 function renderPage() {
-    window.scrollTo(0, 0);
+    // ❌ 已删除 window.scrollTo(0, 0); 以防止每次操作都跳动
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
     
@@ -321,7 +321,6 @@ function renderPage() {
         `;
         container.appendChild(div);
         
-        // 只有在非双高模式下才渲染普通滑块的颜色
         if (!isDual) {
             updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
         }
@@ -333,7 +332,6 @@ function renderPage() {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-        // 计算有效答题数 (排除 dual_ 标记)
         const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
 
         if (currentPage >= maxPage) {
@@ -349,7 +347,7 @@ function renderPage() {
 }
 
 function updateSliderVisual(input, val) {
-    if (!input) return; // 防错
+    if (!input) return; 
     const value = parseInt(val);
     if (value < 5) {
         const intensity = (5 - value) / 5;
@@ -362,6 +360,7 @@ function updateSliderVisual(input, val) {
     }
 }
 
+// 修复：滑块拖动时不再重绘页面，只更新 DOM
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
     document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
@@ -369,7 +368,7 @@ function onSliderChange(input, id) {
     userAnswers[id] = value;
     saveProgress();
     updateProgress();
-    renderPage(); // 刷新按钮状态
+    // ❌ renderPage() removed to prevent jump
 }
 
 // 切换双高模式
@@ -377,7 +376,7 @@ function toggleDual(id) {
     const currentStatus = userAnswers[`dual_${id}`] || false;
     userAnswers[`dual_${id}`] = !currentStatus;
     saveProgress();
-    renderPage(); // 重新渲染以切换滑块/彩虹条
+    renderPage(); // 按钮切换需要重绘来更新样式，但因为去掉了 scrollTo(0,0)，所以不会乱跳
 }
     
 function updateProgress() {
@@ -389,10 +388,18 @@ function updateProgress() {
 
 function nextPage() {
     const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-    if (currentPage < maxPage) { currentPage++; renderPage(); }
+    if (currentPage < maxPage) { 
+        currentPage++; 
+        renderPage(); 
+        window.scrollTo(0, 0); // ✅ 只有翻页时才回顶部
+    }
 }
 function prevPage() {
-    if (currentPage > 0) { currentPage--; renderPage(); }
+    if (currentPage > 0) { 
+        currentPage--; 
+        renderPage(); 
+        window.scrollTo(0, 0); // ✅ 只有翻页时才回顶部
+    }
 }
 
 // ============ 3. 核心计算 (纯净版) ============
@@ -490,7 +497,7 @@ function resolveTieBreaker() {
     finalizeAndShow(tempScores);
 }
 
-// ============ 4. 最终判定 (纯净逻辑版) ============
+// ============ 4. 最终判定 (纯净版) ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
     showModal(result, scores);
