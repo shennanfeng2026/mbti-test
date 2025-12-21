@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评（最终专业版）</title>
+    <title>MBTI 八维深度测评（最终完整版）</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -64,7 +64,7 @@
             <p class="font-bold text-amber-800 mb-2 text-center">💡 答题小贴士：</p>
             <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span></p>
             <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span></p>
-            <p class="mb-1">• <span class="font-bold text-indigo-600">点击下方按钮</span> = 开启“双高模式” (两边都强)</p>
+            <p class="mb-1">• <span class="font-bold text-indigo-600">点击下方按钮</span> = 开启“双高模式” (两边都强，各+6分)</p>
         </div>
     </header>
 
@@ -98,8 +98,7 @@
 </div>
 
 <script>
-// ============ 1. 题库配置 ============
-// ============ 1. 优化题库 (含 S 人通俗化修改) ============
+// ============ 1. 完整题库 (已填充) ============
 const rawQuestions = [
     // 1-4
     { id: 1, left: "Ni", right: "Ne", lText: "我常忍不住去想事情背后的“征兆”或“寓意”", rText: "我常忍不住由一个点子联想到好几种“新玩法”", reversed: false },
@@ -206,8 +205,8 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length; 
-const STORAGE_KEY = 'mbti_final_v11_fix'; 
-const RESULT_KEY = 'mbti_final_report_v11';
+const STORAGE_KEY = 'mbti_final_v12_fixed'; 
+const RESULT_KEY = 'mbti_final_report_v12';
 
 let userAnswers = {};
 let currentPage = 0;
@@ -217,7 +216,7 @@ let tieAdjustments = {};
 function startApp() {
     loadAnswers();
     if(rawQuestions.length === 0) {
-        alert("请先在代码中填入题目数据 (rawQuestions)！");
+        alert("题库加载失败，请检查代码！");
         return;
     }
     renderPage();
@@ -249,9 +248,9 @@ function getDisplayText(value) {
     return "强烈右倾";
 }
 
-// ============ 2. 渲染核心 (修复跳页问题) ============
+// ============ 2. 渲染核心 (解锁下一页按钮) ============
 function renderPage() {
-    // ❌ 已删除 window.scrollTo(0, 0); 以防止每次操作都跳动
+    // 移除 window.scrollTo(0,0) 防止每次点击都回顶
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
     
@@ -332,11 +331,10 @@ function renderPage() {
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-        const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
-
+        // ⭐ 修改：最后一页总是显示“生成报告”按钮，不检查 answered 数量
         if (currentPage >= maxPage) {
-            nextBtn.textContent = (validAnswers < TOTAL_QUESTIONS) ? `完成 (${validAnswers}/${TOTAL_QUESTIONS})` : '生成报告';
-            nextBtn.className = (validAnswers < TOTAL_QUESTIONS) ? "px-8 py-3 bg-slate-400 text-white rounded-xl font-bold cursor-not-allowed" : "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
+            nextBtn.textContent = '生成报告';
+            nextBtn.className = "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
         } else {
             nextBtn.textContent = '下一页';
             nextBtn.className = "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
@@ -360,7 +358,6 @@ function updateSliderVisual(input, val) {
     }
 }
 
-// 修复：滑块拖动时不再重绘页面，只更新 DOM
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
     document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
@@ -368,15 +365,14 @@ function onSliderChange(input, id) {
     userAnswers[id] = value;
     saveProgress();
     updateProgress();
-    // ❌ renderPage() removed to prevent jump
+    // 移除 renderPage()，只更新数据和视觉，不重绘页面
 }
 
-// 切换双高模式
 function toggleDual(id) {
     const currentStatus = userAnswers[`dual_${id}`] || false;
     userAnswers[`dual_${id}`] = !currentStatus;
     saveProgress();
-    renderPage(); // 按钮切换需要重绘来更新样式，但因为去掉了 scrollTo(0,0)，所以不会乱跳
+    renderPage(); // 按钮切换必须重绘以更新 UI
 }
     
 function updateProgress() {
@@ -391,23 +387,22 @@ function nextPage() {
     if (currentPage < maxPage) { 
         currentPage++; 
         renderPage(); 
-        window.scrollTo(0, 0); // ✅ 只有翻页时才回顶部
+        window.scrollTo(0, 0); // 只有翻页时回到顶部
     }
 }
 function prevPage() {
     if (currentPage > 0) { 
         currentPage--; 
         renderPage(); 
-        window.scrollTo(0, 0); // ✅ 只有翻页时才回顶部
+        window.scrollTo(0, 0);
     }
 }
 
-// ============ 3. 核心计算 (纯净版) ============
-// ============ 3. 核心计算 (温和双高版) ============
+// ============ 3. 核心计算 (温和双高 + 允许默认提交) ============
 function calculateResults() {
     const validAnswers = Object.keys(userAnswers).filter(k => !k.startsWith('dual_')).length;
     
-    // 弹窗确认逻辑保持不变
+    // ⭐ 弹窗确认逻辑
     if(validAnswers < TOTAL_QUESTIONS) { 
         const remaining = TOTAL_QUESTIONS - validAnswers;
         const confirmSubmit = confirm(`系统检测到您还有 ${remaining} 道题未进行滑动操作。\n\n这些题目将默认视为“完全中立 (5分)”。\n\n是否确认生成报告？`);
@@ -419,9 +414,7 @@ function calculateResults() {
     rawQuestions.forEach(q => {
         const isDual = userAnswers[`dual_${q.id}`];
         if (isDual) {
-            // ⭐ 修改点：从 +12 改为 +6
-            // 逻辑：+6 分相当于“比较认同”，既体现了强度，又不会因为选多了导致分数通货膨胀。
-            // 同时，这里没有减法操作，所以完美实现了“不触发扣分”。
+            // ⭐ 核心修改：双高模式改为 +6 (不扣分)
             scores[q.left] += 6;
             scores[q.right] += 6;
         } else {
@@ -431,19 +424,13 @@ function calculateResults() {
 
             if (diff > 0) {
                 scores[q.right] += diff * 2;
-                scores[q.left] -= Math.abs(diff) * 0.3; // 滑块依然有扣分，保持区分度
+                scores[q.left] -= Math.abs(diff) * 0.3;
             } else if (diff < 0) {
                 scores[q.left] += Math.abs(diff) * 2;
                 scores[q.right] -= Math.abs(diff) * 0.3;
             }
         }
     });
-
-    Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
-    tempScores = scores; 
-    const tiePair = checkForTies(scores);
-    if (tiePair) { startTieBreaker(tiePair); } else { finalizeAndShow(scores); }
-}
 
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
     tempScores = scores; 
@@ -664,4 +651,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
