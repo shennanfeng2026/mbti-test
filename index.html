@@ -2,234 +2,442 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTI 八维深度测评 (v14 旗舰版)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' },
-                        indigo: { 500: '#6366f1', 600: '#4f46e5' },
-                        red: { 600: '#dc2626' },
-                        green: { 600: '#16a34a' }
-                    },
-                    animation: {
-                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'flash-focus': 'flashFocus 1.5s ease-in-out infinite'
-                    },
-                    keyframes: {
-                        flashFocus: {
-                            '0%, 100%': { borderColor: '#e2e8f0', boxShadow: 'none' },
-                            '50%': { borderColor: '#6366f1', boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.2)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MBTI 八维深度测评 (极速版)</title>
     <style>
-        .slider { 
-            -webkit-appearance: none; width: 100%; height: 14px; border-radius: 7px; background: #e2e8f0; outline: none; transition: background 0.3s;
+        /* ============ 1. 核心样式 (替代 Tailwind) ============ */
+        :root {
+            --primary: #4f46e5; /* Indigo-600 */
+            --primary-hover: #4338ca;
+            --bg-grad-start: #f8fafc;
+            --bg-grad-end: #e2e8f0;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --red: #dc2626;
+            --green: #16a34a;
         }
-        .slider::-webkit-slider-thumb { 
-            -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #ffffff; cursor: pointer; 
-            border: 4px solid #4f46e5; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.1s;
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-start), var(--bg-grad-end));
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px 15px;
+            line-height: 1.6;
         }
-        .slider::-webkit-slider-thumb:active { transform: scale(1.1); }
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        /* 未答题目的高亮样式 */
-        .highlight-unanswered { animation: flashFocus 2s infinite; border-color: #6366f1 !important; }
+
+        /* 布局容器 */
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 标题与文本 */
+        h1 { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 10px; color: #0f172a; letter-spacing: -0.5px; }
+        h2 { font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 15px; }
+        h3 { font-size: 18px; font-weight: 700; color: #334155; margin-bottom: 10px; }
+        p { margin-bottom: 10px; color: var(--text-sub); }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 14px; }
+        .text-xs { font-size: 12px; }
+        .font-bold { font-weight: 700; }
+
+        /* 进度条 */
+        .progress-container {
+            display: flex; align-items: center; gap: 10px; margin: 20px 0;
+        }
+        .progress-track {
+            flex: 1; height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); width: 0%; transition: width 0.5s ease;
+        }
+        .page-badge {
+            background: #fff; padding: 4px 12px; border-radius: 99px; font-weight: 600; font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* 题目区域 */
+        .question-header {
+            display: flex; justify-content: space-between; margin-bottom: 20px;
+        }
+        .option-box {
+            display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;
+        }
+        @media (min-width: 640px) {
+            .option-box { flex-direction: row; align-items: center; justify-content: space-between; }
+            .option-text { width: 45%; }
+            .vs-text { display: block; font-size: 20px; font-weight: bold; color: #cbd5e1; }
+        }
+        .option-text { font-size: 16px; font-weight: 700; line-height: 1.5; }
+        .text-left-opt { color: var(--red); text-align: left; }
+        .text-right-opt { color: var(--green); text-align: left; }
+        @media (min-width: 640px) { .text-left-opt { text-align: right; } }
+        
+        .vs-mobile { text-align: center; font-weight: bold; color: #cbd5e1; margin-bottom: 15px; display: block; }
+        @media (min-width: 640px) { .vs-mobile { display: none; } }
+
+        /* 滑块美化 */
+        .slider-container { padding: 15px 0; position: relative; }
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: #e2e8f0; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff;
+            border: 3px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.1); }
+
+        /* 双高彩虹条 */
+        .rainbow-bar {
+            width: 100%; height: 12px; border-radius: 6px;
+            background: linear-gradient(90deg, #ef4444, #e0e7ff, #22c55e);
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #c7d2fe;
+        }
+        .rainbow-tag {
+            font-size: 10px; font-weight: bold; color: var(--primary); background: rgba(255,255,255,0.9);
+            padding: 1px 8px; border-radius: 99px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 15px;
+            transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6); color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
+        .btn-outline {
+            background: white; border: 1px solid #e2e8f0; color: #475569;
+        }
+        .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .dual-btn {
+            width: 100%; max-width: 300px; margin: 0 auto; display: flex; gap: 8px;
+            background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;
+        }
+        .dual-btn.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); border: 2px solid #818cf8;
+        }
+
+        /* 弹窗覆盖层 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px);
+            z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;
+            opacity: 0; visibility: hidden; transition: all 0.3s;
+        }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; width: 100%; max-width: 600px; max-height: 90vh;
+            border-radius: 24px; padding: 30px; overflow-y: auto; text-align: left;
+            transform: translateY(20px); transition: transform 0.3s;
+        }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+
+        /* 动画 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .highlight-unanswered { border: 2px solid var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+
+        /* 结果页图表条 */
+        .chart-row { margin-bottom: 12px; }
+        .chart-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+        .chart-bg { background: #f1f5f9; height: 12px; border-radius: 6px; overflow: hidden; }
+        .chart-fill { background: var(--primary); height: 100%; border-radius: 6px; }
+
+        /* 深度报告模块 */
+        .report-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+        .report-card { padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid transparent; }
+        .bg-blue-50 { background: #eff6ff; border-color: #dbeafe; }
+        .bg-pink-50 { background: #fdf2f8; border-color: #fce7f3; }
+        .bg-green-50 { background: #f0fdf4; border-color: #dcfce7; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 font-sans min-h-screen">
-<div id="app" class="max-w-5xl mx-auto py-8 px-4 md:px-6">
-    <header class="text-center mb-8">
-        <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">MBTI 八维深度测评</h1>
-        <p class="text-slate-600 max-w-3xl mx-auto mb-4">52 道深度题目 · 能量拮抗算法 · 自适应加赛判型</p>
+<body>
+
+<div id="welcome-modal" class="modal-overlay show" style="z-index: 200;">
+    <div class="modal-content text-center">
+        <div style="font-size: 48px; margin-bottom: 20px;">🧠</div>
+        <h2 style="font-size: 26px; margin-bottom: 10px;">MBTI 八维深度测评</h2>
+        <p style="margin-bottom: 30px; font-size: 15px;">基于荣格认知功能心理学 · 剥离社会面具</p>
         
-        <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-8 mt-6">
-            <span class="text-lg font-semibold bg-white px-4 py-1 rounded-full shadow-sm">第 <span id="current-page">1</span> / 7 页</span>
-            <div class="w-full md:w-64 bg-slate-200 rounded-full h-3">
-                <div id="total-progress" class="bg-gradient-to-r from-indigo-500 to-purple-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-            </div>
-            <span class="text-sm font-semibold text-slate-500">已答 <span id="answered-count">0</span>/52</span>
+        <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+            <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 10px;">⚠️ 测评前请阅读 (非常重要)</h3>
+            <ul style="list-style: none; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 10px;">
+                <li>❌ <strong>不要选“我应该怎么做”</strong><br><span style="font-size:12px; color:#94a3b8">社会要求的你，不是真实的你。</span></li>
+                <li>❌ <strong>不要选“我想成为的样子”</strong><br><span style="font-size:12px; color:#94a3b8">理想的自我，也不是当下的你。</span></li>
+                <li>✅ <strong>请选“下意识的第一反应”</strong><br><span style="font-size:12px; color:#94a3b8">哪怕那个选择看起来很懒惰、很自私、或很平庸，只要它是你最舒服的状态，就请诚实地选择它。</span></li>
+            </ul>
         </div>
-        <div class="block bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 mb-2 text-sm text-left shadow-sm">
-            <p class="font-bold text-amber-800 mb-2 text-center">💡 答题小贴士：</p>
-            <p class="mb-1">• <span class="text-red-600 font-bold">滑块左拉</span> = 更认同 <span class="font-bold">左侧</span></p>
-            <p class="mb-1">• <span class="text-green-600 font-bold">滑块右拉</span> = 更认同 <span class="font-bold">右侧</span></p>
-            <p class="mb-1">• <span class="font-bold text-indigo-600">点击下方按钮</span> = 开启“双高模式” (两边都强，各+6分)</p>
+
+        <button onclick="startQuiz()" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 18px;">
+            调整好了，开始探索
+        </button>
+    </div>
+</div>
+
+<div id="app" class="container">
+    <header>
+        <h1>MBTI 八维深度测评</h1>
+        <p class="text-center text-sm">v15.0 极速旗舰版</p>
+        
+        <div class="progress-container">
+            <span class="page-badge">第 <span id="current-page">1</span> / 7 页</span>
+            <div class="progress-track">
+                <div id="total-progress" class="progress-fill"></div>
+            </div>
+            <span class="text-sm font-bold text-sub">已答 <span id="answered-count">0</span>/52</span>
+        </div>
+
+        <div style="background: #fffbeb; border: 1px solid #fcd34d; padding: 12px; border-radius: 12px; font-size: 13px; color: #92400e; margin-bottom: 20px;">
+            <p class="text-center font-bold" style="color: #b45309; margin-bottom: 5px;">💡 操作指南</p>
+            <div style="display: flex; justify-content: space-between; text-align: center;">
+                <span>🔴 左拉 = 认同左边</span>
+                <span>⚪ 中间 = 中立</span>
+                <span>🟢 右拉 = 认同右边</span>
+            </div>
+            <div style="text-align: center; margin-top: 5px; font-weight: bold; color: var(--primary);">
+                ⚡ 点击下方按钮 = 双高模式 (两边都强)
+            </div>
         </div>
     </header>
 
-    <div id="quiz-container" class="space-y-8 mb-12"></div>
+    <div id="quiz-container"></div>
 
-    <div class="flex justify-between items-center mt-12 px-2 md:px-10 pb-20">
-        <button id="prev-btn" class="px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors">上一页</button>
-        <button id="next-btn" class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95">下一页</button>
+    <div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 50px;">
+        <button id="prev-btn" class="btn btn-outline">上一页</button>
+        <button id="next-btn" class="btn btn-primary">下一页</button>
     </div>
+</div>
 
-    <div id="tie-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="text-center mb-6">
-                <div class="inline-block p-3 bg-amber-100 text-amber-600 rounded-full mb-4 text-2xl">⚖️</div>
-                <h2 class="text-2xl font-black text-slate-800">进入终极决胜局</h2>
-                <p class="text-slate-600 mt-2">系统检测到您的 <span id="tie-names" class="font-bold text-indigo-600"></span> 功能难分伯仲。</p>
-            </div>
-            <div id="tie-question-container" class="space-y-4"></div>
+<div id="tie-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="text-center mb-6">
+            <div style="font-size: 40px; margin-bottom: 10px;">⚖️</div>
+            <h2>进入终极决胜局</h2>
+            <p>系统检测到您的 <span id="tie-names" style="color: var(--primary); font-weight: bold;"></span> 功能难分伯仲。</p>
+            <p class="text-sm">请抛开逻辑，凭直觉选出更让你“痛苦”或“舒适”的场景。</p>
         </div>
+        <div id="tie-question-container"></div>
     </div>
+</div>
 
-    <div id="result-modal" class="hidden fixed inset-0 bg-slate-900/95 backdrop-blur-lg flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-3xl max-w-5xl w-full p-8 md:p-10 shadow-2xl overflow-y-auto max-h-[95vh]">
-            <div id="result-content"></div>
-            <div id="depth-report-placeholder" class="mt-8 border-t border-slate-200 pt-8 hidden">
-                <h3 class="text-2xl font-black text-slate-800 mb-4">📘 深度人格解析报告</h3>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="p-5 bg-blue-50 rounded-xl border border-blue-100">
-                        <h4 class="font-bold text-blue-800 mb-2">🚀 职业发展建议</h4>
-                        <p class="text-sm text-slate-600 leading-relaxed">基于您的主导功能，您在需要高度自主性、创造力以及价值观驱动的领域（如咨询、艺术、科研）将获得最大成就感...</p>
-                    </div>
-                    <div class="p-5 bg-pink-50 rounded-xl border border-pink-100">
-                        <h4 class="font-bold text-pink-800 mb-2">❤️ 情感与人际关系</h4>
-                        <p class="text-sm text-slate-600 leading-relaxed">在亲密关系中，您渴望深层的灵魂共鸣。建议寻找能够理解您内心世界、且不强迫您进行过多表面社交的伴侣...</p>
-                    </div>
+<div id="result-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 800px;">
+        <div id="result-content"></div>
+        
+        <div id="depth-report-placeholder" class="report-section hidden">
+            <h3>📘 深度人格解析报告</h3>
+            <div class="grid-report">
+                <div class="report-card bg-blue-50">
+                    <h4 style="color: #1e40af; margin-bottom: 8px;">🚀 优势与职业建议</h4>
+                    <p id="report-career" class="text-sm text-main"></p>
+                </div>
+                <div class="report-card bg-pink-50">
+                    <h4 style="color: #9d174d; margin-bottom: 8px;">❤️ 情感与人际盲点</h4>
+                    <p id="report-love" class="text-sm text-main"></p>
+                </div>
+                <div class="report-card bg-green-50">
+                    <h4 style="color: #166534; margin-bottom: 8px;">🌱 进化与成长建议</h4>
+                    <p id="report-growth" class="text-sm text-main"></p>
                 </div>
             </div>
-            
-            <div class="flex gap-4 mt-10">
-                <button onclick="clearStorage()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-2xl font-bold transition">清除重测</button>
-                <button onclick="shareResults()" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 rounded-2xl font-bold hover:opacity-90 transition">复制结果</button>
-            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 30px;">
+            <button onclick="clearStorage()" class="btn btn-outline" style="flex: 1;">清除重测</button>
+            <button onclick="shareResults()" class="btn btn-primary" style="flex: 1;">复制结果</button>
         </div>
     </div>
-    
-    <div id="jump-confirm-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all scale-100">
-            <h3 class="text-xl font-bold text-slate-900 mb-2">还有题目未完成</h3>
-            <p class="text-slate-600 mb-6">您还有 <span id="missing-count" class="font-bold text-red-600"></span> 道题未作答。</p>
-            <div class="flex flex-col gap-3">
-                <button onclick="jumpToFirstUnanswered()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">
-                    👉 跳转到第一道未做题目
-                </button>
-                <button onclick="forceSubmit()" class="w-full py-3 bg-white border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition">
-                    视为中立 (5分) 并提交
-                </button>
-            </div>
+</div>
+
+<div id="jump-confirm-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 style="margin-bottom: 10px;">还有题目未完成</h3>
+        <p style="margin-bottom: 20px;">您还有 <span id="missing-count" style="color: var(--red); font-weight: bold; font-size: 18px;"></span> 道题未作答。</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button onclick="jumpToFirstUnanswered()" class="btn btn-primary">
+                👉 跳转到漏做的题目
+            </button>
+            <button onclick="forceSubmit()" class="btn btn-outline" style="border: none; color: #94a3b8;">
+                视为中立 (5分) 并强制提交
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-// ============ 1. 完整题库 (内置版) ============
+// ============ 0. 深度报告数据库 (新功能) ============
+const typeDepthData = {
+    "INFP": {
+        career: "您是天生的治疗者和梦想家。在需要高度自主性、创造力以及价值观驱动的领域（如心理咨询、艺术创作、写作、教育、非营利组织）能获得最大成就感。避免高压、死板、只讲效率的机械性工作。",
+        love: "渴望灵魂共鸣，但也容易理想化伴侣。您最需要的是‘被看见’和‘被理解’。盲点在于容易在冲突中逃避（Si）或过度妥协，建议练习表达真实需求。",
+        growth: "您的成长在于发展 Te（执行力）。不要只停留在完美的构想中，试着把大目标拆解成每天可执行的小任务。当您能把理想落地时，您将不可战胜。"
+    },
+    "INFJ": {
+        career: "您是深邃的洞察者。适合需要长远规划、理解复杂人性或构建宏大体系的工作（如战略顾问、辅导员、作家、系统架构师）。避免琐碎、重复、缺乏意义的事务性工作。",
+        love: "您寻找的是灵魂伴侣，对他人的情绪极其敏感（Fe）。但也容易因为过度承担他人情绪而耗竭。学会设立‘心理边界’是您一生的课题。",
+        growth: "拥抱 Se（当下）。当您陷入内耗循环时，去做具体的家务、运动、吃美食。切断过度的精神反刍，回到真实的世界中来。"
+    },
+    "INTJ": {
+        career: "您是战略大师。适合解决复杂难题、构建系统、长远规划的领域（如科研、编程、金融分析、高管）。您需要独立的工作环境，无法忍受愚蠢和低效。",
+        love: "在感情中您是忠诚且深情的，但往往不善表达，显得冷漠。建议试着像分析系统一样去‘分析’伴侣的情感需求，用行动代替语言。",
+        growth: "发展 Se（感官体验）。不要总是活在未来，偶尔允许自己‘无脑’地放松一下。有时候，意外不是系统的 bug，而是生活的彩蛋。"
+    },
+    "INTP": {
+        career: "您是逻辑建筑师。适合需要深度分析、抽象思维和创新解法的领域（如学术研究、编程、哲学、数学）。避免需要大量社交寒暄或死板执行规定的工作。",
+        love: "您追求智力上的匹配和真诚。Fe 是您的短板，这让您在处理人际冲突时容易显得笨拙或逃避。建议找一个能直接沟通、不玩心理游戏的伴侣。",
+        growth: "培养 Si（日常习惯）。您的脑洞很大，但生活往往一团糟。建立微小的生活秩序（如规律睡眠、整理房间），能为您的思维大厦提供稳固的地基。"
+    },
+    "ISFJ": {
+        career: "您是忠诚的守护者。适合需要细心、耐心、关怀和维护秩序的工作（如医疗护理、行政管理、教育、财务）。您是团队中最靠谱的后盾。",
+        love: "您付出极多，但往往不敢索取。容易吸引‘索取型’人格。请记住，您的需求和别人一样重要。真正的爱是双向奔赴，不是单方面牺牲。",
+        growth: "挑战 Ne（可能性）。不要总是担心‘如果出错了怎么办’。偶尔尝试一条新路、一家新餐厅。世界比您想象的要安全。"
+    },
+    "ISTJ": {
+        career: "您是社会的基石。适合注重细节、流程、合规和逻辑的领域（如法律、审计、物流、工程）。您能把最混乱的事情变得井井有条。",
+        love: "您用责任感和承诺来表达爱。虽然不浪漫，但极其稳定。建议偶尔学习表达柔软的一面，让伴侣感受到您的温情，而不仅仅是责任。",
+        growth: "打开 Fi（情感）。您习惯压抑感受，直到爆发。试着每天记录一件让您感动的小事。承认自己也是有血有肉的人，不是机器。"
+    },
+    "ISTP": {
+        career: "您是冷静的巧匠。适合需要动手操作、应对危机、分析机制的领域（如外科医生、飞行员、技工、极限运动）。您在混乱中最为冷静。",
+        love: "您需要大量的个人空间。如果伴侣太黏人，您会逃跑。建议找一个同样独立、玩得来的人。多一点 Fe（情感回馈），别让对方觉得像在和石头谈恋爱。",
+        growth: "发展 Ni（远见）。不要只看眼前这一步，试着规划一下三年后的人生。虽然这很无聊，但能帮您避免很多不必要的弯路。"
+    },
+    "ISFP": {
+        career: "您是自由的艺术家。适合需要审美、动手能力和情感表达的领域（如设计、艺术、厨师、兽医）。您无法忍受死板的打卡制度和复杂的办公室政治。",
+        love: "您极其敏感且深情，但往往藏在心里。您需要一个能读懂您非语言信号的伴侣。建议在冲突中勇敢说出‘我不喜欢’，而不是默默忍受。",
+        growth: "提升 Te（效率）。您容易随波逐流，缺乏规划。试着给自己定一个小目标，并强迫自己完成它。纪律不仅不限制自由，反而保护自由。"
+    },
+    "ESTJ": {
+        career: "您是天生的管理者。适合组织、管理、执行和建立秩序的领域（如企业高管、军官、项目经理）。您的执行力是 16 人格之首。",
+        love: "您在感情中也喜欢处于主导地位，负责解决问题。但爱不是项目管理。请学会倾听伴侣的‘废话’，那是建立连接的桥梁。",
+        growth: "拥抱 Fi（内心感受）。不要把情绪视为软弱。当您感到疲惫时，停下来问问自己：‘这真的是我想要的吗？’ 成功不只是 KPI。"
+    },
+    "ESFJ": {
+        career: "您是热情的供应者。适合需要大量人际互动、服务他人和维护和谐的领域（如公关、销售、教务管理、医疗）。哪里有人，哪里就是您的舞台。",
+        love: "您极度渴望和谐与认可。容易为了讨好伴侣而失去自我。请记住，健康的冲突比虚假的和平更重要。",
+        growth: "锻炼 Ti（独立思考）。在做决定时，先问问逻辑是否合理，而不是谁会高兴。学会独处，不要让孤独感吞噬了您。"
+    },
+    "ENFJ": {
+        career: "您是魅力四射的导师。适合激励他人、促进成长和沟通的领域（如培训师、政治家、主持人、心理辅导）。您能看到每个人身上的潜能。",
+        love: "您爱得热烈且全情投入，希望与伴侣合二为一。但要注意不要过度干涉对方的生活。给彼此一点空间，爱会更长久。",
+        growth: "审视 Ti（逻辑真理）。有时为了‘大家好’，您可能会忽视残酷的真相。学会接受并不是所有人都想被拯救，也不是所有矛盾都能调和。"
+    },
+    "ENTJ": {
+        career: "您是统率千军的指挥官。适合宏观战略、改革、创业和领导大规模组织的领域。您天生就是为了带领团队攻克难关而生的。",
+        love: "您欣赏强大、聪明的伴侣。但感情不是博弈，不需要输赢。试着展示您的脆弱面（Fi），那是您最迷人也最真实的部分。",
+        growth: "呵护 Fi（价值观）。在追求效率的同时，不要践踏他人的尊严。一个没有仁慈的暴君最终会众叛亲离。慢一点，听听弱者的声音。"
+    },
+    "ENFP": {
+        career: "您是充满可能性的竞选者。适合需要创意、脑洞、人际连接和多样性的领域（如创意总监、记者、营销、演艺）。重复和枯燥是您的死敌。",
+        love: "您需要一个能陪您疯、也能把您拉回地面的伴侣。您容易对新人产生激情，但维持长期关系需要承诺（Si）。",
+        growth: "修炼 Si（专注与细节）。才华需要纪律来变现。逼自己把一件事做完再开始下一件。不要让您的人生变成一堆烂尾楼。"
+    },
+    "ENTP": {
+        career: "您是聪明的辩论家。适合创新、挑战传统、解决棘手问题的领域（如创业者、律师、风险投资、脱口秀）。您擅长从 0 到 1，但不擅长守成。",
+        love: "您喜欢智力上的交锋。找一个能接住您梗、且不玻璃心的伴侣。注意不要为了‘赢’而伤害了对方的感情（Fe）。",
+        growth: "培养 Si（落地能力）。点子不值钱，落地才值钱。学会忍受枯燥的执行过程，那是通往伟大的必经之路。"
+    },
+    "ESTP": {
+        career: "您是无畏的实干家。适合高风险、高回报、需要即时反应的领域（如股票交易、消防员、销售冠军、运动员）。您是解决眼前危机的高手。",
+        love: "您魅力十足，活在当下。但也容易让伴侣缺乏安全感。如果您认定了一个人，请尝试规划一下未来（Ni），给对方一个承诺。",
+        growth: "发展 Ni（后果意识）。行动前多想三秒：‘这样做会有什么长远后果？’ 冲动是魔鬼，预判是智慧。"
+    },
+    "ESFP": {
+        career: "您是天生的表演者。适合展现自我、娱乐他人、美感和体验相关的领域（如演员、时尚、旅游博主、活动策划）。您让世界变得丰富多彩。",
+        love: "您需要玩伴式的恋人。一起吃喝玩乐是您的爱的语言。但生活不只有派对，还有柴米油盐。找一个能陪您面对平淡的人。",
+        growth: "提升 Ni（深度思考）。不要总是逃避严肃话题。面对痛苦和虚无，是成熟的开始。深刻的快乐往往来自于克服困难之后。"
+    }
+};
+
+// ============ 1. 完整题库 (内置) ============
 const rawQuestions = [
-    // 1-4
     { id: 1, left: "Ni", right: "Ne", lText: "我常忍不住去想事情背后的“征兆”或“寓意”", rText: "我常忍不住由一个点子联想到好几种“新玩法”", reversed: false },
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
     { id: 27, left: "Ti", right: "Te", lText: "我一定要搞清楚背后的原理，哪怕慢一点", rText: "只要方法管用能最快搞定就行，原理不重要", reversed: false },
     { id: 40, left: "Fi", right: "Te", lText: "让我做一件虽然赚钱但心里觉得“不对味”的事，我会难受得睡不着", rText: "工作就是工作，只要钱给够，我可以把个人喜好放一边", reversed: false },
-    
-    // 5-8
     { id: 2, left: "Ni", right: "Ne", lText: "我倾向于收敛思维，寻找那个唯一的“真相”", rText: "我倾向于发散思维，寻找多种有趣的替代方案", reversed: false },
     { id: 16, left: "Si", right: "Se", lText: "我喜欢规律、可预测的生活节奏", rText: "我喜欢充满新鲜感和挑战的生活", reversed: true },
     { id: 31, left: "Ti", right: "Te", lText: "我喜欢构建抽象模型，哪怕暂时无用", rText: "我喜欢优化流程提升产出", reversed: true },
     { id: 41, left: "Fi", right: "Fe", lText: "我的情感深沉私密，追求灵魂共鸣", rText: "我的情感温暖外显，追求群体和谐", reversed: true },
-
-    // 9-12
     { id: 3, left: "Ni", right: "Ne", lText: "灵感通常是发呆时突然“蹦”出来的答案", rText: "灵感通常是和人聊着聊着突然“碰”出来的", reversed: true },
     { id: 15, left: "Si", right: "Se", lText: "我注重细节、熟悉感和精确记忆", rText: "我注重感官冲击、现场氛围和即兴", reversed: false },
     { id: 29, left: "Ti", right: "Te", lText: "我习惯独立思考，不轻易接受权威", rText: "我倾向引用客观数据和标准", reversed: false },
     { id: 42, left: "Fi", right: "Fe", lText: "我非常在意个体的独立和独特价值", rText: "我非常在意群体的凝聚与互助", reversed: false },
-
-    // 13-16
     { id: 4, left: "Ni", right: "Ne", lText: "我更在意宏大远景，哪怕现在还很模糊", rText: "我更在意当前的新机会，哪怕要改变原计划", reversed: false },
     { id: 19, left: "Si", right: "Se", lText: "我喜欢保留有纪念意义的物品", rText: "我喜欢追逐最新潮的体验和物品", reversed: true },
     { id: 30, left: "Ti", right: "Te", lText: "在这个问题没弄懂之前，我很难继续下一步", rText: "为了进度，我可以先照着说明书做，以后再懂", reversed: false },
     { id: 43, left: "Fi", right: "Fe", lText: "独处时，我更享受沉浸在自己的情感中，感觉被充电", rText: "独处时，我更想联系朋友或家人，感觉被充电", reversed: false },
-
-    // 17-20
     { id: 5, left: "Ni", right: "Ne", lText: "思考时我会不断深入，直到触及核心", rText: "思考时我会不断扩展，连接各种不相关的事物", reversed: false },
     { id: 21, left: "Si", right: "Se", lText: "安全感和稳定性对我最重要", rText: "刺激感和自由感对我最重要", reversed: true },
     { id: 34, left: "Ti", right: "Te", lText: "组队时我更愿当分析者", rText: "组队时我更愿当组织协调者", reversed: true },
     { id: 47, left: "Fi", right: "Fe", lText: "我认为每个人应为自己情绪负责", rText: "我认为我们有责任照顾彼此情绪", reversed: true },
-
-    // 21-24
     { id: 6, left: "Ni", right: "Ne", lText: "我常能预感事情的发展方向", rText: "我常能发现别人忽略的新奇点子", reversed: false },
     { id: 17, left: "Si", right: "Se", lText: "面对新事物我会先对比旧经验", rText: "面对新事物我会立刻投入当下", reversed: false },
     { id: 32, left: "Ti", right: "Te", lText: "辩论是为了厘清概念定义", rText: "辩论是为了证明我是对的/达成共识", reversed: false },
     { id: 44, left: "Fi", right: "Fe", lText: "没人看到时，我会完全按照内心真实感受行事", rText: "没人看到时，我还是会考虑‘这样做会不会让别人不舒服’", reversed: false },
-
-    // 25-28
     { id: 7, left: "Ni", right: "Ne", lText: "看电影时我更关注隐喻和结局伏笔", rText: "看电影时我更享受各种脑洞和反转", reversed: true },
     { id: 24, left: "Si", right: "Se", lText: "周末我更想待在熟悉的环境休息", rText: "周末我更想出去探索未知的地方", reversed: true },
     { id: 37, left: "Ti", right: "Te", lText: "我更在意事情“为什么是对的”", rText: "我更在意事情“如何做最有效”", reversed: true },
     { id: 50, left: "Fi", right: "Fe", lText: "我需要独处时间整理真实感受", rText: "我通过与人互动理解自己情绪", reversed: true },
-
-    // 29-32
     { id: 8, left: "Ni", right: "Ne", lText: "规划旅行时我喜欢提前想好主题和意义", rText: "规划旅行时我喜欢留白，随机探索", reversed: false },
     { id: 18, left: "Si", right: "Se", lText: "我信任被时间验证的品牌和习惯", rText: "我容易被新奇包装和功能吸引", reversed: false },
     { id: 28, left: "Ti", right: "Te", lText: "为了弄懂一个原理，我愿意耽误进度", rText: "为了赶上进度，我可以暂不求甚解", reversed: false },
     { id: 45, left: "Fi", right: "Fe", lText: "为了维持和谐而迎合他人，会让我感到‘内耗’", rText: "为了维持和谐而调节气氛，会让我感到‘有价值’", reversed: false },
-
-    // 33-36
     { id: 9, left: "Ni", right: "Ne", lText: "我相信现象背后有根本规律", rText: "我相信现象可以有无数解释角度", reversed: true },
     { id: 20, left: "Si", right: "Se", lText: "学习时我依赖循序渐进和重复练习", rText: "学习时我需要动手尝试和亲身体验", reversed: false },
     { id: 33, left: "Ti", right: "Te", lText: "我认为真理要经得起反复推敲", rText: "我认为真理要能解决实际问题", reversed: false },
     { id: 46, left: "Fi", right: "Fe", lText: "聚会中我更在意是否找到灵魂知音", rText: "聚会中我更在意大家是否都开心", reversed: false },
-
-    // 37-40
     { id: 12, left: "Ni", right: "Ne", lText: "买东西时我会想象它未来的意义", rText: "买东西时我会被新奇功能吸引", reversed: true },
     { id: 22, left: "Si", right: "Se", lText: "吃饭时我更在意熟悉的口味", rText: "吃饭时我更想尝试新奇的菜式", reversed: false },
     { id: 35, left: "Ti", right: "Te", lText: "我喜欢拆解复杂概念理清结构", rText: "我喜欢制定清晰的执行计划", reversed: false },
     { id: 48, left: "Fi", right: "Fe", lText: "我通过艺术创作表达内心", rText: "我通过社交活动感受情感连接", reversed: false },
-
-    // 41-44
     { id: 10, left: "Ni", right: "Ne", lText: "我喜欢把新知识纳入我已有的“体系”中", rText: "我喜欢在各种看似无关的新知识间建立“连线”", reversed: false },
     { id: 23, left: "Si", right: "Se", lText: "我擅长回忆过去的具体细节", rText: "我擅长捕捉当下的细微变化", reversed: false },
     { id: 36, left: "Ti", right: "Te", lText: "看说明书时我会挑毛病找不一致", rText: "看说明书时我会快速找最优操作", reversed: false },
     { id: 49, left: "Fi", right: "Te", lText: "如果方案伤害了自尊，即使有效我也可能反对", rText: "如果方案能解决大局问题，个人感受应当让步", reversed: false },
-
-    // 45-48
     { id: 11, left: "Ni", right: "Ne", lText: "聊天时我常把话题引向深层本质", rText: "聊天时我常把话题引向各种有趣分支", reversed: false },
     { id: 25, left: "Si", right: "Se", lText: "我做决定常参考过去的相似案例", rText: "我做决定常根据当下具体情况调整", reversed: false },
     { id: 38, left: "Ti", right: "Te", lText: "我能花很长时间琢磨一个理论问题", rText: "我更倾向快速行动获取反馈", reversed: false },
     { id: 51, left: "Fi", right: "Fe", lText: "送礼时我更在意是否符合对方个性", rText: "送礼时我更在意是否让对方当场开心", reversed: false },
-
-    // 49-52
     { id: 13, left: "Ni", right: "Ne", lText: "我对“命运”和“使命感”话题很感兴趣", rText: "我对“可能性”和“选择分支”话题很感兴趣", reversed: false },
     { id: 26, left: "Si", right: "Se", lText: "我喜欢传统节日按老规矩过", rText: "我喜欢传统节日加入新玩法", reversed: false },
     { id: 39, left: "Ti", right: "Te", lText: "批评时我指出系统性逻辑错误", rText: "批评时我指出具体可改进的指标", reversed: false },
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
-// ============ 优化版加赛题库 (去暗示纯净版) ============
+// 加赛题库 (去暗示纯净版)
 const tieBreakerPool = {
-    // ⚔️ Ti (逻辑) vs Fi (价值)
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
         { q: "你最无法忍受别人评价你什么？", A: "说我“脑子不清楚、逻辑混乱”", funcA: "Ti", B: "说我“虚伪、没有原则、随波逐流”", funcB: "Fi" },
         { q: "【压力测试】哪种情况更让你想逃跑？", A: "被迫在一个情绪失控、大家都在哭闹的房间里安抚所有人", funcA: "Ti", B: "被迫在一个冷酷无情、只讲效率不讲人情的流水线上做机械工", funcB: "Fi" }
     ],
-
-    // ⚔️ Ne (发散) vs Se (体验)
     "Ne-Se": [
         { q: "看到一个苹果，你第一反应是？", A: "联想到牛顿、白雪公主、科技公司（发散联想）", funcA: "Ne", B: "这个苹果很红、很圆、看起来很脆（物理属性）", funcB: "Se" },
-        // 下面这题是之前优化过的“脑洞 vs 唯美”版
         { q: "如果让你去旅游，你更倾向于？", A: "去一个充满随机性、带有奇幻色彩的未知之地", funcA: "Ne", B: "去一个风景绝美、视觉冲击力极强的度假胜地", funcB: "Se" },
         { q: "【压力测试】如果必须被关在一个房间里一天，你宁愿？", A: "听一整天完全听不懂的抽象哲学理论", funcA: "Ne", B: "整理一整天毫无意义的琐碎发票和数据", funcB: "Se" }
     ],
-
-    // ⚔️ Ni (深究) vs Si (经验)
     "Ni-Si": [
         { q: "做决定时，你更依赖？", A: "一种说不清道不明的“直觉”或预感", funcA: "Ni", B: "过去类似的具体经验和数据", funcB: "Si" },
         { q: "回忆过去时，你通常？", A: "只记得模糊的大概轮廓和当时的意义", funcA: "Ni", B: "能清晰回忆起具体的画面、声音和细节", funcB: "Si" },
         { q: "【压力测试】哪种工作环境更让你焦虑？", A: "噪音巨大、需要时刻应对突发状况、必须即兴表演的环境", funcA: "Ni", B: "完全没有先例可循、规则时刻在变、未来充满不确定性的环境", funcB: "Si" }
     ],
-
-    // ⚔️ Te (效率) vs Fe (和谐)
     "Te-Fe": [
         { q: "作为组长，当组员犯错影响进度时，你倾向于？", A: "直接指出问题并修正，效率第一", funcA: "Te", B: "先安抚情绪，委婉提醒，关系第一", funcB: "Fe" },
         { q: "你认为什么是“成功”？", A: "达成客观目标，获取资源和地位", funcA: "Te", B: "获得群体的认可，人际关系和谐", funcB: "Fe" },
@@ -239,8 +447,8 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length; 
-const STORAGE_KEY = 'mbti_final_v14_flagship'; 
-const RESULT_KEY = 'mbti_final_report_v14';
+const STORAGE_KEY = 'mbti_final_v15_fast'; 
+const RESULT_KEY = 'mbti_final_report_v15';
 
 let userAnswers = {};
 let currentPage = 0;
@@ -249,6 +457,17 @@ let tieAdjustments = {};
 
 function startApp() {
     loadAnswers();
+    // 检查是否应该显示欢迎页
+    const hasStarted = Object.keys(userAnswers).length > 0;
+    if (!hasStarted) {
+        document.getElementById('welcome-modal').classList.add('show');
+    } else {
+        renderPage();
+    }
+}
+
+function startQuiz() {
+    document.getElementById('welcome-modal').classList.remove('show');
     renderPage();
 }
 
@@ -278,14 +497,13 @@ function getDisplayText(value) {
     return "强烈右倾";
 }
 
-// 检查一道题是否已作答 (有滑块值 OR 双高标记)
+// 检查是否已作答
 function isQuestionAnswered(qId) {
     return (userAnswers[qId] !== undefined) || (userAnswers[`dual_${qId}`] === true);
 }
 
-// ============ 2. 渲染核心 ============
+// 渲染核心
 function renderPage() {
-    // 不再自动回顶，体验更流畅
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
     
@@ -301,82 +519,71 @@ function renderPage() {
         const isDual = userAnswers[`dual_${q.id}`] || false;
 
         const div = document.createElement('div');
-        div.id = `card-q${q.id}`; // 给卡片加ID方便跳转
-        div.className = 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm fade-in transition-all duration-500';
+        div.id = `card-q${q.id}`; 
+        div.className = 'card';
         div.style.animationDelay = `${idx * 0.05}s`;
 
         div.innerHTML = `
-            <div class="text-sm font-semibold text-slate-500 mb-4 flex justify-between">
-                <span>题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
-                <span id="status-q${q.id}" class="text-xs font-bold ${isQuestionAnswered(q.id) ? 'text-green-500' : 'text-slate-300'}">
+            <div class="question-header">
+                <span class="text-sm font-bold text-sub">题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
+                <span id="status-q${q.id}" class="text-xs font-bold ${isQuestionAnswered(q.id) ? 'text-green' : 'text-sub'}" style="color: ${isQuestionAnswered(q.id) ? 'var(--green)' : '#94a3b8'}">
                     ${isQuestionAnswered(q.id) ? '✅ 已答' : '⚪ 未答'}
                 </span>
             </div>
-            <div class="space-y-6 md:space-y-0 md:flex md:items-center md:justify-between mb-8">
-                <div class="text-base font-bold text-red-600 text-left md:text-right md:w-1/2 md:pr-8 leading-relaxed">${leftText}</div>
-                <div class="hidden md:block text-lg text-slate-400 font-bold">VS</div>
-                <div class="text-base font-bold text-green-600 text-left md:text-left md:w-1/2 md:pl-8 leading-relaxed">${rightText}</div>
-            </div>
-            <div class="block md:hidden text-center text-lg text-slate-500 font-bold mb-6">VS</div>
             
-            <div class="py-4 transition-all duration-300">
-                <div class="relative w-full h-8 flex items-center">
+            <div class="option-box">
+                <div class="option-text text-left-opt">${leftText}</div>
+                <div class="vs-text">VS</div>
+                <div class="vs-mobile">VS</div>
+                <div class="option-text text-right-opt">${rightText}</div>
+            </div>
+            
+            <div class="slider-container" style="opacity: ${isDual ? '0.5' : '1'}; pointer-events: ${isDual ? 'none' : 'auto'}; transition: opacity 0.3s;">
+                <div style="position: relative; height: 30px; display: flex; align-items: center;">
                     ${isDual ? `
-                        <div class="w-full h-[14px] rounded-full bg-gradient-to-r from-red-500 via-indigo-100 to-green-500 shadow-inner flex items-center justify-center border-2 border-indigo-200">
-                            <span class="text-xs font-bold text-indigo-600 bg-white/80 px-2 py-0.5 rounded-full shadow-sm">⚡ 双核驱动中 ⚡</span>
-                        </div>
+                        <div class="rainbow-bar"><span class="rainbow-tag">⚡ 双核驱动中 ⚡</span></div>
                     ` : `
-                        <input type="range" min="0" max="10" value="${savedValue}" class="slider"
-                           id="q${q.id}" oninput="onSliderChange(this, ${q.id})">
+                        <input type="range" min="0" max="10" value="${savedValue}" oninput="onSliderChange(this, ${q.id})">
                     `}
                 </div>
                 
-                <div class="flex justify-between mt-2 text-xs font-medium text-slate-400">
-                    <span class="${isDual ? 'text-red-600 font-bold scale-110' : 'text-red-500'}">强烈左倾</span>
-                    <span id="val-q${q.id}" class="text-lg font-black text-indigo-600 transition-all">
-                        ${isDual ? '双高 (Both)' : getDisplayText(savedValue)}
+                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 600;">
+                    <span style="color: var(--red)">强烈左倾</span>
+                    <span id="val-q${q.id}" style="font-size: 16px; color: var(--primary); font-weight: 900;">
+                        ${isDual ? '双高' : getDisplayText(savedValue)}
                     </span>
-                    <span class="${isDual ? 'text-green-600 font-bold scale-110' : 'text-green-500'}">强烈右倾</span>
+                    <span style="color: var(--green)">强烈右倾</span>
                 </div>
             </div>
 
-            <div class="mt-8 flex justify-center">
+            <div style="margin-top: 25px; text-align: center;">
                 <button onclick="toggleDual(${q.id})" 
-                    class="relative group overflow-hidden px-6 py-3 rounded-full transition-all duration-300 ease-out 
-                    ${isDual 
-                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-2 ring-indigo-600 ring-offset-2 transform scale-105' 
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200 hover:shadow-sm'}">
-                    
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">${isDual ? '⚡' : '⚪'}</span>
-                        <span class="font-bold text-sm tracking-wide">
-                            ${isDual ? '已开启双高模式 (两边都强)' : '我对两者都有强烈共鸣'}
-                        </span>
-                    </div>
-                    ${isDual ? '<div class="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity"></div>' : ''}
+                    class="dual-btn ${isDual ? 'active' : ''} btn">
+                    <span style="font-size: 18px;">${isDual ? '⚡' : '⚪'}</span>
+                    <span>${isDual ? '已开启双高模式' : '我对两者都有强烈共鸣'}</span>
                 </button>
             </div>
         `;
         container.appendChild(div);
         
         if (!isDual) {
-            updateSliderVisual(document.getElementById(`q${q.id}`), savedValue);
+            updateSliderVisual(div.querySelector('input[type=range]'), savedValue);
         }
     });
 
+    // 翻页按钮状态
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) prevBtn.disabled = currentPage === 0;
 
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
-        // 最后一页总是显示“生成报告”
         if (currentPage >= maxPage) {
             nextBtn.textContent = '生成报告';
-            nextBtn.className = "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
+            nextBtn.className = "btn btn-primary";
         } else {
             nextBtn.textContent = '下一页';
-            nextBtn.className = "px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:opacity-90 transition-transform transform active:scale-95";
+            nextBtn.className = "btn btn-primary";
         }
     }
     document.getElementById('current-page').textContent = currentPage + 1;
@@ -403,11 +610,10 @@ function onSliderChange(input, id) {
     updateSliderVisual(input, value);
     userAnswers[id] = value;
     
-    // 更新UI上的“已答”状态
     const statusSpan = document.getElementById(`status-q${id}`);
     if(statusSpan) {
         statusSpan.textContent = '✅ 已答';
-        statusSpan.className = 'text-xs font-bold text-green-500';
+        statusSpan.style.color = 'var(--green)';
     }
 
     saveProgress();
@@ -418,11 +624,10 @@ function toggleDual(id) {
     const currentStatus = userAnswers[`dual_${id}`] || false;
     userAnswers[`dual_${id}`] = !currentStatus;
     saveProgress();
-    renderPage(); // 重绘以显示彩虹条
+    renderPage();
 }
     
 function updateProgress() {
-    // 修复：双高也算已答
     let answeredCount = 0;
     rawQuestions.forEach(q => {
         if(isQuestionAnswered(q.id)) answeredCount++;
@@ -438,7 +643,7 @@ function nextPage() {
     if (currentPage < maxPage) { 
         currentPage++; 
         renderPage(); 
-        window.scrollTo(0, 0); // 翻页时回顶
+        window.scrollTo(0, 0);
     }
 }
 function prevPage() {
@@ -449,7 +654,6 @@ function prevPage() {
     }
 }
 
-// ============ 3. 核心计算 (交互增强版) ============
 function calculateResults() {
     let missingCount = 0;
     let firstMissingId = null;
@@ -461,11 +665,9 @@ function calculateResults() {
         }
     });
     
-    // 如果有未答题目，弹窗询问
     if(missingCount > 0) { 
         document.getElementById('missing-count').textContent = missingCount;
-        document.getElementById('jump-confirm-modal').classList.remove('hidden');
-        // 绑定跳转逻辑
+        document.getElementById('jump-confirm-modal').classList.add('show');
         window.targetJumpId = firstMissingId;
         return; 
     }
@@ -473,46 +675,38 @@ function calculateResults() {
     runCalculation();
 }
 
-// 跳转到未答题目
 function jumpToFirstUnanswered() {
     const id = window.targetJumpId;
     if (!id) return;
 
-    // 算出该题在第几页
-    // rawQuestions 数组下标 = id - 1 (假设id是连续的1..52，实际上要通过findIndex找更稳妥)
     const idx = rawQuestions.findIndex(q => q.id === id);
     const targetPage = Math.floor(idx / QUESTIONS_PER_PAGE);
 
-    document.getElementById('jump-confirm-modal').classList.add('hidden');
+    document.getElementById('jump-confirm-modal').classList.remove('show');
     currentPage = targetPage;
     renderPage();
 
-    // 延时滚动并高亮
     setTimeout(() => {
         const card = document.getElementById(`card-q${id}`);
         if (card) {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             card.classList.add('highlight-unanswered');
-            // 2秒后移除高亮动画
             setTimeout(() => card.classList.remove('highlight-unanswered'), 2000);
         }
     }, 100);
 }
 
-// 强制提交（视为中立）
 function forceSubmit() {
-    document.getElementById('jump-confirm-modal').classList.add('hidden');
+    document.getElementById('jump-confirm-modal').classList.remove('show');
     runCalculation();
 }
 
-// 真正的算分逻辑 (v12 温和双高版 + v13 智能判型)
 function runCalculation() {
     let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
 
     rawQuestions.forEach(q => {
         const isDual = userAnswers[`dual_${q.id}`];
         if (isDual) {
-            // ⭐ 双高 +6 不扣分
             scores[q.left] += 6;
             scores[q.right] += 6;
         } else {
@@ -563,53 +757,52 @@ function startTieBreaker(pair) {
     container.innerHTML = '';
     questions.forEach((q, idx) => {
         const div = document.createElement('div');
-        div.className = "p-4 bg-slate-50 rounded-xl border border-slate-200";
+        div.className = "card";
+        div.style.background = "#f8fafc";
         div.innerHTML = `
-            <p class="font-bold text-slate-800 mb-3">${idx+1}. ${q.q}</p>
-            <div class="space-y-2">
-                <button onclick="handleTieChoice('${q.funcA}', '${q.funcB}', this)" class="w-full text-left p-3 rounded-lg border border-slate-300 hover:bg-indigo-50 hover:border-indigo-300 transition-all">A. ${q.A}</button>
-                <button onclick="handleTieChoice('${q.funcB}', '${q.funcA}', this)" class="w-full text-left p-3 rounded-lg border border-slate-300 hover:bg-indigo-50 hover:border-indigo-300 transition-all">B. ${q.B}</button>
+            <p class="font-bold text-main mb-3">${idx+1}. ${q.q}</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button onclick="handleTieChoice('${q.funcA}', '${q.funcB}', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">A. ${q.A}</button>
+                <button onclick="handleTieChoice('${q.funcB}', '${q.funcA}', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">B. ${q.B}</button>
             </div>
         `;
         container.appendChild(div);
     });
     const submitDiv = document.createElement('div');
-    submitDiv.innerHTML = `<button onclick="resolveTieBreaker()" class="w-full mt-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700">提交决胜选择</button>`;
+    submitDiv.innerHTML = `<button onclick="resolveTieBreaker()" class="btn btn-primary" style="width:100%; margin-top:15px;">提交决胜选择</button>`;
     container.appendChild(submitDiv);
-    modal.classList.remove('hidden');
+    modal.classList.add('show');
     tieAdjustments = {}; 
 }
 
 function handleTieChoice(winner, loser, btn) {
     const parent = btn.parentElement;
     Array.from(parent.children).forEach(b => {
-        b.classList.remove('bg-indigo-600', 'text-white', 'border-indigo-600');
-        b.classList.add('border-slate-300');
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline');
     });
-    btn.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
-    btn.classList.remove('border-slate-300');
+    btn.classList.remove('btn-outline');
+    btn.classList.add('btn-primary');
     tieAdjustments[winner] = (tieAdjustments[winner] || 0) + 10;
     tieAdjustments[loser] = (tieAdjustments[loser] || 0) - 5;
 }
 
 function resolveTieBreaker() {
     for (let [func, adjustment] of Object.entries(tieAdjustments)) { tempScores[func] += adjustment; }
-    document.getElementById('tie-modal').classList.add('hidden');
+    document.getElementById('tie-modal').classList.remove('show');
     finalizeAndShow(tempScores);
 }
 
-// ============ 4. 最终判定 (v13 智能权重版) ============
 function finalizeAndShow(scores) {
     const result = determineType(scores);
     showModal(result, scores);
 }
 
 function determineType(scores) {
-    // 1. 排序
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    const topFunc = sorted[0][0];   // 第1名
-    const secondFunc = sorted[1][0]; // 第2名
-    const thirdFunc = sorted[2][0];  // 第3名
+    const topFunc = sorted[0][0];   
+    const secondFunc = sorted[1][0]; 
+    const thirdFunc = sorted[2][0];  
 
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
@@ -633,17 +826,13 @@ function determineType(scores) {
         const tert = stack[2]; 
         const inf = stack[3]; 
 
-        // A. 主导功能权重
         if (dom === topFunc) score += 50;
         else if (dom === secondFunc) score += 30;
 
-        // B. 辅助功能权重 (智能修正)
-        // 只要在前三名，就得分
         if (aux === secondFunc) score += 25; 
         else if (aux === thirdFunc) score += 20; 
         else if (sorted.slice(0, 4).some(x => x[0] === aux)) score += 10; 
 
-        // 强度加分：如果 辅助功能 > 对立功能 + 10 分
         let counterAux = "";
         if (aux.includes('N')) counterAux = aux.replace('N', 'S');
         if (aux.includes('S')) counterAux = aux.replace('S', 'N');
@@ -653,13 +842,8 @@ function determineType(scores) {
             score += 15; 
         }
 
-        // C. 第三功能 (前4给分)
         if (sorted.slice(0, 4).some(x => x[0] === tert)) score += 10;
-        
-        // D. 劣势功能 (惩罚)
         if (scores[inf] > scores[dom]) score -= 20;
-
-        // E. 基础分累加
         score += (scores[dom] + scores[aux]) * 0.1;
 
         if (score > bestScore) {
@@ -674,32 +858,29 @@ function determineType(scores) {
     if (confidence > 100) confidence = 99;
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
-   // ============ 结果提示修正版 (替换原 669-676 行) ============
     let extraTip = "";
-
-    // 1. 压力状态检测 (Grip) - 补回缺失的压力提示
+    
+    // 1. 压力状态检测 (Grip)
     const inferior = bestStack[3];
     if (scores[inferior] > 70) {
-        extraTip += `<div class="mt-4 p-4 bg-amber-50 rounded-xl text-sm text-amber-800 border border-amber-200">
-            <strong>⚠️ 状态提示：</strong><br>
+        extraTip += `<div class="report-card bg-pink-50" style="margin-top:10px;">
+            <strong style="color:#9d174d">⚠️ 状态提示：</strong><br>
             系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
             <br>这通常出现在极度压力或被迫“扮演角色”的情况下。
         </div>`;
     }
 
-    // 2. 高阶解析修正版 (增加类型限制，防止 ISTJ 被误判为 INFP)
-    // 只有当主类型是 INFP/ISFP 时，才显示“构建者型”解析
+    // 2. 高阶解析
     if ((bestType === 'INFP' || bestType === 'ISFP') && scores.Ti > 60 && scores.Fi > 60) {
-        extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200">
-            <strong>💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。
+        extraTip += `<div class="report-card bg-blue-50" style="margin-top:10px;">
+            <strong style="color:#1e40af">💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。
             <br>这通常意味着您是一位<strong>“构建者型 ${bestType}”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。
         </div>`;
     }
-    // 3. 新增：针对 ISTJ/ESTJ 但 Fi 很高的情况 (您爱人的专属治愈语)
     else if ((bestType === 'ISTJ' || bestType === 'ESTJ') && scores.Fi > 60) {
-        extraTip += `<div class="mt-4 p-4 bg-rose-50 rounded-xl text-sm text-rose-800 border border-rose-200">
-            <strong>🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。
-            <br>对于理性的 ${bestType} 来说，这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序 (Si/Te)，更是在守护内心某种不愿妥协的感觉。这是一种非常疲惫但坚韧的状态。
+        extraTip += `<div class="report-card bg-pink-50" style="margin-top:10px;">
+            <strong style="color:#be185d">🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。
+            <br>对于理性的 ${bestType} 来说，这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序，更是在守护内心某种不愿妥协的感觉。
         </div>`;
     }
     
@@ -718,56 +899,73 @@ const typeFullDesc = {
 };
 
 function showModal(res, scores) {
-    const content = document.getElementById('result-content');
     const modal = document.getElementById('result-modal');
+    const content = document.getElementById('result-content');
     const reportPlaceholder = document.getElementById('depth-report-placeholder');
     
-    // 显示深度报告区域
-    if(reportPlaceholder) reportPlaceholder.classList.remove('hidden');
-
+    // 填充基本结果
     const chartHtml = Object.entries(scores).map(([f, s]) => `
-        <div class="mb-3">
-            <div class="flex justify-between text-xs font-bold mb-1">
+        <div class="chart-row">
+            <div class="chart-label">
                 <span>${f}</span><span>${s.toFixed(1)}</span>
             </div>
-            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                <div class="bg-indigo-500 h-full" style="width: ${(s/100)*100}%"></div>
+            <div class="chart-bg">
+                <div class="chart-fill" style="width: ${(s/120)*100}%"></div>
             </div>
         </div>
     `).join('');
+    
     const rankHtml = res.sorted.slice(0,4).map(([f,s], i) => 
-        `<div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2 border border-slate-100">
-            <span class="font-bold text-slate-500">#${i+1}</span>
-            <span class="font-black text-lg text-indigo-600">${f}</span>
-            <span class="text-sm font-medium text-slate-600">${s.toFixed(0)}</span>
+        `<div style="display:flex; justify-content:space-between; padding:8px; background:#f8fafc; border-radius:8px; margin-bottom:5px;">
+            <span style="color:#64748b; font-weight:bold;">#${i+1}</span>
+            <span style="color:var(--primary); font-weight:900; font-size:18px;">${f}</span>
+            <span style="color:#334155;">${s.toFixed(0)}</span>
         </div>`
     ).join('');
+
     content.innerHTML = `
-        <div class="text-center mb-8">
-            <h2 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-2">测评结果</h2>
-            <div class="text-6xl font-black text-indigo-600 mb-2">${res.type}</div>
-            <div class="text-lg text-slate-600 font-medium">${typeFullDesc[res.type]}</div>
-            <div class="mt-4 inline-block px-4 py-1 bg-green-50 text-green-700 rounded-full text-sm font-bold">匹配度: ${res.confidence}%</div>
+        <div class="text-center mb-6">
+            <h2 style="font-size:12px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">测评结果</h2>
+            <div style="font-size:48px; font-weight:900; color:var(--primary); line-height:1.2;">${res.type}</div>
+            <div style="font-size:18px; color:#475569; margin-bottom:10px;">${typeFullDesc[res.type]}</div>
+            <div style="display:inline-block; padding:4px 12px; background:#dcfce7; color:#15803d; border-radius:99px; font-size:13px; font-weight:bold;">匹配度: ${res.confidence}%</div>
         </div>
-        <div class="grid md:grid-cols-2 gap-8">
-            <div><h3 class="font-bold mb-4 text-slate-700">八维强度</h3>${chartHtml}</div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+            <div><h3 style="font-size:14px; margin-bottom:10px;">八维强度</h3>${chartHtml}</div>
             <div>
-                <h3 class="font-bold mb-4 text-slate-700">核心功能排序</h3>
+                <h3 style="font-size:14px; margin-bottom:10px;">核心功能</h3>
                 ${rankHtml}
-                <div class="mt-6 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800">
-                    <strong>功能堆栈：</strong> ${res.stack.join(' > ')}
+                <div class="report-card bg-blue-50" style="margin-top:10px; padding:10px;">
+                    <strong style="color:#1e40af; font-size:12px;">功能堆栈：</strong><br>
+                    <span style="color:#1e3a8a; font-size:14px;">${res.stack.join(' > ')}</span>
                 </div>
             </div>
         </div>
         ${res.extraTip}
     `;
-    modal.classList.remove('hidden');
+
+    // 填充深度报告
+    const depthData = typeDepthData[res.type];
+    if (depthData) {
+        document.getElementById('report-career').textContent = depthData.career;
+        document.getElementById('report-love').textContent = depthData.love;
+        document.getElementById('report-growth').textContent = depthData.growth;
+        reportPlaceholder.classList.remove('hidden');
+    }
+
+    modal.classList.add('show');
 }
 
 function shareResults() {
-    const type = document.querySelector('.text-6xl')?.textContent || "未知";
+    const type = document.querySelector('.text-6xl')?.textContent || document.querySelector('div[style*="font-size:48px"]')?.textContent || "未知";
     const text = `我的MBTI八维深度测评结果：${type}！\n快来测测你的真实人格：${location.href}`;
-    navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
+    
+    if (navigator.share) {
+        navigator.share({ title: 'MBTI深度测评', text: text, url: location.href });
+    } else {
+        navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
+    }
 }
 
 function clearStorage() {
@@ -794,7 +992,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-
-
-
