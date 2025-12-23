@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MBTI 八维深度测评 (极速版)</title>
+    <title>MBTI 八维深度测评 (v16.1 修复版)</title>
     <style>
-        /* ============ 1. 核心样式 (v15.1 修复版) ============ */
+        /* ============ 1. 核心样式 ============ */
         :root {
-            --primary: #4f46e5; /* Indigo-600 */
-            --primary-hover: #4338ca;
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
             --bg-grad-start: #f8fafc;
             --bg-grad-end: #e2e8f0;
             --card-bg: #ffffff;
@@ -28,167 +28,114 @@
             line-height: 1.6;
         }
 
-        /* 布局容器 */
+        /* 💻 电脑端优化：美化滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         .container { max-width: 800px; margin: 0 auto; }
         
-        /* 卡片样式 */
         .card {
             background: var(--card-bg);
             border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             padding: 24px;
             margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #ffffff;
             animation: fadeIn 0.5s ease-out;
         }
 
-        /* 标题与文本 */
-        h1 { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 10px; color: #0f172a; letter-spacing: -0.5px; }
-        h2 { font-size: 24px; font-weight: 800; color: #1e293b; margin-bottom: 15px; }
-        h3 { font-size: 18px; font-weight: 700; color: #334155; margin-bottom: 10px; }
+        h1 { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 5px; color: #0f172a; letter-spacing: -0.5px; }
         p { margin-bottom: 10px; color: var(--text-sub); }
-        .text-center { text-align: center; }
         .text-sm { font-size: 14px; }
-        .text-xs { font-size: 12px; }
         .font-bold { font-weight: 700; }
 
         /* 进度条 */
-        .progress-container {
-            display: flex; align-items: center; gap: 10px; margin: 20px 0;
-        }
-        .progress-track {
-            flex: 1; height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%; background: linear-gradient(90deg, #6366f1, #8b5cf6); width: 0%; transition: width 0.5s ease;
-        }
-        .page-badge {
-            background: #fff; padding: 4px 12px; border-radius: 99px; font-weight: 600; font-size: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
+        .progress-container { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
+        .progress-track { flex: 1; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 0.5s ease; }
+        .page-badge { background: #fff; padding: 2px 10px; border-radius: 99px; font-weight: 600; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
 
         /* 题目区域 */
-        .question-header {
-            display: flex; justify-content: space-between; margin-bottom: 20px;
-        }
-        .option-box {
-            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
-        }
-        /* 默认隐藏 PC 版的 VS */
+        .question-header { display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center; }
+        .option-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .vs-text { display: none; }
 
         @media (min-width: 640px) {
             .option-box { flex-direction: row; align-items: center; justify-content: space-between; }
             .option-text { width: 45%; }
-            /* 电脑端显示 VS */
-            .vs-text { display: block; font-size: 20px; font-weight: bold; color: #cbd5e1; }
+            .vs-text { display: block; font-size: 24px; font-weight: 900; color: #e2e8f0; font-style: italic; }
         }
-        .option-text { font-size: 16px; font-weight: 700; line-height: 1.5; }
+        .option-text { font-size: 16px; font-weight: 600; line-height: 1.5; }
         .text-left-opt { color: var(--red); text-align: left; }
         .text-right-opt { color: var(--green); text-align: left; }
         @media (min-width: 640px) { .text-left-opt { text-align: right; } }
         
-        .vs-mobile { text-align: center; font-weight: bold; color: #cbd5e1; margin: 5px 0; display: block; font-size: 14px; }
+        .vs-mobile { text-align: center; font-weight: 900; color: #e2e8f0; margin: 5px 0; display: block; font-size: 18px; font-style: italic; }
         @media (min-width: 640px) { .vs-mobile { display: none; } }
 
-        /* 滑块美化 */
-        .slider-container { padding: 15px 0; position: relative; }
-        input[type=range] {
-            -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: #e2e8f0; outline: none;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff;
-            border: 3px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.1s;
-        }
+        /* 滑块与按钮 */
+        .slider-container { padding: 10px 0; position: relative; }
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 12px; border-radius: 6px; background: #e2e8f0; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 4px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.1s; }
         input[type=range]::-webkit-slider-thumb:active { transform: scale(1.1); }
 
-        /* 双高彩虹条 */
-        .rainbow-bar {
-            width: 100%; height: 12px; border-radius: 6px;
-            background: linear-gradient(90deg, #ef4444, #e0e7ff, #22c55e);
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid #c7d2fe;
-        }
-        .rainbow-tag {
-            font-size: 10px; font-weight: bold; color: var(--primary); background: rgba(255,255,255,0.9);
-            padding: 1px 8px; border-radius: 99px;
-        }
+        .rainbow-bar { width: 100%; height: 12px; border-radius: 6px; background: linear-gradient(90deg, #ef4444, #818cf8, #22c55e); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.05); }
+        .rainbow-tag { font-size: 10px; font-weight: bold; color: var(--primary); background: rgba(255,255,255,0.9); padding: 1px 8px; border-radius: 99px; }
 
-        /* 按钮样式 */
-        .btn {
-            padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 15px;
-            transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center;
-        }
-        .btn-primary {
-            background: linear-gradient(90deg, #6366f1, #8b5cf6); color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-        .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
-        .btn-outline {
-            background: white; border: 1px solid #e2e8f0; color: #475569;
-        }
-        .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn { padding: 14px 28px; border-radius: 14px; font-weight: 700; cursor: pointer; border: none; font-size: 16px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; -webkit-user-select: none; user-select: none; }
+        .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); }
+        .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+        .btn-outline { background: white; border: 2px solid #e2e8f0; color: #64748b; }
         
-        .dual-btn {
-            width: 100%; max-width: 300px; margin: 0 auto; display: flex; gap: 8px;
-            background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;
-        }
-        .dual-btn.active {
-            background: var(--primary); color: white; border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); border: 2px solid #818cf8;
-        }
+        .dual-btn { width: 100%; max-width: 320px; margin: 0 auto; display: flex; gap: 8px; background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; padding: 10px 20px; font-size: 14px; }
+        .dual-btn.active { background: #eff6ff; color: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
 
-        /* 弹窗覆盖层 */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px);
-            z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;
-            opacity: 0; visibility: hidden; transition: all 0.3s;
-        }
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 15px; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-content {
-            background: white; width: 100%; max-width: 600px; max-height: 90vh;
-            border-radius: 24px; padding: 30px; overflow-y: auto; text-align: left;
-            transform: translateY(20px); transition: transform 0.3s;
-        }
+        .modal-content { background: white; width: 100%; max-width: 650px; max-height: 92vh; border-radius: 24px; padding: 25px; overflow-y: auto; text-align: left; transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
         .modal-overlay.show .modal-content { transform: translateY(0); }
 
-        /* 动画 */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .highlight-unanswered { border: 2px solid var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
 
-        /* 结果页图表条 */
-        .chart-row { margin-bottom: 12px; }
-        .chart-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
-        .chart-bg { background: #f1f5f9; height: 12px; border-radius: 6px; overflow: hidden; }
-        .chart-fill { background: var(--primary); height: 100%; border-radius: 6px; }
+        /* 雷达图 SVG */
+        .radar-chart-container { width: 100%; max-width: 400px; margin: 0 auto 20px; position: relative; }
+        .radar-label { font-size: 12px; font-weight: bold; fill: #64748b; }
+        .radar-grid { stroke: #e2e8f0; stroke-width: 1; fill: none; }
+        .radar-area { fill: rgba(99, 102, 241, 0.2); stroke: #6366f1; stroke-width: 2; }
+        .radar-point { fill: #6366f1; }
 
-        /* 深度报告模块 */
-        .report-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-        .report-card { padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid transparent; }
-        .bg-blue-50 { background: #eff6ff; border-color: #dbeafe; }
-        .bg-pink-50 { background: #fdf2f8; border-color: #fce7f3; }
-        .bg-green-50 { background: #f0fdf4; border-color: #dcfce7; }
+        /* 深度报告卡片 */
+        .report-card { padding: 16px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid transparent; transition: transform 0.2s; }
+        .report-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .bg-blue-50 { background: #eff6ff; border-left-color: #3b82f6; }
+        .bg-pink-50 { background: #fdf2f8; border-left-color: #ec4899; }
+        .bg-green-50 { background: #f0fdf4; border-left-color: #22c55e; }
+        
+        .result-header-badge { display: inline-block; padding: 6px 16px; background: #dcfce7; color: #166534; border-radius: 99px; font-size: 14px; font-weight: 800; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div id="welcome-modal" class="modal-overlay show" style="z-index: 200;">
-    <div class="modal-content text-center">
-        <div style="font-size: 48px; margin-bottom: 20px;">🧠</div>
-        <h2 style="font-size: 26px; margin-bottom: 10px;">MBTI 八维深度测评</h2>
-        <p style="margin-bottom: 30px; font-size: 15px;">基于荣格认知功能心理学 · 剥离社会面具</p>
+    <div class="modal-content text-center" style="max-width: 500px;">
+        <div style="font-size: 56px; margin-bottom: 10px;">🧠</div>
+        <h2 style="font-size: 28px; margin-bottom: 5px;">MBTI 八维深度测评</h2>
+        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v16.1 视觉修复版 · 剥离社会面具</p>
         
-        <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
-            <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 10px;">⚠️ 测评前请阅读 (非常重要)</h3>
-            <ul style="list-style: none; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 10px;">
-                <li>❌ <strong>不要选“我应该怎么做”</strong><br><span style="font-size:12px; color:#94a3b8">社会要求的你，不是真实的你。</span></li>
-                <li>❌ <strong>不要选“我想成为的样子”</strong><br><span style="font-size:12px; color:#94a3b8">理想的自我，也不是当下的你。</span></li>
-                <li>✅ <strong>请选“下意识的第一反应”</strong><br><span style="font-size:12px; color:#94a3b8">哪怕那个选择看起来很懒惰、很自私、或很平庸，只要它是你最舒服的状态，就请诚实地选择它。</span></li>
+        <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
+            <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 12px;">⚠️ 测评前请阅读 (核心原则)</h3>
+            <ul style="list-style: none; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 12px;">
+                <li style="display:flex; gap:8px;">❌ <span><strong>不要选“我应该怎么做”</strong><br><span style="font-size:12px; color:#94a3b8">社会要求的你，不是真实的你。</span></span></li>
+                <li style="display:flex; gap:8px;">❌ <span><strong>不要选“我想成为的样子”</strong><br><span style="font-size:12px; color:#94a3b8">理想的自我，也不是当下的你。</span></span></li>
+                <li style="display:flex; gap:8px;">✅ <span><strong>请选“下意识的第一反应”</strong><br><span style="font-size:12px; color:#94a3b8">哪怕那个选择看起来很懒惰、很自私，只要它是你最舒服的状态，就请诚实地选择它。</span></span></li>
             </ul>
         </div>
 
-        <button onclick="startQuiz()" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 18px;">
+        <button onclick="startQuiz()" class="btn btn-primary" style="width: 100%; font-size: 18px;">
             调整好了，开始探索
         </button>
     </div>
@@ -197,74 +144,84 @@
 <div id="app" class="container">
     <header>
         <h1>MBTI 八维深度测评</h1>
-        <p class="text-center text-sm">v15.1 极速修复版</p>
-        
         <div class="progress-container">
             <span class="page-badge">第 <span id="current-page">1</span> / 7 页</span>
-            <div class="progress-track">
-                <div id="total-progress" class="progress-fill"></div>
-            </div>
-            <span class="text-sm font-bold text-sub">已答 <span id="answered-count">0</span>/52</span>
+            <div class="progress-track"><div id="total-progress" class="progress-fill"></div></div>
+            <span class="text-sm font-bold text-sub" style="width: 60px; text-align: right;"><span id="answered-count">0</span>/52</span>
         </div>
-
-        <div style="background: #fffbeb; border: 1px solid #fcd34d; padding: 12px; border-radius: 12px; font-size: 13px; color: #92400e; margin-bottom: 20px;">
-            <p class="text-center font-bold" style="color: #b45309; margin-bottom: 5px;">💡 操作指南</p>
-            <div style="display: flex; justify-content: space-between; text-align: center;">
+        <div style="background: #fffbeb; border: 1px solid #fcd34d; padding: 12px; border-radius: 12px; font-size: 13px; color: #92400e; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(251, 191, 36, 0.1);">
+            <div style="display: flex; justify-content: center; gap: 15px; text-align: center; font-weight: 600;">
                 <span>🔴 左拉 = 认同左边</span>
-                <span>⚪ 中间 = 中立</span>
                 <span>🟢 右拉 = 认同右边</span>
             </div>
-            <div style="text-align: center; margin-top: 5px; font-weight: bold; color: var(--primary);">
-                ⚡ 点击下方按钮 = 双高模式 (两边都强)
+            <div style="text-align: center; margin-top: 6px; font-weight: 700; color: var(--primary);">
+                ⚡ 按钮 = 双高模式 (两边都强)
             </div>
         </div>
     </header>
 
     <div id="quiz-container"></div>
 
-    <div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 50px;">
-        <button id="prev-btn" class="btn btn-outline">上一页</button>
-        <button id="next-btn" class="btn btn-primary">下一页</button>
+    <div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 60px;">
+        <button id="prev-btn" class="btn btn-outline" style="padding: 12px 24px;">上一页</button>
+        <button id="next-btn" class="btn btn-primary" style="padding: 12px 36px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);">下一页</button>
     </div>
 </div>
 
 <div id="tie-modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 500px;">
         <div class="text-center mb-6">
-            <div style="font-size: 40px; margin-bottom: 10px;">⚖️</div>
+            <div style="font-size: 48px; margin-bottom: 10px;">⚖️</div>
             <h2>进入终极决胜局</h2>
             <p>系统检测到您的 <span id="tie-names" style="color: var(--primary); font-weight: bold;"></span> 功能难分伯仲。</p>
-            <p class="text-sm">请抛开逻辑，凭直觉选出更让你“痛苦”或“舒适”的场景。</p>
+            <p class="text-sm" style="background:#f1f5f9; padding:8px; border-radius:8px; display:inline-block; margin-top:5px;">请抛开逻辑，凭直觉选出更让你“痛苦”或“舒适”的场景。</p>
         </div>
         <div id="tie-question-container"></div>
     </div>
 </div>
 
 <div id="result-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 800px;">
-        <div id="result-content"></div>
-        
-        <div id="depth-report-placeholder" class="report-section hidden">
-            <h3>📘 深度人格解析报告</h3>
-            <div class="grid-report">
-                <div class="report-card bg-blue-50">
-                    <h4 style="color: #1e40af; margin-bottom: 8px;">🚀 优势与职业建议</h4>
-                    <p id="report-career" class="text-sm text-main"></p>
-                </div>
-                <div class="report-card bg-pink-50">
-                    <h4 style="color: #9d174d; margin-bottom: 8px;">❤️ 情感与人际盲点</h4>
-                    <p id="report-love" class="text-sm text-main"></p>
-                </div>
-                <div class="report-card bg-green-50">
-                    <h4 style="color: #166534; margin-bottom: 8px;">🌱 进化与成长建议</h4>
-                    <p id="report-growth" class="text-sm text-main"></p>
-                </div>
+    <div class="modal-content" style="max-width: 700px; padding: 0;">
+        <div style="background: linear-gradient(135deg, #f8fafc, #eef2ff); padding: 30px 25px; border-bottom: 1px solid #e2e8f0;">
+            <div class="text-center">
+                <h2 style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:2px; margin-bottom: 5px;">MBTI Depth Assessment</h2>
+                <div id="res-title" style="font-size:56px; font-weight:900; color:var(--primary); line-height:1; margin-bottom:5px; text-shadow: 2px 2px 0px rgba(0,0,0,0.05);"></div>
+                <div id="res-desc" style="font-size:18px; font-weight:700; color:#334155;"></div>
+                <div id="res-score" class="result-header-badge"></div>
             </div>
+            
+            <div id="radar-container" class="radar-chart-container" style="margin-top: 25px;"></div>
+            <div id="rank-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; margin-top: 10px;"></div>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 30px;">
-            <button onclick="clearStorage()" class="btn btn-outline" style="flex: 1;">清除重测</button>
-            <button onclick="shareResults()" class="btn btn-primary" style="flex: 1;">复制结果</button>
+        <div style="padding: 25px;">
+            <div id="depth-report-placeholder" class="report-section hidden">
+                <h3 style="margin-bottom: 15px; font-size: 20px;">📘 深度人格解析</h3>
+                <div class="grid-report">
+                    <div class="report-card bg-blue-50">
+                        <h4 style="color: #1e40af; margin-bottom: 6px;">🚀 优势与职业</h4>
+                        <p id="report-career" class="text-sm text-main" style="line-height: 1.6;"></p>
+                    </div>
+                    <div class="report-card bg-pink-50">
+                        <h4 style="color: #be185d; margin-bottom: 6px;">❤️ 情感与盲点</h4>
+                        <p id="report-love" class="text-sm text-main" style="line-height: 1.6;"></p>
+                    </div>
+                    <div class="report-card bg-green-50">
+                        <h4 style="color: #15803d; margin-bottom: 6px;">🌱 进化建议</h4>
+                        <p id="report-growth" class="text-sm text-main" style="line-height: 1.6;"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="extra-tip-container"></div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button onclick="clearStorage()" class="btn btn-outline" style="flex: 1;">重测</button>
+                <button onclick="shareResults()" class="btn btn-primary" style="flex: 2;">复制详细结果</button>
+            </div>
+            <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #94a3b8;">
+                截图即可分享 · 2025 旗舰版
+            </div>
         </div>
     </div>
 </div>
@@ -274,102 +231,34 @@
         <h3 style="margin-bottom: 10px;">还有题目未完成</h3>
         <p style="margin-bottom: 20px;">您还有 <span id="missing-count" style="color: var(--red); font-weight: bold; font-size: 18px;"></span> 道题未作答。</p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button onclick="jumpToFirstUnanswered()" class="btn btn-primary">
-                👉 跳转到漏做的题目
-            </button>
-            <button onclick="forceSubmit()" class="btn btn-outline" style="border: none; color: #94a3b8;">
-                视为中立 (5分) 并强制提交
-            </button>
+            <button onclick="jumpToFirstUnanswered()" class="btn btn-primary">👉 跳转到漏做的题目</button>
+            <button onclick="forceSubmit()" class="btn btn-outline" style="border: none; color: #94a3b8;">视为中立 (5分) 并强制提交</button>
         </div>
     </div>
 </div>
 
 <script>
-// ============ 0. 深度报告数据库 (新功能) ============
+// ============ 0. 深度报告数据库 ============
 const typeDepthData = {
-    "INFP": {
-        career: "您是天生的治疗者和梦想家。在需要高度自主性、创造力以及价值观驱动的领域（如心理咨询、艺术创作、写作、教育、非营利组织）能获得最大成就感。避免高压、死板、只讲效率的机械性工作。",
-        love: "渴望灵魂共鸣，但也容易理想化伴侣。您最需要的是‘被看见’和‘被理解’。盲点在于容易在冲突中逃避（Si）或过度妥协，建议练习表达真实需求。",
-        growth: "您的成长在于发展 Te（执行力）。不要只停留在完美的构想中，试着把大目标拆解成每天可执行的小任务。当您能把理想落地时，您将不可战胜。"
-    },
-    "INFJ": {
-        career: "您是深邃的洞察者。适合需要长远规划、理解复杂人性或构建宏大体系的工作（如战略顾问、辅导员、作家、系统架构师）。避免琐碎、重复、缺乏意义的事务性工作。",
-        love: "您寻找的是灵魂伴侣，对他人的情绪极其敏感（Fe）。但也容易因为过度承担他人情绪而耗竭。学会设立‘心理边界’是您一生的课题。",
-        growth: "拥抱 Se（当下）。当您陷入内耗循环时，去做具体的家务、运动、吃美食。切断过度的精神反刍，回到真实的世界中来。"
-    },
-    "INTJ": {
-        career: "您是战略大师。适合解决复杂难题、构建系统、长远规划的领域（如科研、编程、金融分析、高管）。您需要独立的工作环境，无法忍受愚蠢和低效。",
-        love: "在感情中您是忠诚且深情的，但往往不善表达，显得冷漠。建议试着像分析系统一样去‘分析’伴侣的情感需求，用行动代替语言。",
-        growth: "发展 Se（感官体验）。不要总是活在未来，偶尔允许自己‘无脑’地放松一下。有时候，意外不是系统的 bug，而是生活的彩蛋。"
-    },
-    "INTP": {
-        career: "您是逻辑建筑师。适合需要深度分析、抽象思维和创新解法的领域（如学术研究、编程、哲学、数学）。避免需要大量社交寒暄或死板执行规定的工作。",
-        love: "您追求智力上的匹配和真诚。Fe 是您的短板，这让您在处理人际冲突时容易显得笨拙或逃避。建议找一个能直接沟通、不玩心理游戏的伴侣。",
-        growth: "培养 Si（日常习惯）。您的脑洞很大，但生活往往一团糟。建立微小的生活秩序（如规律睡眠、整理房间），能为您的思维大厦提供稳固的地基。"
-    },
-    "ISFJ": {
-        career: "您是忠诚的守护者。适合需要细心、耐心、关怀和维护秩序的工作（如医疗护理、行政管理、教育、财务）。您是团队中最靠谱的后盾。",
-        love: "您付出极多，但往往不敢索取。容易吸引‘索取型’人格。请记住，您的需求和别人一样重要。真正的爱是双向奔赴，不是单方面牺牲。",
-        growth: "挑战 Ne（可能性）。不要总是担心‘如果出错了怎么办’。偶尔尝试一条新路、一家新餐厅。世界比您想象的要安全。"
-    },
-    "ISTJ": {
-        career: "您是社会的基石。适合注重细节、流程、合规和逻辑的领域（如法律、审计、物流、工程）。您能把最混乱的事情变得井井有条。",
-        love: "您用责任感和承诺来表达爱。虽然不浪漫，但极其稳定。建议偶尔学习表达柔软的一面，让伴侣感受到您的温情，而不仅仅是责任。",
-        growth: "打开 Fi（情感）。您习惯压抑感受，直到爆发。试着每天记录一件让您感动的小事。承认自己也是有血有肉的人，不是机器。"
-    },
-    "ISTP": {
-        career: "您是冷静的巧匠。适合需要动手操作、应对危机、分析机制的领域（如外科医生、飞行员、技工、极限运动）。您在混乱中最为冷静。",
-        love: "您需要大量的个人空间。如果伴侣太黏人，您会逃跑。建议找一个同样独立、玩得来的人。多一点 Fe（情感回馈），别让对方觉得像在和石头谈恋爱。",
-        growth: "发展 Ni（远见）。不要只看眼前这一步，试着规划一下三年后的人生。虽然这很无聊，但能帮您避免很多不必要的弯路。"
-    },
-    "ISFP": {
-        career: "您是自由的艺术家。适合需要审美、动手能力和情感表达的领域（如设计、艺术、厨师、兽医）。您无法忍受死板的打卡制度和复杂的办公室政治。",
-        love: "您极其敏感且深情，但往往藏在心里。您需要一个能读懂您非语言信号的伴侣。建议在冲突中勇敢说出‘我不喜欢’，而不是默默忍受。",
-        growth: "提升 Te（效率）。您容易随波逐流，缺乏规划。试着给自己定一个小目标，并强迫自己完成它。纪律不仅不限制自由，反而保护自由。"
-    },
-    "ESTJ": {
-        career: "您是天生的管理者。适合组织、管理、执行和建立秩序的领域（如企业高管、军官、项目经理）。您的执行力是 16 人格之首。",
-        love: "您在感情中也喜欢处于主导地位，负责解决问题。但爱不是项目管理。请学会倾听伴侣的‘废话’，那是建立连接的桥梁。",
-        growth: "拥抱 Fi（内心感受）。不要把情绪视为软弱。当您感到疲惫时，停下来问问自己：‘这真的是我想要的吗？’ 成功不只是 KPI。"
-    },
-    "ESFJ": {
-        career: "您是热情的供应者。适合需要大量人际互动、服务他人和维护和谐的领域（如公关、销售、教务管理、医疗）。哪里有人，哪里就是您的舞台。",
-        love: "您极度渴望和谐与认可。容易为了讨好伴侣而失去自我。请记住，健康的冲突比虚假的和平更重要。",
-        growth: "锻炼 Ti（独立思考）。在做决定时，先问问逻辑是否合理，而不是谁会高兴。学会独处，不要让孤独感吞噬了您。"
-    },
-    "ENFJ": {
-        career: "您是魅力四射的导师。适合激励他人、促进成长和沟通的领域（如培训师、政治家、主持人、心理辅导）。您能看到每个人身上的潜能。",
-        love: "您爱得热烈且全情投入，希望与伴侣合二为一。但要注意不要过度干涉对方的生活。给彼此一点空间，爱会更长久。",
-        growth: "审视 Ti（逻辑真理）。有时为了‘大家好’，您可能会忽视残酷的真相。学会接受并不是所有人都想被拯救，也不是所有矛盾都能调和。"
-    },
-    "ENTJ": {
-        career: "您是统率千军的指挥官。适合宏观战略、改革、创业和领导大规模组织的领域。您天生就是为了带领团队攻克难关而生的。",
-        love: "您欣赏强大、聪明的伴侣。但感情不是博弈，不需要输赢。试着展示您的脆弱面（Fi），那是您最迷人也最真实的部分。",
-        growth: "呵护 Fi（价值观）。在追求效率的同时，不要践踏他人的尊严。一个没有仁慈的暴君最终会众叛亲离。慢一点，听听弱者的声音。"
-    },
-    "ENFP": {
-        career: "您是充满可能性的竞选者。适合需要创意、脑洞、人际连接和多样性的领域（如创意总监、记者、营销、演艺）。重复和枯燥是您的死敌。",
-        love: "您需要一个能陪您疯、也能把您拉回地面的伴侣。您容易对新人产生激情，但维持长期关系需要承诺（Si）。",
-        growth: "修炼 Si（专注与细节）。才华需要纪律来变现。逼自己把一件事做完再开始下一件。不要让您的人生变成一堆烂尾楼。"
-    },
-    "ENTP": {
-        career: "您是聪明的辩论家。适合创新、挑战传统、解决棘手问题的领域（如创业者、律师、风险投资、脱口秀）。您擅长从 0 到 1，但不擅长守成。",
-        love: "您喜欢智力上的交锋。找一个能接住您梗、且不玻璃心的伴侣。注意不要为了‘赢’而伤害了对方的感情（Fe）。",
-        growth: "培养 Si（落地能力）。点子不值钱，落地才值钱。学会忍受枯燥的执行过程，那是通往伟大的必经之路。"
-    },
-    "ESTP": {
-        career: "您是无畏的实干家。适合高风险、高回报、需要即时反应的领域（如股票交易、消防员、销售冠军、运动员）。您是解决眼前危机的高手。",
-        love: "您魅力十足，活在当下。但也容易让伴侣缺乏安全感。如果您认定了一个人，请尝试规划一下未来（Ni），给对方一个承诺。",
-        growth: "发展 Ni（后果意识）。行动前多想三秒：‘这样做会有什么长远后果？’ 冲动是魔鬼，预判是智慧。"
-    },
-    "ESFP": {
-        career: "您是天生的表演者。适合展现自我、娱乐他人、美感和体验相关的领域（如演员、时尚、旅游博主、活动策划）。您让世界变得丰富多彩。",
-        love: "您需要玩伴式的恋人。一起吃喝玩乐是您的爱的语言。但生活不只有派对，还有柴米油盐。找一个能陪您面对平淡的人。",
-        growth: "提升 Ni（深度思考）。不要总是逃避严肃话题。面对痛苦和虚无，是成熟的开始。深刻的快乐往往来自于克服困难之后。"
-    }
+    "INFP": { career: "您是天生的治疗者和梦想家。适合需要自主性、创造力及价值观驱动的领域（如咨询、艺术、写作、教育）。避免高压、死板的机械性工作。", love: "渴望灵魂共鸣，但也容易理想化伴侣。您最需要的是‘被看见’。盲点在于容易在冲突中逃避（Si）或过度妥协。", growth: "成长在于发展 Te（执行力）。不要只停留在构想中，试着把大目标拆解成每天可执行的小任务。把理想落地时，您将不可战胜。" },
+    "INFJ": { career: "您是深邃的洞察者。适合长远规划、理解复杂人性或构建宏大体系（如战略顾问、辅导员、架构师）。避免琐碎、无意义的事务。", love: "寻找灵魂伴侣，对他人的情绪极其敏感（Fe）。但也容易因过度承担而耗竭。学会设立‘心理边界’是您一生的课题。", growth: "拥抱 Se（当下）。陷入内耗时，去做具体的家务、运动、吃美食。切断精神反刍，回到真实世界。" },
+    "INTJ": { career: "您是战略大师。适合解决复杂难题、构建系统（如科研、编程、金融分析）。需要独立环境，无法忍受愚蠢和低效。", love: "忠诚且深情，但往往不善表达。建议试着像分析系统一样‘分析’伴侣的情感需求，用行动代替语言。", growth: "发展 Se（感官体验）。不要总活在未来，偶尔允许自己‘无脑’放松。意外不是 bug，是生活的彩蛋。" },
+    "INTP": { career: "您是逻辑建筑师。适合深度分析、抽象思维（如学术、编程、哲学）。避免大量社交寒暄或死板执行规定的工作。", love: "追求智力匹配和真诚。Fe 是短板，处理冲突易笨拙或逃避。建议找能直接沟通、不玩心理游戏的伴侣。", growth: "培养 Si（日常习惯）。建立微小的生活秩序（如规律睡眠），能为思维大厦提供稳固地基。" },
+    "ISFJ": { career: "您是忠诚的守护者。适合细心、关怀和维护秩序的工作（如医护、行政、教育）。是团队中最靠谱的后盾。", love: "付出极多，往往不敢索取。容易吸引索取型人格。记住，您的需求一样重要。爱是双向奔赴。", growth: "挑战 Ne（可能性）。不要总担心‘出错怎么办’。尝试一条新路、新餐厅。世界比您想象的安全。" },
+    "ISTJ": { career: "您是社会的基石。适合细节、流程、合规（如法律、审计、物流）。能把最混乱的事情变得井井有条。", love: "用责任感表达爱。虽然不浪漫，但极其稳定。建议偶尔表达柔软的一面，让伴侣感受到温情。", growth: "打开 Fi（情感）。习惯压抑感受直到爆发。试着每天记录一件感动的小事。承认自己是有血有肉的人。" },
+    "ISTP": { career: "您是冷静的巧匠。适合动手操作、应对危机（如外科医生、飞行员、技工）。在混乱中最为冷静。", love: "需要大量个人空间。伴侣太黏人会逃跑。多一点 Fe（情感回馈），别让对方觉得在和石头谈恋爱。", growth: "发展 Ni（远见）。不要只看眼前，试着规划三年后的人生。虽然无聊，但能帮您避免弯路。" },
+    "ISFP": { career: "您是自由的艺术家。适合审美、动手和情感表达（如设计、艺术、厨师）。无法忍受死板制度和办公室政治。", love: "敏感且深情，往往藏在心里。需要懂您非语言信号的伴侣。冲突中勇敢说出‘我不喜欢’，别默默忍受。", growth: "提升 Te（效率）。容易随波逐流。定个小目标并强迫自己完成。纪律不限制自由，反而保护自由。" },
+    "ESTJ": { career: "您是天生的管理者。适合组织、执行和建立秩序（如高管、项目经理）。执行力是 16 人格之首。", love: "喜欢主导解决问题。但爱不是项目管理。学会倾听伴侣的‘废话’，那是建立连接的桥梁。", growth: "拥抱 Fi（内心感受）。不要把情绪视为软弱。疲惫时问自己：‘这真的是我想要的吗？’ 成功不只是 KPI。" },
+    "ESFJ": { career: "您是热情的供应者。适合人际互动、服务他人（如公关、销售、教务）。哪里有人，哪里就是舞台。", love: "渴望和谐与认可。容易为了讨好而失去自我。请记住，健康的冲突比虚假的和平更重要。", growth: "锻炼 Ti（独立思考）。做决定时问逻辑是否合理，而不是谁会高兴。学会独处，别让孤独吞噬您。" },
+    "ENFJ": { career: "您是魅力导师。适合激励他人、沟通（如培训、主持、心理辅导）。能看到每个人身上的潜能。", love: "爱得热烈，希望合二为一。注意不要过度干涉。给彼此空间，爱会更长久。", growth: "审视 Ti（逻辑真理）。为了‘大家好’可能忽视残酷真相。接受不是所有人都想被拯救。" },
+    "ENTJ": { career: "您是统率千军的指挥官。适合宏观战略、改革、创业。天生为了带领团队攻克难关而生。", love: "欣赏强大伴侣。但感情不是博弈。试着展示脆弱面（Fi），那是您最真实的部分。", growth: "呵护 Fi（价值观）。追求效率时别践踏尊严。没有仁慈的暴君会众叛亲离。慢一点，听听弱者声音。" },
+    "ENFP": { career: "您是充满可能性的竞选者。适合创意、脑洞、人际连接（如创意总监、营销、演艺）。枯燥是死敌。", love: "需要能陪您疯也能拉回地面的伴侣。维持长期关系需要承诺（Si）。", growth: "修炼 Si（专注与细节）。才华需要纪律变现。逼自己把一件事做完。别让人生变成烂尾楼。" },
+    "ENTP": { career: "您是聪明的辩论家。适合创新、挑战传统（如创业、风投、脱口秀）。擅长从 0 到 1，不擅长守成。", love: "喜欢智力交锋。找能接梗且不玻璃心的伴侣。注意别为了‘赢’伤害感情（Fe）。", growth: "培养 Si（落地能力）。点子不值钱，落地才值钱。忍受枯燥的执行过程，是通往伟大的必经之路。" },
+    "ESTP": { career: "您是无畏的实干家。适合高风险、高回报（如交易员、消防员、销售）。解决眼前危机的高手。", love: "魅力十足，活在当下。容易让伴侣缺安全感。认定一个人，请尝试规划未来（Ni）。", growth: "发展 Ni（后果意识）。行动前多想三秒：‘会有什么长远后果？’ 冲动是魔鬼，预判是智慧。" },
+    "ESFP": { career: "您是天生的表演者。适合展现自我、娱乐他人（如演员、时尚、活动策划）。让世界丰富多彩。", love: "需要玩伴式恋人。生活不只有派对。找一个能陪您面对平淡的人。", growth: "提升 Ni（深度思考）。不要逃避严肃话题。面对痛苦和虚无是成熟的开始。深刻快乐来自克服困难。" }
 };
 
-// ============ 1. 完整题库 (内置) ============
+// ============ 1. 完整题库 ============
 const rawQuestions = [
     { id: 1, left: "Ni", right: "Ne", lText: "我常忍不住去想事情背后的“征兆”或“寓意”", rText: "我常忍不住由一个点子联想到好几种“新玩法”", reversed: false },
     { id: 14, left: "Si", right: "Se", lText: "我通过过去经验判断事情是否靠谱", rText: "我通过当下实时情况决定行动", reversed: false },
@@ -425,7 +314,6 @@ const rawQuestions = [
     { id: 52, left: "Fi", right: "Fe", lText: "批评时我担心伤害对方自我认同", rText: "批评时我担心破坏团队整体氛围", reversed: false }
 ];
 
-// 加赛题库 (去暗示纯净版)
 const tieBreakerPool = {
     "Ti-Fi": [
         { q: "当别人通过情感勒索要求你做一件不合逻辑的事时，你的第一反应是？", A: "愤怒于其中的逻辑漏洞（凭什么？这不合理）", funcA: "Ti", B: "愤怒于对方不尊重我的感受（我很受伤/反感）", funcB: "Fi" },
@@ -451,8 +339,8 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length; 
-const STORAGE_KEY = 'mbti_final_v15_fast'; 
-const RESULT_KEY = 'mbti_final_report_v15';
+const STORAGE_KEY = 'mbti_final_v16_visual'; 
+const RESULT_KEY = 'mbti_final_report_v16';
 
 let userAnswers = {};
 let currentPage = 0;
@@ -461,7 +349,6 @@ let tieAdjustments = {};
 
 function startApp() {
     loadAnswers();
-    // 检查是否应该显示欢迎页
     const hasStarted = Object.keys(userAnswers).length > 0;
     if (!hasStarted) {
         document.getElementById('welcome-modal').classList.add('show');
@@ -501,12 +388,10 @@ function getDisplayText(value) {
     return "强烈右倾";
 }
 
-// 检查是否已作答
 function isQuestionAnswered(qId) {
     return (userAnswers[qId] !== undefined) || (userAnswers[`dual_${qId}`] === true);
 }
 
-// 渲染核心
 function renderPage() {
     const container = document.getElementById('quiz-container');
     container.innerHTML = '';
@@ -530,27 +415,20 @@ function renderPage() {
         div.innerHTML = `
             <div class="question-header">
                 <span class="text-sm font-bold text-sub">题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
-                <span id="status-q${q.id}" class="text-xs font-bold ${isQuestionAnswered(q.id) ? 'text-green' : 'text-sub'}" style="color: ${isQuestionAnswered(q.id) ? 'var(--green)' : '#94a3b8'}">
+                <span id="status-q${q.id}" class="text-xs font-bold" style="color: ${isQuestionAnswered(q.id) ? 'var(--green)' : '#94a3b8'}">
                     ${isQuestionAnswered(q.id) ? '✅ 已答' : '⚪ 未答'}
                 </span>
             </div>
-            
             <div class="option-box">
                 <div class="option-text text-left-opt">${leftText}</div>
                 <div class="vs-text">VS</div>
                 <div class="vs-mobile">VS</div>
                 <div class="option-text text-right-opt">${rightText}</div>
             </div>
-            
             <div class="slider-container" style="opacity: ${isDual ? '0.5' : '1'}; pointer-events: ${isDual ? 'none' : 'auto'}; transition: opacity 0.3s;">
                 <div style="position: relative; height: 30px; display: flex; align-items: center;">
-                    ${isDual ? `
-                        <div class="rainbow-bar"><span class="rainbow-tag">⚡ 双核驱动中 ⚡</span></div>
-                    ` : `
-                        <input type="range" min="0" max="10" value="${savedValue}" oninput="onSliderChange(this, ${q.id})">
-                    `}
+                    ${isDual ? `<div class="rainbow-bar"><span class="rainbow-tag">⚡ 双核驱动中 ⚡</span></div>` : `<input type="range" min="0" max="10" value="${savedValue}" oninput="onSliderChange(this, ${q.id})">`}
                 </div>
-                
                 <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 600;">
                     <span style="color: var(--red)">强烈左倾</span>
                     <span id="val-q${q.id}" style="font-size: 16px; color: var(--primary); font-weight: 900;">
@@ -559,23 +437,17 @@ function renderPage() {
                     <span style="color: var(--green)">强烈右倾</span>
                 </div>
             </div>
-
             <div style="margin-top: 25px; text-align: center;">
-                <button onclick="toggleDual(${q.id})" 
-                    class="dual-btn ${isDual ? 'active' : ''} btn">
+                <button onclick="toggleDual(${q.id})" class="dual-btn ${isDual ? 'active' : ''} btn">
                     <span style="font-size: 18px;">${isDual ? '⚡' : '⚪'}</span>
                     <span>${isDual ? '已开启双高模式' : '我对两者都有强烈共鸣'}</span>
                 </button>
             </div>
         `;
         container.appendChild(div);
-        
-        if (!isDual) {
-            updateSliderVisual(div.querySelector('input[type=range]'), savedValue);
-        }
+        if (!isDual) updateSliderVisual(div.querySelector('input[type=range]'), savedValue);
     });
 
-    // 翻页按钮状态
     const prevBtn = document.getElementById('prev-btn');
     if (prevBtn) prevBtn.disabled = currentPage === 0;
 
@@ -613,13 +485,11 @@ function onSliderChange(input, id) {
     document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
     updateSliderVisual(input, value);
     userAnswers[id] = value;
-    
     const statusSpan = document.getElementById(`status-q${id}`);
     if(statusSpan) {
         statusSpan.textContent = '✅ 已答';
         statusSpan.style.color = 'var(--green)';
     }
-
     saveProgress();
     updateProgress();
 }
@@ -636,7 +506,6 @@ function updateProgress() {
     rawQuestions.forEach(q => {
         if(isQuestionAnswered(q.id)) answeredCount++;
     });
-    
     const percent = Math.round((answeredCount / TOTAL_QUESTIONS) * 100);
     document.getElementById('answered-count').textContent = answeredCount;
     document.getElementById('total-progress').style.width = `${percent}%`;
@@ -661,35 +530,29 @@ function prevPage() {
 function calculateResults() {
     let missingCount = 0;
     let firstMissingId = null;
-
     rawQuestions.forEach(q => {
         if (!isQuestionAnswered(q.id)) {
             missingCount++;
             if (!firstMissingId) firstMissingId = q.id;
         }
     });
-    
     if(missingCount > 0) { 
         document.getElementById('missing-count').textContent = missingCount;
         document.getElementById('jump-confirm-modal').classList.add('show');
         window.targetJumpId = firstMissingId;
         return; 
     }
-
     runCalculation();
 }
 
 function jumpToFirstUnanswered() {
     const id = window.targetJumpId;
     if (!id) return;
-
     const idx = rawQuestions.findIndex(q => q.id === id);
     const targetPage = Math.floor(idx / QUESTIONS_PER_PAGE);
-
     document.getElementById('jump-confirm-modal').classList.remove('show');
     currentPage = targetPage;
     renderPage();
-
     setTimeout(() => {
         const card = document.getElementById(`card-q${id}`);
         if (card) {
@@ -707,7 +570,6 @@ function forceSubmit() {
 
 function runCalculation() {
     let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
-
     rawQuestions.forEach(q => {
         const isDual = userAnswers[`dual_${q.id}`];
         if (isDual) {
@@ -717,7 +579,6 @@ function runCalculation() {
             const val = userAnswers[q.id] || 5;
             let diff = val - 5;
             if(q.reversed) diff = -diff;
-
             if (diff > 0) {
                 scores[q.right] += diff * 2;
                 scores[q.left] -= Math.abs(diff) * 0.3;
@@ -727,7 +588,6 @@ function runCalculation() {
             }
         }
     });
-
     Object.keys(scores).forEach(k => scores[k] = Math.max(0, scores[k]));
     tempScores = scores; 
     const tiePair = checkForTies(scores);
@@ -753,18 +613,16 @@ function startTieBreaker(pair) {
     const key = `${pair[0]}-${pair[1]}`;
     const questions = tieBreakerPool[key] || tieBreakerPool[`${pair[1]}-${pair[0]}`];
     if (!questions) { finalizeAndShow(tempScores); return; }
-
     const modal = document.getElementById('tie-modal');
     const container = document.getElementById('tie-question-container');
     document.getElementById('tie-names').textContent = `${pair[0]} 与 ${pair[1]}`;
-    
     container.innerHTML = '';
     questions.forEach((q, idx) => {
         const div = document.createElement('div');
         div.className = "card";
         div.style.background = "#f8fafc";
         div.innerHTML = `
-            <p class="font-bold text-main mb-3">${idx+1}. ${q.q}</p>
+            <p class="font-bold mb-3">${idx+1}. ${q.q}</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <button onclick="handleTieChoice('${q.funcA}', '${q.funcB}', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">A. ${q.A}</button>
                 <button onclick="handleTieChoice('${q.funcB}', '${q.funcA}', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">B. ${q.B}</button>
@@ -863,8 +721,6 @@ function determineType(scores) {
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
     let extraTip = "";
-    
-    // 1. 压力状态检测 (Grip)
     const inferior = bestStack[3];
     if (scores[inferior] > 70) {
         extraTip += `<div class="report-card bg-pink-50" style="margin-top:10px;">
@@ -874,7 +730,6 @@ function determineType(scores) {
         </div>`;
     }
 
-    // 2. 高阶解析
     if ((bestType === 'INFP' || bestType === 'ISFP') && scores.Ti > 60 && scores.Fi > 60) {
         extraTip += `<div class="report-card bg-blue-50" style="margin-top:10px;">
             <strong style="color:#1e40af">💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。
@@ -892,64 +747,104 @@ function determineType(scores) {
 }
 
 const typeFullDesc = {
-    INTJ: "建筑师 - 独立、战略性思考者", INFJ: "提倡者 - 理想主义、深刻洞察",
-    ENTJ: "指挥官 - 大胆、果断的领导者", ENFJ: "主人公 - 魅力四射的激励者",
-    INTP: "逻辑学家 - 渴望知识的创新者", INFP: "调停者 - 诗意、善良的利他主义者",
-    ENTP: "辩论家 - 聪明好奇的思想家", ENFP: "竞选者 - 热情、有创造力的自由人",
-    ISTJ: "物流师 - 务实、注重事实", ISFJ: "守卫者 - 专注、温暖的守护者",
-    ESTJ: "总经理 - 出色的管理者", ESFJ: "执政官 - 极有同情心、受欢迎",
-    ISTP: "鉴赏家 - 大胆的实践者", ISFP: "探险家 - 灵活、有魅力的艺术家",
-    ESTP: "企业家 - 聪明、精力充沛", ESFP: "表演者 - 自发、精力充沛"
+    INTJ: "建筑师 - 独立、战略性", INFJ: "提倡者 - 理想主义、深邃",
+    ENTJ: "指挥官 - 大胆、果断", ENFJ: "主人公 - 魅力四射",
+    INTP: "逻辑学家 - 渴望知识", INFP: "调停者 - 诗意、善良",
+    ENTP: "辩论家 - 聪明好奇", ENFP: "竞选者 - 热情、创造力",
+    ISTJ: "物流师 - 务实、注重事实", ISFJ: "守卫者 - 专注、温暖",
+    ESTJ: "总经理 - 出色的管理者", ESFJ: "执政官 - 极有同情心",
+    ISTP: "鉴赏家 - 大胆的实践者", ISFP: "探险家 - 灵活、有魅力",
+    ESTP: "企业家 - 聪明、精力充沛", ESFP: "表演者 - 自发、热情"
 };
+
+// ============ 5. 雷达图绘制 (核心 SVG 算法) ============
+function generateRadarChart(scores) {
+    const labels = ["Ni", "Ne", "Si", "Se", "Ti", "Te", "Fi", "Fe"];
+    const maxScore = 120;
+    const size = 300;
+    const center = size / 2;
+    const radius = 100;
+    const angleStep = (Math.PI * 2) / 8;
+
+    let points = "";
+    labels.forEach((label, i) => {
+        const score = scores[label] || 0;
+        const normalizedScore = Math.min(score, maxScore); 
+        const r = (normalizedScore / maxScore) * radius;
+        const angle = i * angleStep - Math.PI / 2;
+        const x = center + r * Math.cos(angle);
+        const y = center + r * Math.sin(angle);
+        points += `${x},${y} `;
+    });
+
+    let svg = `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+    [0.33, 0.66, 1].forEach(scale => {
+        let gridPoints = "";
+        for(let i=0; i<8; i++) {
+            const r = radius * scale;
+            const angle = i * angleStep - Math.PI / 2;
+            const x = center + r * Math.cos(angle);
+            const y = center + r * Math.sin(angle);
+            gridPoints += `${x},${y} `;
+        }
+        svg += `<polygon points="${gridPoints}" class="radar-grid" />`;
+    });
+
+    labels.forEach((label, i) => {
+        const angle = i * angleStep - Math.PI / 2;
+        const endX = center + radius * Math.cos(angle);
+        const endY = center + radius * Math.sin(angle);
+        svg += `<line x1="${center}" y1="${center}" x2="${endX}" y2="${endY}" class="radar-grid" />`;
+        const labelR = radius + 20;
+        const labelX = center + labelR * Math.cos(angle);
+        const labelY = center + labelR * Math.sin(angle);
+        svg += `<text x="${labelX}" y="${labelY}" text-anchor="middle" dominant-baseline="middle" class="radar-label">${label}</text>`;
+    });
+
+    svg += `<polygon points="${points}" class="radar-area" />`;
+    labels.forEach((label, i) => {
+        const score = scores[label] || 0;
+        const normalizedScore = Math.min(score, maxScore);
+        const r = (normalizedScore / maxScore) * radius;
+        const angle = i * angleStep - Math.PI / 2;
+        const x = center + r * Math.cos(angle);
+        const y = center + r * Math.sin(angle);
+        svg += `<circle cx="${x}" cy="${y}" r="4" class="radar-point" />`;
+    });
+
+    svg += `</svg>`;
+    return svg;
+}
 
 function showModal(res, scores) {
     const modal = document.getElementById('result-modal');
-    const content = document.getElementById('result-content');
+    const desc = document.getElementById('res-desc');
+    const title = document.getElementById('res-title'); // 新增
+    const scoreBadge = document.getElementById('res-score');
+    const radarContainer = document.getElementById('radar-container');
+    const rankContainer = document.getElementById('rank-container');
     const reportPlaceholder = document.getElementById('depth-report-placeholder');
-    
-    // 填充基本结果
-    const chartHtml = Object.entries(scores).map(([f, s]) => `
-        <div class="chart-row">
-            <div class="chart-label">
-                <span>${f}</span><span>${s.toFixed(1)}</span>
-            </div>
-            <div class="chart-bg">
-                <div class="chart-fill" style="width: ${(s/120)*100}%"></div>
-            </div>
+    const extraTipContainer = document.getElementById('extra-tip-container');
+
+    // 1. 填充头部
+    title.textContent = res.type; // 修复 Bug：动态填充标题
+    desc.textContent = typeFullDesc[res.type];
+    scoreBadge.textContent = `匹配度 ${res.confidence}%`;
+
+    // 2. 绘制雷达图
+    radarContainer.innerHTML = generateRadarChart(scores);
+
+    // 3. 填充核心排序
+    const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"]; 
+    rankContainer.innerHTML = res.sorted.slice(0,4).map(([f,s], i) => `
+        <div style="background:#fff; padding:5px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <div style="font-size:10px; color:#94a3b8">#${i+1}</div>
+            <div style="font-size:18px; font-weight:900; color:${colors[i]}">${f}</div>
+            <div style="font-size:12px; font-weight:bold; color:#64748b">${s.toFixed(0)}</div>
         </div>
     `).join('');
-    
-    const rankHtml = res.sorted.slice(0,4).map(([f,s], i) => 
-        `<div style="display:flex; justify-content:space-between; padding:8px; background:#f8fafc; border-radius:8px; margin-bottom:5px;">
-            <span style="color:#64748b; font-weight:bold;">#${i+1}</span>
-            <span style="color:var(--primary); font-weight:900; font-size:18px;">${f}</span>
-            <span style="color:#334155;">${s.toFixed(0)}</span>
-        </div>`
-    ).join('');
 
-    content.innerHTML = `
-        <div class="text-center mb-6">
-            <h2 style="font-size:12px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">测评结果</h2>
-            <div style="font-size:48px; font-weight:900; color:var(--primary); line-height:1.2;">${res.type}</div>
-            <div style="font-size:18px; color:#475569; margin-bottom:10px;">${typeFullDesc[res.type]}</div>
-            <div style="display:inline-block; padding:4px 12px; background:#dcfce7; color:#15803d; border-radius:99px; font-size:13px; font-weight:bold;">匹配度: ${res.confidence}%</div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
-            <div><h3 style="font-size:14px; margin-bottom:10px;">八维强度</h3>${chartHtml}</div>
-            <div>
-                <h3 style="font-size:14px; margin-bottom:10px;">核心功能</h3>
-                ${rankHtml}
-                <div class="report-card bg-blue-50" style="margin-top:10px; padding:10px;">
-                    <strong style="color:#1e40af; font-size:12px;">功能堆栈：</strong><br>
-                    <span style="color:#1e3a8a; font-size:14px;">${res.stack.join(' > ')}</span>
-                </div>
-            </div>
-        </div>
-        ${res.extraTip}
-    `;
-
-    // 填充深度报告
+    // 4. 填充深度报告
     const depthData = typeDepthData[res.type];
     if (depthData) {
         document.getElementById('report-career').textContent = depthData.career;
@@ -958,11 +853,14 @@ function showModal(res, scores) {
         reportPlaceholder.classList.remove('hidden');
     }
 
+    // 5. 填充额外提示
+    extraTipContainer.innerHTML = res.extraTip;
+
     modal.classList.add('show');
 }
 
 function shareResults() {
-    const type = document.querySelector('.text-6xl')?.textContent || document.querySelector('div[style*="font-size:48px"]')?.textContent || "未知";
+    const type = document.getElementById('res-title')?.textContent || "未知";
     const text = `我的MBTI八维深度测评结果：${type}！\n快来测测你的真实人格：${location.href}`;
     
     if (navigator.share) {
