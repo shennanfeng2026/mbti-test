@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MBTI 八维深度测评 (极速版)</title>
     <style>
-        /* ============ 1. 核心样式 (替代 Tailwind) ============ */
+        /* ============ 1. 核心样式 (v15.1 修复版) ============ */
         :root {
             --primary: #4f46e5; /* Indigo-600 */
             --primary-hover: #4338ca;
@@ -72,11 +72,15 @@
             display: flex; justify-content: space-between; margin-bottom: 20px;
         }
         .option-box {
-            display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
         }
+        /* 默认隐藏 PC 版的 VS */
+        .vs-text { display: none; }
+
         @media (min-width: 640px) {
             .option-box { flex-direction: row; align-items: center; justify-content: space-between; }
             .option-text { width: 45%; }
+            /* 电脑端显示 VS */
             .vs-text { display: block; font-size: 20px; font-weight: bold; color: #cbd5e1; }
         }
         .option-text { font-size: 16px; font-weight: 700; line-height: 1.5; }
@@ -84,7 +88,7 @@
         .text-right-opt { color: var(--green); text-align: left; }
         @media (min-width: 640px) { .text-left-opt { text-align: right; } }
         
-        .vs-mobile { text-align: center; font-weight: bold; color: #cbd5e1; margin-bottom: 15px; display: block; }
+        .vs-mobile { text-align: center; font-weight: bold; color: #cbd5e1; margin: 5px 0; display: block; font-size: 14px; }
         @media (min-width: 640px) { .vs-mobile { display: none; } }
 
         /* 滑块美化 */
@@ -193,7 +197,7 @@
 <div id="app" class="container">
     <header>
         <h1>MBTI 八维深度测评</h1>
-        <p class="text-center text-sm">v15.0 极速旗舰版</p>
+        <p class="text-center text-sm">v15.1 极速修复版</p>
         
         <div class="progress-container">
             <span class="page-badge">第 <span id="current-page">1</span> / 7 页</span>
