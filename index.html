@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MBTI 八维深度测评 (v16.1 修复版)</title>
+    <title>MBTI 八维深度测评 (v16.2 兼容版)</title>
     <style>
         /* ============ 1. 核心样式 ============ */
         :root {
@@ -28,13 +28,12 @@
             line-height: 1.6;
         }
 
-        /* 💻 电脑端优化：美化滚动条 */
+        /* 修复滚动条 */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 800px; margin: 0 auto; display: none; /* JS加载成功前隐藏 */ }
         
         .card {
             background: var(--card-bg);
@@ -50,6 +49,18 @@
         p { margin-bottom: 10px; color: var(--text-sub); }
         .text-sm { font-size: 14px; }
         .font-bold { font-weight: 700; }
+
+        /* 加载动画 */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #f8fafc; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 进度条 */
         .progress-container { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
@@ -101,30 +112,39 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .highlight-unanswered { border: 2px solid var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
 
-        /* 雷达图 SVG */
         .radar-chart-container { width: 100%; max-width: 400px; margin: 0 auto 20px; position: relative; }
         .radar-label { font-size: 12px; font-weight: bold; fill: #64748b; }
         .radar-grid { stroke: #e2e8f0; stroke-width: 1; fill: none; }
         .radar-area { fill: rgba(99, 102, 241, 0.2); stroke: #6366f1; stroke-width: 2; }
         .radar-point { fill: #6366f1; }
 
-        /* 深度报告卡片 */
-        .report-card { padding: 16px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid transparent; transition: transform 0.2s; }
-        .report-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .report-card { padding: 16px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid transparent; }
         .bg-blue-50 { background: #eff6ff; border-left-color: #3b82f6; }
         .bg-pink-50 { background: #fdf2f8; border-left-color: #ec4899; }
         .bg-green-50 { background: #f0fdf4; border-left-color: #22c55e; }
         
         .result-header-badge { display: inline-block; padding: 6px 16px; background: #dcfce7; color: #166534; border-radius: 99px; font-size: 14px; font-weight: 800; margin-top: 10px; }
     </style>
+    <script>
+        // 全局错误捕捉（用于手机端调试）
+        window.onerror = function(msg, url, line) {
+            var loading = document.getElementById('loading-screen');
+            if(loading) loading.innerHTML = '<p style="color:red; padding:20px;">⚠️ 程序加载出错<br>' + msg + '</p>';
+        };
+    </script>
 </head>
 <body>
 
-<div id="welcome-modal" class="modal-overlay show" style="z-index: 200;">
+<div id="loading-screen">
+    <div class="spinner"></div>
+    <p style="color: #64748b; font-size: 14px; font-weight: bold;">正在启动...</p>
+</div>
+
+<div id="welcome-modal" class="modal-overlay" style="z-index: 200;">
     <div class="modal-content text-center" style="max-width: 500px;">
         <div style="font-size: 56px; margin-bottom: 10px;">🧠</div>
         <h2 style="font-size: 28px; margin-bottom: 5px;">MBTI 八维深度测评</h2>
-        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v16.1 视觉修复版 · 剥离社会面具</p>
+        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v16.2 兼容版 · 剥离社会面具</p>
         
         <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
             <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 12px;">⚠️ 测评前请阅读 (核心原则)</h3>
@@ -195,7 +215,7 @@
         </div>
 
         <div style="padding: 25px;">
-            <div id="depth-report-placeholder" class="report-section hidden">
+            <div id="depth-report-placeholder" class="report-section" style="display:none;">
                 <h3 style="margin-bottom: 15px; font-size: 20px;">📘 深度人格解析</h3>
                 <div class="grid-report">
                     <div class="report-card bg-blue-50">
@@ -350,6 +370,14 @@ let tieAdjustments = {};
 function startApp() {
     loadAnswers();
     const hasStarted = Object.keys(userAnswers).length > 0;
+    
+    // 隐藏加载遮罩
+    var loader = document.getElementById('loading-screen');
+    if(loader) loader.style.display = 'none';
+    
+    // 显示内容
+    document.getElementById('app').style.display = 'block';
+
     if (!hasStarted) {
         document.getElementById('welcome-modal').classList.add('show');
     } else {
@@ -375,7 +403,7 @@ function loadAnswers() {
 
 function saveProgress() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: userAnswers, currentPage }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: userAnswers, currentPage: currentPage }));
     } catch (e) {}
 }
 
@@ -389,7 +417,7 @@ function getDisplayText(value) {
 }
 
 function isQuestionAnswered(qId) {
-    return (userAnswers[qId] !== undefined) || (userAnswers[`dual_${qId}`] === true);
+    return (userAnswers[qId] !== undefined) || (userAnswers['dual_'+qId] === true);
 }
 
 function renderPage() {
@@ -402,48 +430,58 @@ function renderPage() {
 
     pageQuestions.forEach((q, idx) => {
         const globalIdx = start + idx;
-        const savedValue = userAnswers[q.id] ?? 5; 
+        const savedValue = (userAnswers[q.id] !== undefined) ? userAnswers[q.id] : 5;
         const leftText = q.reversed ? q.rText : q.lText;
         const rightText = q.reversed ? q.lText : q.rText;
-        const isDual = userAnswers[`dual_${q.id}`] || false;
+        const isDual = userAnswers['dual_'+q.id] || false;
 
         const div = document.createElement('div');
-        div.id = `card-q${q.id}`; 
+        div.id = 'card-q' + q.id; 
         div.className = 'card';
-        div.style.animationDelay = `${idx * 0.05}s`;
+        div.style.animationDelay = (idx * 0.05) + 's';
 
-        div.innerHTML = `
-            <div class="question-header">
-                <span class="text-sm font-bold text-sub">题号 ${globalIdx + 1}/${TOTAL_QUESTIONS}</span>
-                <span id="status-q${q.id}" class="text-xs font-bold" style="color: ${isQuestionAnswered(q.id) ? 'var(--green)' : '#94a3b8'}">
-                    ${isQuestionAnswered(q.id) ? '✅ 已答' : '⚪ 未答'}
-                </span>
-            </div>
-            <div class="option-box">
-                <div class="option-text text-left-opt">${leftText}</div>
-                <div class="vs-text">VS</div>
-                <div class="vs-mobile">VS</div>
-                <div class="option-text text-right-opt">${rightText}</div>
-            </div>
-            <div class="slider-container" style="opacity: ${isDual ? '0.5' : '1'}; pointer-events: ${isDual ? 'none' : 'auto'}; transition: opacity 0.3s;">
-                <div style="position: relative; height: 30px; display: flex; align-items: center;">
-                    ${isDual ? `<div class="rainbow-bar"><span class="rainbow-tag">⚡ 双核驱动中 ⚡</span></div>` : `<input type="range" min="0" max="10" value="${savedValue}" oninput="onSliderChange(this, ${q.id})">`}
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 600;">
-                    <span style="color: var(--red)">强烈左倾</span>
-                    <span id="val-q${q.id}" style="font-size: 16px; color: var(--primary); font-weight: 900;">
-                        ${isDual ? '双高' : getDisplayText(savedValue)}
-                    </span>
-                    <span style="color: var(--green)">强烈右倾</span>
-                </div>
-            </div>
-            <div style="margin-top: 25px; text-align: center;">
-                <button onclick="toggleDual(${q.id})" class="dual-btn ${isDual ? 'active' : ''} btn">
-                    <span style="font-size: 18px;">${isDual ? '⚡' : '⚪'}</span>
-                    <span>${isDual ? '已开启双高模式' : '我对两者都有强烈共鸣'}</span>
-                </button>
-            </div>
-        `;
+        // 兼容性修正：不使用模板字符串的嵌套复杂逻辑
+        var dualHtml = '';
+        if (isDual) {
+            dualHtml = '<div class="rainbow-bar"><span class="rainbow-tag">⚡ 双核驱动中 ⚡</span></div>';
+        } else {
+            dualHtml = '<input type="range" min="0" max="10" value="'+savedValue+'" oninput="onSliderChange(this, '+q.id+')">';
+        }
+
+        var btnHtml = '<button onclick="toggleDual('+q.id+')" class="dual-btn ' + (isDual ? 'active' : '') + ' btn">';
+        btnHtml += '<span style="font-size: 18px;">' + (isDual ? '⚡' : '⚪') + '</span>';
+        btnHtml += '<span>' + (isDual ? '已开启双高模式' : '我对两者都有强烈共鸣') + '</span>';
+        btnHtml += '</button>';
+
+        div.innerHTML = 
+            '<div class="question-header">' +
+                '<span class="text-sm font-bold text-sub">题号 '+(globalIdx + 1)+'/'+TOTAL_QUESTIONS+'</span>' +
+                '<span id="status-q'+q.id+'" class="text-xs font-bold" style="color: '+(isQuestionAnswered(q.id) ? 'var(--green)' : '#94a3b8')+'">' +
+                    (isQuestionAnswered(q.id) ? '✅ 已答' : '⚪ 未答') +
+                '</span>' +
+            '</div>' +
+            '<div class="option-box">' +
+                '<div class="option-text text-left-opt">'+leftText+'</div>' +
+                '<div class="vs-text">VS</div>' +
+                '<div class="vs-mobile">VS</div>' +
+                '<div class="option-text text-right-opt">'+rightText+'</div>' +
+            '</div>' +
+            '<div class="slider-container" style="opacity: '+(isDual ? '0.5' : '1')+'; pointer-events: '+(isDual ? 'none' : 'auto')+'; transition: opacity 0.3s;">' +
+                '<div style="position: relative; height: 30px; display: flex; align-items: center;">' +
+                    dualHtml +
+                '</div>' +
+                '<div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 600;">' +
+                    '<span style="color: var(--red)">强烈左倾</span>' +
+                    '<span id="val-q'+q.id+'" style="font-size: 16px; color: var(--primary); font-weight: 900;">' +
+                        (isDual ? '双高' : getDisplayText(savedValue)) +
+                    '</span>' +
+                    '<span style="color: var(--green)">强烈右倾</span>' +
+                '</div>' +
+            '</div>' +
+            '<div style="margin-top: 25px; text-align: center;">' +
+                btnHtml +
+            '</div>';
+            
         container.appendChild(div);
         if (!isDual) updateSliderVisual(div.querySelector('input[type=range]'), savedValue);
     });
@@ -471,10 +509,10 @@ function updateSliderVisual(input, val) {
     const value = parseInt(val);
     if (value < 5) {
         const intensity = (5 - value) / 5;
-        input.style.background = `linear-gradient(to right, rgba(220, 38, 38, ${0.3 + intensity*0.7}), #e2e8f0 ${50 + (5-value)*10}%)`;
+        input.style.background = 'linear-gradient(to right, rgba(220, 38, 38, '+(0.3 + intensity*0.7)+'), #e2e8f0 '+(50 + (5-value)*10)+'%)';
     } else if (value > 5) {
         const intensity = (value - 5) / 5;
-        input.style.background = `linear-gradient(to right, #e2e8f0 ${50 - (value-5)*10}%, rgba(22, 163, 74, ${0.3 + intensity*0.7}))`;
+        input.style.background = 'linear-gradient(to right, #e2e8f0 '+(50 - (value-5)*10)+'%, rgba(22, 163, 74, '+(0.3 + intensity*0.7)+'))';
     } else {
         input.style.background = '#e2e8f0';
     }
@@ -482,10 +520,10 @@ function updateSliderVisual(input, val) {
 
 function onSliderChange(input, id) {
     const value = parseInt(input.value);
-    document.getElementById(`val-q${id}`).textContent = getDisplayText(value);
+    document.getElementById('val-q'+id).textContent = getDisplayText(value);
     updateSliderVisual(input, value);
     userAnswers[id] = value;
-    const statusSpan = document.getElementById(`status-q${id}`);
+    const statusSpan = document.getElementById('status-q'+id);
     if(statusSpan) {
         statusSpan.textContent = '✅ 已答';
         statusSpan.style.color = 'var(--green)';
@@ -495,8 +533,8 @@ function onSliderChange(input, id) {
 }
 
 function toggleDual(id) {
-    const currentStatus = userAnswers[`dual_${id}`] || false;
-    userAnswers[`dual_${id}`] = !currentStatus;
+    const currentStatus = userAnswers['dual_'+id] || false;
+    userAnswers['dual_'+id] = !currentStatus;
     saveProgress();
     renderPage();
 }
@@ -508,7 +546,7 @@ function updateProgress() {
     });
     const percent = Math.round((answeredCount / TOTAL_QUESTIONS) * 100);
     document.getElementById('answered-count').textContent = answeredCount;
-    document.getElementById('total-progress').style.width = `${percent}%`;
+    document.getElementById('total-progress').style.width = percent + '%';
 }
 
 function nextPage() {
@@ -554,7 +592,7 @@ function jumpToFirstUnanswered() {
     currentPage = targetPage;
     renderPage();
     setTimeout(() => {
-        const card = document.getElementById(`card-q${id}`);
+        const card = document.getElementById('card-q'+id);
         if (card) {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             card.classList.add('highlight-unanswered');
@@ -571,7 +609,7 @@ function forceSubmit() {
 function runCalculation() {
     let scores = { Ni:30, Ne:30, Si:30, Se:30, Ti:30, Te:30, Fi:30, Fe:30 };
     rawQuestions.forEach(q => {
-        const isDual = userAnswers[`dual_${q.id}`];
+        const isDual = userAnswers['dual_'+q.id];
         if (isDual) {
             scores[q.left] += 6;
             scores[q.right] += 6;
@@ -610,28 +648,27 @@ function checkForTies(scores) {
 }
 
 function startTieBreaker(pair) {
-    const key = `${pair[0]}-${pair[1]}`;
-    const questions = tieBreakerPool[key] || tieBreakerPool[`${pair[1]}-${pair[0]}`];
+    const key = pair[0] + '-' + pair[1];
+    const questions = tieBreakerPool[key] || tieBreakerPool[pair[1] + '-' + pair[0]];
     if (!questions) { finalizeAndShow(tempScores); return; }
     const modal = document.getElementById('tie-modal');
     const container = document.getElementById('tie-question-container');
-    document.getElementById('tie-names').textContent = `${pair[0]} 与 ${pair[1]}`;
+    document.getElementById('tie-names').textContent = pair[0] + ' 与 ' + pair[1];
     container.innerHTML = '';
     questions.forEach((q, idx) => {
         const div = document.createElement('div');
         div.className = "card";
         div.style.background = "#f8fafc";
-        div.innerHTML = `
-            <p class="font-bold mb-3">${idx+1}. ${q.q}</p>
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <button onclick="handleTieChoice('${q.funcA}', '${q.funcB}', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">A. ${q.A}</button>
-                <button onclick="handleTieChoice('${q.funcB}', '${q.funcA}', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">B. ${q.B}</button>
-            </div>
-        `;
+        div.innerHTML = 
+            '<p class="font-bold mb-3">'+(idx+1)+'. '+q.q+'</p>' +
+            '<div style="display:flex; flex-direction:column; gap:10px;">' +
+                '<button onclick="handleTieChoice(\''+q.funcA+'\', \''+q.funcB+'\', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">A. '+q.A+'</button>' +
+                '<button onclick="handleTieChoice(\''+q.funcB+'\', \''+q.funcA+'\', this)" class="btn btn-outline" style="text-align:left; justify-content:flex-start;">B. '+q.B+'</button>' +
+            '</div>';
         container.appendChild(div);
     });
     const submitDiv = document.createElement('div');
-    submitDiv.innerHTML = `<button onclick="resolveTieBreaker()" class="btn btn-primary" style="width:100%; margin-top:15px;">提交决胜选择</button>`;
+    submitDiv.innerHTML = '<button onclick="resolveTieBreaker()" class="btn btn-primary" style="width:100%; margin-top:15px;">提交决胜选择</button>';
     container.appendChild(submitDiv);
     modal.classList.add('show');
     tieAdjustments = {}; 
@@ -723,24 +760,18 @@ function determineType(scores) {
     let extraTip = "";
     const inferior = bestStack[3];
     if (scores[inferior] > 70) {
-        extraTip += `<div class="report-card bg-pink-50" style="margin-top:10px;">
-            <strong style="color:#9d174d">⚠️ 状态提示：</strong><br>
-            系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
-            <br>这通常出现在极度压力或被迫“扮演角色”的情况下。
-        </div>`;
+        extraTip += '<div class="report-card bg-pink-50" style="margin-top:10px;">' +
+            '<strong style="color:#9d174d">⚠️ 状态提示：</strong><br>' +
+            '系统检测到您的劣势功能 <strong>'+inferior+'</strong> 异常活跃 ('+scores[inferior].toFixed(1)+')。<br>这通常出现在极度压力或被迫“扮演角色”的情况下。</div>';
     }
 
     if ((bestType === 'INFP' || bestType === 'ISFP') && scores.Ti > 60 && scores.Fi > 60) {
-        extraTip += `<div class="report-card bg-blue-50" style="margin-top:10px;">
-            <strong style="color:#1e40af">💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。
-            <br>这通常意味着您是一位<strong>“构建者型 ${bestType}”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。
-        </div>`;
+        extraTip += '<div class="report-card bg-blue-50" style="margin-top:10px;">' +
+            '<strong style="color:#1e40af">💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。<br>这通常意味着您是一位<strong>“构建者型 '+bestType+'”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。</div>';
     }
     else if ((bestType === 'ISTJ' || bestType === 'ESTJ') && scores.Fi > 60) {
-        extraTip += `<div class="report-card bg-pink-50" style="margin-top:10px;">
-            <strong style="color:#be185d">🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。
-            <br>对于理性的 ${bestType} 来说，这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序，更是在守护内心某种不愿妥协的感觉。
-        </div>`;
+        extraTip += '<div class="report-card bg-pink-50" style="margin-top:10px;">' +
+            '<strong style="color:#be185d">🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。<br>对于理性的 '+bestType+' 来说，这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序，更是在守护内心某种不愿妥协的感觉。</div>';
     }
     
     return { type: bestType, stack: bestStack, sorted, confidence, scores, extraTip };
@@ -757,7 +788,6 @@ const typeFullDesc = {
     ESTP: "企业家 - 聪明、精力充沛", ESFP: "表演者 - 自发、热情"
 };
 
-// ============ 5. 雷达图绘制 (核心 SVG 算法) ============
 function generateRadarChart(scores) {
     const labels = ["Ni", "Ne", "Si", "Se", "Ti", "Te", "Fi", "Fe"];
     const maxScore = 120;
@@ -774,10 +804,10 @@ function generateRadarChart(scores) {
         const angle = i * angleStep - Math.PI / 2;
         const x = center + r * Math.cos(angle);
         const y = center + r * Math.sin(angle);
-        points += `${x},${y} `;
+        points += x + ',' + y + ' ';
     });
 
-    let svg = `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+    let svg = '<svg viewBox="0 0 '+size+' '+size+'" xmlns="http://www.w3.org/2000/svg">';
     [0.33, 0.66, 1].forEach(scale => {
         let gridPoints = "";
         for(let i=0; i<8; i++) {
@@ -785,23 +815,23 @@ function generateRadarChart(scores) {
             const angle = i * angleStep - Math.PI / 2;
             const x = center + r * Math.cos(angle);
             const y = center + r * Math.sin(angle);
-            gridPoints += `${x},${y} `;
+            gridPoints += x + ',' + y + ' ';
         }
-        svg += `<polygon points="${gridPoints}" class="radar-grid" />`;
+        svg += '<polygon points="'+gridPoints+'" class="radar-grid" />';
     });
 
     labels.forEach((label, i) => {
         const angle = i * angleStep - Math.PI / 2;
         const endX = center + radius * Math.cos(angle);
         const endY = center + radius * Math.sin(angle);
-        svg += `<line x1="${center}" y1="${center}" x2="${endX}" y2="${endY}" class="radar-grid" />`;
+        svg += '<line x1="'+center+'" y1="'+center+'" x2="'+endX+'" y2="'+endY+'" class="radar-grid" />';
         const labelR = radius + 20;
         const labelX = center + labelR * Math.cos(angle);
         const labelY = center + labelR * Math.sin(angle);
-        svg += `<text x="${labelX}" y="${labelY}" text-anchor="middle" dominant-baseline="middle" class="radar-label">${label}</text>`;
+        svg += '<text x="'+labelX+'" y="'+labelY+'" text-anchor="middle" dominant-baseline="middle" class="radar-label">'+label+'</text>';
     });
 
-    svg += `<polygon points="${points}" class="radar-area" />`;
+    svg += '<polygon points="'+points+'" class="radar-area" />';
     labels.forEach((label, i) => {
         const score = scores[label] || 0;
         const normalizedScore = Math.min(score, maxScore);
@@ -809,64 +839,61 @@ function generateRadarChart(scores) {
         const angle = i * angleStep - Math.PI / 2;
         const x = center + r * Math.cos(angle);
         const y = center + r * Math.sin(angle);
-        svg += `<circle cx="${x}" cy="${y}" r="4" class="radar-point" />`;
+        svg += '<circle cx="'+x+'" cy="'+y+'" r="4" class="radar-point" />';
     });
 
-    svg += `</svg>`;
+    svg += '</svg>';
     return svg;
 }
 
 function showModal(res, scores) {
     const modal = document.getElementById('result-modal');
     const desc = document.getElementById('res-desc');
-    const title = document.getElementById('res-title'); // 新增
+    const title = document.getElementById('res-title');
     const scoreBadge = document.getElementById('res-score');
     const radarContainer = document.getElementById('radar-container');
     const rankContainer = document.getElementById('rank-container');
     const reportPlaceholder = document.getElementById('depth-report-placeholder');
     const extraTipContainer = document.getElementById('extra-tip-container');
 
-    // 1. 填充头部
-    title.textContent = res.type; // 修复 Bug：动态填充标题
+    title.textContent = res.type;
     desc.textContent = typeFullDesc[res.type];
-    scoreBadge.textContent = `匹配度 ${res.confidence}%`;
+    scoreBadge.textContent = '匹配度 ' + res.confidence + '%';
 
-    // 2. 绘制雷达图
     radarContainer.innerHTML = generateRadarChart(scores);
 
-    // 3. 填充核心排序
     const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"]; 
-    rankContainer.innerHTML = res.sorted.slice(0,4).map(([f,s], i) => `
-        <div style="background:#fff; padding:5px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-            <div style="font-size:10px; color:#94a3b8">#${i+1}</div>
-            <div style="font-size:18px; font-weight:900; color:${colors[i]}">${f}</div>
-            <div style="font-size:12px; font-weight:bold; color:#64748b">${s.toFixed(0)}</div>
-        </div>
-    `).join('');
+    rankContainer.innerHTML = res.sorted.slice(0,4).map((item, i) => {
+        let f = item[0]; let s = item[1];
+        return '<div style="background:#fff; padding:5px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">' +
+            '<div style="font-size:10px; color:#94a3b8">#'+(i+1)+'</div>' +
+            '<div style="font-size:18px; font-weight:900; color:'+colors[i]+'">'+f+'</div>' +
+            '<div style="font-size:12px; font-weight:bold; color:#64748b">'+s.toFixed(0)+'</div>' +
+        '</div>';
+    }).join('');
 
-    // 4. 填充深度报告
     const depthData = typeDepthData[res.type];
     if (depthData) {
         document.getElementById('report-career').textContent = depthData.career;
         document.getElementById('report-love').textContent = depthData.love;
         document.getElementById('report-growth').textContent = depthData.growth;
-        reportPlaceholder.classList.remove('hidden');
+        if(reportPlaceholder) reportPlaceholder.style.display = 'block';
     }
 
-    // 5. 填充额外提示
-    extraTipContainer.innerHTML = res.extraTip;
+    if(extraTipContainer) extraTipContainer.innerHTML = res.extraTip;
 
     modal.classList.add('show');
 }
 
 function shareResults() {
-    const type = document.getElementById('res-title')?.textContent || "未知";
-    const text = `我的MBTI八维深度测评结果：${type}！\n快来测测你的真实人格：${location.href}`;
+    var titleEl = document.getElementById('res-title');
+    var type = titleEl ? titleEl.textContent : "未知";
+    var text = '我的MBTI八维深度测评结果：'+type+'！\n快来测测你的真实人格：' + location.href;
     
     if (navigator.share) {
         navigator.share({ title: 'MBTI深度测评', text: text, url: location.href });
     } else {
-        navigator.clipboard.writeText(text).then(() => alert('结果已复制，快去分享吧！'));
+        navigator.clipboard.writeText(text).then(function() { alert('结果已复制，快去分享吧！'); });
     }
 }
 
@@ -878,18 +905,19 @@ function clearStorage() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const prevBtn = document.getElementById('prev-btn');
+document.addEventListener('DOMContentLoaded', function() {
+    var prevBtn = document.getElementById('prev-btn');
     if (prevBtn) { prevBtn.addEventListener('click', prevPage); }
     
-    const nextBtn = document.getElementById('next-btn');
+    var nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            const maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
+        nextBtn.addEventListener('click', function() {
+            var maxPage = Math.ceil(rawQuestions.length / QUESTIONS_PER_PAGE) - 1;
             if (currentPage >= maxPage) { calculateResults(); } else { nextPage(); }
         });
     }
-    startApp();
+    // 延迟一点启动，确保DOM完全解析
+    setTimeout(startApp, 100);
 });
 </script>
 </body>
