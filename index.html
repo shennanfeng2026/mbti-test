@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="2025最新MBTI八维深度测评，基于荣格心理学，剥离社会面具，探索你的真实人格底色。">
     <meta property="og:title" content="MBTI 八维深度测评 (2025 旗舰版)">
-    <title>MBTI 八维深度测评 (v17.6 数据可视化版)</title>
+    <title>MBTI 八维深度测评 (v18.0 功能栈云分享版)</title>
     <style>
         /* ============ 核心样式 ============ */
         :root {
@@ -127,9 +127,28 @@
         .report-card:hover { transform: translateY(-2px); }
         .highlight-text { color: var(--primary); font-weight: bold; }
         .result-header-badge { display: inline-block; padding: 6px 16px; background: #dcfce7; color: #166534; border-radius: 99px; font-size: 14px; font-weight: 800; margin-top: 10px; }
+
+        /* v18.0 新增: 好友分享Banner */
+        #friend-banner {
+            background: #fffbeb; color: #92400e; padding: 10px; font-size: 13px; font-weight: 600; text-align: center; border-bottom: 1px solid #fcd34d; display: none;
+        }
+
+        /* v18.0 新增: 功能栈网格样式 */
+        .stack-grid-item {
+            background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:10px 4px; text-align:center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .stack-role-label {
+            font-size: 10px; color: #94a3b8; margin-bottom: 4px; font-weight: bold;
+        }
+        .stack-func-val {
+            font-size: 18px; font-weight: 900; line-height: 1; margin-bottom: 4px;
+        }
+        .stack-score-val {
+            font-size: 12px; font-weight: bold; color: #64748b;
+        }
     </style>
     <script>
-        // 全局错误捕捉
         window.onerror = function(msg, url, line) {
             var loading = document.getElementById('loading-screen');
             if(loading) loading.innerHTML = '<p style="color:red; padding:20px;">⚠️ 程序加载出错<br>'+msg+'<br>请刷新重试</p>';
@@ -153,7 +172,7 @@
     <div class="modal-content" style="max-width: 500px; padding: 30px; text-align: center;">
         <div style="font-size: 56px; margin-bottom: 10px;">🧠</div>
         <h2 style="font-size: 28px; margin-bottom: 5px;">MBTI 八维深度测评</h2>
-        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v17.6 数据可视化版</p>
+        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v18.0 功能栈云分享版</p>
         <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
             <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 12px; border:none; padding:0;">⚠️ 测评前请阅读</h3>
             <ul style="list-style: none; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 12px;">
@@ -201,6 +220,7 @@
 
 <div id="result-modal" class="modal-overlay">
     <div class="modal-content">
+        <div id="friend-banner">👀 您正在查看好友的测评结果</div>
         <div style="background: linear-gradient(135deg, #f8fafc, #eef2ff); padding: 40px 30px; border-bottom: 1px solid #e2e8f0; text-align: center;">
             <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:2px; margin-bottom: 5px;">YOUR TRUE SELF</div>
             <div id="res-title" style="font-size:56px; font-weight:900; color:var(--primary); line-height:1; margin-bottom:10px;"></div>
@@ -210,7 +230,10 @@
             <div id="radar-container" class="radar-chart-container" style="margin-top: 30px;"></div>
             
             <div style="margin-top: 25px;">
-                <div style="font-size:12px; color:#94a3b8; font-weight:bold; margin-bottom:12px; letter-spacing:1px;">八维能量分布 (由强到弱)</div>
+                <div style="font-size:12px; color:#94a3b8; font-weight:bold; margin-bottom:12px; letter-spacing:1px; display:flex; justify-content:space-between; padding:0 5px;">
+                    <span>意识世界 (Ego)</span>
+                    <span>潜意识阴影 (Shadow)</span>
+                </div>
                 <div id="rank-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
             </div>
         </div>
@@ -219,8 +242,8 @@
         
         <div style="padding: 0 30px 40px;">
             <div style="display: flex; gap: 15px;">
-                <button onclick="clearStorage()" class="btn btn-outline" style="flex: 1;">重测</button>
-                <button onclick="shareResults()" class="btn btn-primary" style="flex: 2;">复制详细报告</button>
+                <button id="btn-restart" onclick="clearStorage()" class="btn btn-outline" style="flex: 1;">重测</button>
+                <button id="btn-share" onclick="shareResults()" class="btn btn-primary" style="flex: 2;">分享/复制结果</button>
             </div>
         </div>
     </div>
@@ -238,7 +261,22 @@
 </div>
 
 <script>
-// ============ 0. 语料库 ============
+// ============ 0. 全局配置与语料库 ============
+// v18.0 新增: 完整的八维功能栈定义 (Ego + Shadow)
+const FULL_STACKS = {
+    INTJ: ["Ni","Te","Fi","Se", "Ne","Ti","Fe","Si"], INFJ: ["Ni","Fe","Ti","Se", "Ne","Fi","Te","Si"],
+    ENTJ: ["Te","Ni","Se","Fi", "Ti","Ne","Si","Fe"], ENFJ: ["Fe","Ni","Se","Ti", "Fi","Ne","Si","Te"],
+    INTP: ["Ti","Ne","Si","Fe", "Te","Ni","Se","Fi"], INFP: ["Fi","Ne","Si","Te", "Fe","Ni","Se","Ti"],
+    ENTP: ["Ne","Ti","Fe","Si", "Ni","Te","Fi","Se"], ENFP: ["Ne","Fi","Te","Si", "Ni","Fe","Ti","Se"],
+    ISTJ: ["Si","Te","Fi","Ne", "Se","Ti","Fe","Ni"], ISFJ: ["Si","Fe","Ti","Ne", "Se","Fi","Te","Ni"],
+    ESTJ: ["Te","Si","Ne","Fi", "Ti","Se","Ni","Fe"], ESFJ: ["Fe","Si","Ne","Ti", "Fi","Se","Ni","Te"],
+    ISTP: ["Ti","Se","Ni","Fe", "Te","Si","Ne","Fi"], ISFP: ["Fi","Se","Ni","Te", "Fe","Si","Ne","Ti"],
+    ESTP: ["Se","Ti","Fe","Ni", "Si","Te","Fi","Ne"], ESFP: ["Se","Fi","Te","Ni", "Si","Fe","Ti","Ne"]
+};
+
+// v18.0 新增: 功能角色名称
+const ROLE_NAMES = ["主导功能", "辅助功能", "第三功能", "劣势功能", "对立角色", "批判角色", "捣蛋角色", "魔鬼角色"];
+
 const reportLibrary = {
     core: {
         "INFP": "你是一位迷失在现实荒原中的**哲学家与治愈者**。你的内心深处藏着一座不为人知的秘密花园，那里盛开着理想主义的花朵。你并非真的软弱，而是因为你的**价值观（Fi）**过于纯粹，以至于在这个粗糙的世界里，你常常感到格格不入。",
@@ -372,15 +410,21 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length; 
-const STORAGE_KEY = 'mbti_final_v17_6'; 
-const RESULT_KEY = 'mbti_final_report_v17_6';
+const STORAGE_KEY = 'mbti_final_v18_0'; 
+const RESULT_KEY = 'mbti_final_report_v18_0';
 
 let userAnswers = {};
 let currentPage = 0;
 let tempScores = {}; 
 let tieAdjustments = {};
 
+// ============ 1. 初始化逻辑 ============
 function startApp() {
+    // 检查是否有分享参数
+    if (checkUrlParams()) {
+        return; // 如果有参数，直接渲染结果，不再继续
+    }
+
     loadAnswers();
     const hasStarted = Object.keys(userAnswers).length > 0;
     
@@ -403,6 +447,42 @@ function startApp() {
     } else {
         renderPage();
     }
+}
+
+// v18.0 新增: 解析 URL 参数
+function checkUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('t');
+    const scoreStr = params.get('s');
+    
+    if (type && scoreStr && FULL_STACKS[type]) {
+        try {
+            // 解析分数 s=100-90-80... (顺序固定为 Ni, Ne, Si, Se, Ti, Te, Fi, Fe)
+            const parts = scoreStr.split('-');
+            const keys = ["Ni", "Ne", "Si", "Se", "Ti", "Te", "Fi", "Fe"];
+            if(parts.length === 8) {
+                let scores = {};
+                keys.forEach((key, i) => scores[key] = parseInt(parts[i]) || 0);
+                
+                // 构造结果对象
+                const stack = FULL_STACKS[type];
+                const res = {
+                    type: type,
+                    stack: stack,
+                    confidence: 100 // 分享链接默认视为有效
+                };
+                
+                // 隐藏 Loading
+                var loader = document.getElementById('loading-screen');
+                if(loader) loader.style.display = 'none';
+
+                // 显示结果模态框
+                showModal(res, scores, true); // true 表示是好友视角
+                return true;
+            }
+        } catch(e) { console.error("URL Parsing failed", e); }
+    }
+    return false;
 }
 
 function startQuiz() {
@@ -771,22 +851,11 @@ function determineType(scores) {
     const secondFunc = sorted[1][0]; 
     const thirdFunc = sorted[2][0];  
 
-    const stacks = {
-        INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
-        ENTJ: ["Te","Ni","Se","Fi"], ENFJ: ["Fe","Ni","Se","Ti"],
-        INTP: ["Ti","Ne","Si","Fe"], INFP: ["Fi","Ne","Si","Te"],
-        ENTP: ["Ne","Ti","Fe","Si"], ENFP: ["Ne","Fi","Te","Si"],
-        ISTJ: ["Si","Te","Fi","Ne"], ISFJ: ["Si","Fe","Ti","Ne"],
-        ESTJ: ["Te","Si","Ne","Fi"], ESFJ: ["Fe","Si","Ne","Ti"],
-        ISTP: ["Ti","Se","Ni","Fe"], ISFP: ["Fi","Se","Ni","Te"],
-        ESTP: ["Se","Ti","Fe","Ni"], ESFP: ["Se","Fi","Te","Ni"]
-    };
-
     let bestType = "未知";
     let bestStack = [];
     let bestScore = -999; 
 
-    for (const [type, stack] of Object.entries(stacks)) {
+    for (const [type, stack] of Object.entries(FULL_STACKS)) {
         let score = 0;
         const dom = stack[0]; 
         const aux = stack[1]; 
@@ -891,7 +960,8 @@ function generateRadarChart(scores) {
     return svg;
 }
 
-function showModal(res, scores) {
+// v18.0 修改: showModal 增加 friendView 参数
+function showModal(res, scores, friendView = false) {
     try {
         const modal = document.getElementById('result-modal');
         const title = document.getElementById('res-title');
@@ -900,6 +970,9 @@ function showModal(res, scores) {
         const radarContainer = document.getElementById('radar-container');
         const rankContainer = document.getElementById('rank-container');
         const reportContent = document.getElementById('depth-report-content');
+        const friendBanner = document.getElementById('friend-banner');
+        const btnRestart = document.getElementById('btn-restart');
+        const btnShare = document.getElementById('btn-share');
 
         title.textContent = res.type;
         desc.textContent = typeFullDesc[res.type] || "未知类型";
@@ -908,25 +981,46 @@ function showModal(res, scores) {
         // 绘制雷达图
         radarContainer.innerHTML = generateRadarChart(scores);
 
-        // 绘制全部8个数值 (从高到低)
-        // 1-3名: 暖色; 4名: 绿色; 5-8名: 冷色/灰色
-        const colors = [
-            "#ef4444", "#f97316", "#eab308", // 1-3
-            "#22c55e",                        // 4
-            "#3b82f6", "#6366f1", "#8b5cf6", "#64748b" // 5-8
-        ];
+        // v18.0 核心逻辑: 按【功能栈】排序显示，而非按分数高低
+        const stackList = res.stack; // 例如 ["Fi", "Ne", "Si", "Te", "Fe", "Ni", "Se", "Ti"]
         
-        // 使用 res.sorted 遍历全部 8 个
-        rankContainer.innerHTML = res.sorted.map((item, i) => {
-            let f = item[0]; let s = item[1];
-            return '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 4px; text-align:center;">' +
-                '<div style="font-size:10px; color:#94a3b8; margin-bottom:2px;">#'+(i+1)+'</div>' +
-                '<div style="font-size:16px; font-weight:900; color:'+colors[i]+'">'+f+'</div>' +
-                '<div style="font-size:13px; font-weight:bold; color:#334155;">'+s.toFixed(0)+'</div>' +
-            '</div>';
+        rankContainer.innerHTML = stackList.map((funcName, i) => {
+            const scoreVal = scores[funcName] || 0;
+            // 热力图颜色逻辑：分数越高越红，越低越蓝
+            let color = "#64748b";
+            if (scoreVal >= 90) color = "#ef4444";
+            else if (scoreVal >= 75) color = "#f97316";
+            else if (scoreVal >= 60) color = "#eab308";
+            else if (scoreVal >= 45) color = "#22c55e";
+            else if (scoreVal >= 30) color = "#3b82f6";
+            
+            const roleName = ROLE_NAMES[i] || "";
+
+            return `<div class="stack-grid-item">
+                <div class="stack-role-label">${roleName}</div>
+                <div class="stack-func-val" style="color:${color}">${funcName}</div>
+                <div class="stack-score-val">${scoreVal.toFixed(0)}</div>
+            </div>`;
         }).join('');
 
         reportContent.innerHTML = generateDepthReport(res.type, scores, res.stack);
+        
+        // v18.0 新增: 好友视角 UI 调整
+        if (friendView) {
+            friendBanner.style.display = 'block';
+            btnRestart.style.display = 'none'; // 隐藏重测
+            btnShare.textContent = "我也要测"; // 改按钮文本
+            btnShare.onclick = function() {
+                // 清除 URL 参数并重载
+                window.location.href = window.location.pathname;
+            };
+        } else {
+            friendBanner.style.display = 'none';
+            btnRestart.style.display = 'block';
+            btnShare.textContent = "分享/复制结果";
+            btnShare.onclick = shareResults;
+        }
+
         modal.classList.add('show');
     } catch(e) {
         alert("结果展示出错: " + e.message);
@@ -935,17 +1029,34 @@ function showModal(res, scores) {
 
 function finalizeAndShow(scores) {
     const result = determineType(scores);
-    showModal(result, scores);
+    showModal(result, scores, false);
 }
 
+// v18.0 新增: 基于 URL 参数的分享
 function shareResults() {
+    // 1. 获取当前数据
     var titleEl = document.getElementById('res-title');
     var type = titleEl ? titleEl.textContent : "未知";
-    var text = '我的MBTI八维深度测评结果：'+type+'！\n快来测测你的真实人格：' + location.href;
+    
+    // 2. 重新从 DOM 或 内存中获取 8 维分数，按固定顺序序列化
+    // 为了简单，我们直接读取全局的 tempScores (如果是好友视角，tempScores可能为空，需要注意)
+    // 但在好友视角点击这个按钮是跳转首页，所以这里只处理“自己测完分享”的情况
+    
+    // 序列化分数: Ni-Ne-Si-Se-Ti-Te-Fi-Fe
+    const keys = ["Ni", "Ne", "Si", "Se", "Ti", "Te", "Fi", "Fe"];
+    const scoreValStr = keys.map(k => Math.round(tempScores[k] || 0)).join('-');
+    
+    const shareUrl = `${window.location.origin}${window.location.pathname}?t=${type}&s=${scoreValStr}`;
+    const text = `我的MBTI八维深度测评结果：${type}！\n这是我的详细功能栈数据，快来看看：${shareUrl}`;
+
     if (navigator.share) {
-        navigator.share({ title: 'MBTI深度测评', text: text, url: location.href });
+        navigator.share({ title: 'MBTI深度测评', text: text, url: shareUrl });
     } else {
-        navigator.clipboard.writeText(text).then(function() { alert('结果已复制，快去分享吧！'); });
+        navigator.clipboard.writeText(text).then(function() { 
+            alert('✅ 专属链接已复制！\n\n发送给好友，他们可以直接看到你的八维雷达图和详细报告。'); 
+        }).catch(function() {
+            prompt("请手动复制链接分享：", text);
+        });
     }
 }
 
@@ -953,7 +1064,7 @@ function clearStorage() {
     if(confirm('确定清除进度并重测？')) { 
         localStorage.removeItem(STORAGE_KEY); 
         localStorage.removeItem(RESULT_KEY); 
-        location.reload();
+        location.href = window.location.pathname; // 清除参数并刷新
     }
 }
 
