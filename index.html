@@ -698,10 +698,11 @@ function finalizeAndShow(scores) {
 }
 
 function determineType(scores) {
+    // 1. 排序
     const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    const topFunc = sorted[0][0];   
-    const secondFunc = sorted[1][0]; 
-    const thirdFunc = sorted[2][0];  
+    const topFunc = sorted[0][0];   // 第1名
+    const secondFunc = sorted[1][0]; // 第2名
+    const thirdFunc = sorted[2][0];  // 第3名
 
     const stacks = {
         INTJ: ["Ni","Te","Fi","Se"], INFJ: ["Ni","Fe","Ti","Se"],
@@ -725,6 +726,7 @@ function determineType(scores) {
         const tert = stack[2]; 
         const inf = stack[3]; 
 
+        // 基础算法保持不变...
         if (dom === topFunc) score += 50;
         else if (dom === secondFunc) score += 30;
 
@@ -757,26 +759,102 @@ function determineType(scores) {
     if (confidence > 100) confidence = 99;
     if (bestScore < 40) confidence = Math.min(confidence, 50);
 
+    // ============ 🌟 智能提示系统 v2.0 (含冲突检测) ============
     let extraTip = "";
     const inferior = bestStack[3];
+
+    // --- 优先级 1: 红色警报 (Grip 状态) ---
     if (scores[inferior] > 70) {
-        extraTip += '<div class="report-card bg-pink-50" style="margin-top:10px;">' +
-            '<strong style="color:#9d174d">⚠️ 状态提示：</strong><br>' +
-            '系统检测到您的劣势功能 <strong>'+inferior+'</strong> 异常活跃 ('+scores[inferior].toFixed(1)+')。<br>这通常出现在极度压力或被迫“扮演角色”的情况下。</div>';
+        extraTip += `<div class="mt-4 p-4 bg-red-50 rounded-xl text-sm text-red-800 border border-red-200 fade-in">
+            <strong>⚠️ 状态警报：</strong><br>
+            系统检测到您的劣势功能 <strong>${inferior}</strong> 异常活跃 (${scores[inferior].toFixed(1)})。
+            <br>这通常意味着您正处于<strong>极度压力</strong>或<strong>被迫扮演角色</strong>的状态。请注意休息，回归您的主导功能。
+        </div>`;
     }
 
-    if ((bestType === 'INFP' || bestType === 'ISFP') && scores.Ti > 60 && scores.Fi > 60) {
-        extraTip += '<div class="report-card bg-blue-50" style="margin-top:10px;">' +
-            '<strong style="color:#1e40af">💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong> 与 <strong>Fi (内核)</strong> 并存。<br>这通常意味着您是一位<strong>“构建者型 '+bestType+'”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。</div>';
+    // --- 优先级 2: 双核驱动/功能打架 (Ambiguity) ---
+    // 针对您提到的那些“难分伯仲”的情况，优先级高于普通的高阶提示
+
+    // A. 哲学家矛盾：Fi (价值) vs Ti (逻辑) 都在高位
+    else if (scores.Fi > 60 && scores.Ti > 60 && Math.abs(scores.Fi - scores.Ti) < 15) {
+        extraTip += `<div class="mt-4 p-4 bg-indigo-100 rounded-xl text-sm text-indigo-900 border border-indigo-200 fade-in">
+            <strong>⚖️ 哲学家矛盾 (Fi ≈ Ti)：</strong> 您的情感内核(Fi)与逻辑思维(Ti)在<strong>激烈博弈</strong>。
+            <br>您做决定时可能极其痛苦——既要<strong>“符合逻辑真理”</strong>，又要<strong>“忠于内心感受”</strong>。这让您比常人更深刻、更独立，但也容易陷入<strong>“自我审判”的内耗死循环</strong>。
+        </div>`;
+    }
+
+    // B. 探索者困境：Ne (脑洞) vs Se (体验) 都在高位
+    else if (scores.Ne > 60 && scores.Se > 60 && Math.abs(scores.Ne - scores.Se) < 15) {
+        extraTip += `<div class="mt-4 p-4 bg-orange-100 rounded-xl text-sm text-orange-900 border border-orange-200 fade-in">
+            <strong>🔀 探索者困境 (Ne ≈ Se)：</strong> 您的直觉(Ne)与感官(Se)<strong>难分伯仲</strong>。
+            <br>您可能既想追求抽象的“无限可能”，又想沉浸于具象的“当下刺激”。这让您拥有极强的适应力和好奇心，但也容易<strong>极度分心</strong>，难以在“脑洞”和“现实”间取舍。
+        </div>`;
+    }
+
+    // C. 完美领袖悖论：Te (效率) vs Fe (和谐) 都在高位
+    else if (scores.Te > 60 && scores.Fe > 60 && Math.abs(scores.Te - scores.Fe) < 15) {
+        extraTip += `<div class="mt-4 p-4 bg-emerald-100 rounded-xl text-sm text-emerald-900 border border-emerald-200 fade-in">
+            <strong>🤝 完美领袖悖论 (Te ≈ Fe)：</strong> 您的执行力(Te)与共情力(Fe)<strong>并驾齐驱</strong>。
+            <br>您总是试图在<strong>“达成目标”</strong>和<strong>“照顾大家情绪”</strong>之间寻找不可能的平衡。您是一位“仁慈的独裁者”，但这往往让您自己背负了过重的心理包袱。
+        </div>`;
+    }
+
+    // D. 时空旅人：Ni (远见) vs Si (经验) 都在高位
+    else if (scores.Ni > 60 && scores.Si > 60 && Math.abs(scores.Ni - scores.Si) < 15) {
+        extraTip += `<div class="mt-4 p-4 bg-cyan-100 rounded-xl text-sm text-cyan-900 border border-cyan-200 fade-in">
+            <strong>🕰️ 时空旅人 (Ni ≈ Si)：</strong> 您的远见(Ni)与经验(Si)<strong>高度重合</strong>。
+            <br>您既活在未来，又深植于过去。您可能非常保守谨慎，但内心又在策划宏大的变革。这种张力让您拥有<strong>“基于现实的预言能力”</strong>，但也容易让您在“改变”与“维持”中犹豫不决。
+        </div>`;
+    }
+
+    // --- 优先级 3: 单功能高阶提示 (Fallback) ---
+    // 如果没有上述冲突，再显示之前的高阶提示
+
+    else if ((bestType === 'INFP' || bestType === 'ISFP') && scores.Ti > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-indigo-50 rounded-xl text-sm text-indigo-800 border border-indigo-200 fade-in">
+            <strong>💡 高阶解析：</strong> 检测到极高的 <strong>Ti (逻辑)</strong>。
+            <br>您是一位<strong>“构建者型 ${bestType}”</strong>——不仅拥有坚定的价值观，还具备像建筑师一样严密的逻辑体系来支撑它。
+        </div>`;
     }
     else if ((bestType === 'ISTJ' || bestType === 'ESTJ') && scores.Fi > 60) {
-        extraTip += '<div class="report-card bg-pink-50" style="margin-top:10px;">' +
-            '<strong style="color:#be185d">🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。<br>对于理性的 '+bestType+' 来说，这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序，更是在守护内心某种不愿妥协的感觉。</div>';
+        extraTip += `<div class="mt-4 p-4 bg-rose-50 rounded-xl text-sm text-rose-800 border border-rose-200 fade-in">
+            <strong>🛡️ 特殊状态解析：</strong> 您的 <strong>Fi (情感/价值观)</strong> 异常得高。
+            <br>这通常意味着您正在<strong>由内而外地防御</strong>。您不仅在维护秩序，更是在守护内心某种不愿妥协的感觉。
+        </div>`;
+    }
+    else if ((bestType === 'INTJ' || bestType === 'INFJ') && scores.Ti > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-purple-50 rounded-xl text-sm text-purple-800 border border-purple-200 fade-in">
+            <strong>🧠 学者型解析：</strong> 检测到极高的 <strong>Ti (批判逻辑)</strong>。
+            <br>您是一位<strong>“自我批判型 ${bestType}”</strong>。不满足于直觉，还会用逻辑自我解剖。这让您更独立，但也更内耗。
+        </div>`;
+    }
+    else if ((bestType === 'ENFJ' || bestType === 'ESFJ') && scores.Te > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-emerald-50 rounded-xl text-sm text-emerald-800 border border-emerald-200 fade-in">
+            <strong>⚡ 强执行力解析：</strong> 您的 <strong>Te (执行力)</strong> 远超常规。
+            <br>您是一位<strong>“铁腕仁心型 ${bestType}”</strong>。不仅关注人际，更具备高效的组织能力，是值得信赖的执行官。
+        </div>`;
+    }
+    else if ((bestType === 'INTP' || bestType === 'ISTP') && scores.Ni > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-cyan-50 rounded-xl text-sm text-cyan-800 border border-cyan-200 fade-in">
+            <strong>🔮 先知型解析：</strong> 您的 <strong>Ni (远见)</strong> 异常突出。
+            <br>您不只是分析逻辑，还能敏锐地<strong>预知演变方向</strong>。这让您常常能看到别人忽略的深层模式。
+        </div>`;
+    }
+    else if ((bestType === 'ENTP' || bestType === 'ENFP') && scores.Fe > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-orange-50 rounded-xl text-sm text-orange-800 border border-orange-200 fade-in">
+            <strong>🌟 社交魅力解析：</strong> 您的 <strong>Fe (共情)</strong> 非常发达。
+            <br>您擅长<strong>利用创意感染他人</strong>。拥有极强的“路人缘”和煽动力，是天生的团队粘合剂。
+        </div>`;
+    }
+    else if ((bestType === 'ESTP' || bestType === 'ESFP') && scores.Te > 60) {
+        extraTip += `<div class="mt-4 p-4 bg-slate-100 rounded-xl text-sm text-slate-800 border border-slate-300 fade-in">
+            <strong>🚀 实干家解析：</strong> 您的 <strong>Te (效率)</strong> 极高。
+            <br>您不仅爱体验，更有着<strong>极其务实的野心</strong>。您是潜藏在娱乐家外表下的<strong>“霸道总裁”</strong>。
+        </div>`;
     }
     
     return { type: bestType, stack: bestStack, sorted, confidence, scores, extraTip };
 }
-
 const typeFullDesc = {
     INTJ: "建筑师 - 独立、战略性", INFJ: "提倡者 - 理想主义、深邃",
     ENTJ: "指挥官 - 大胆、果断", ENFJ: "主人公 - 魅力四射",
@@ -922,3 +1000,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
