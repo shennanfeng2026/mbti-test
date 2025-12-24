@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="2025最新MBTI八维深度测评，基于荣格心理学，剥离社会面具，探索你的真实人格底色。">
     <meta property="og:title" content="MBTI 八维深度测评 (2025 旗舰版)">
-    <title>MBTI 八维深度测评</title>
+    <title>MBTI 八维深度测评 (v17.6 数据可视化版)</title>
     <style>
-        /* ============ 核心样式 (零依赖) ============ */
+        /* ============ 核心样式 ============ */
         :root {
             --primary: #4f46e5;
             --primary-light: #818cf8;
@@ -39,13 +39,12 @@
         }
         h1 { font-size: 28px; font-weight: 900; text-align: center; margin-bottom: 5px; color: #0f172a; }
         
-        /* 微信引导遮罩 */
+        /* 微信引导 */
         #wx-mask {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 99999; display: none;
             flex-direction: column; align-items: center; color: #fff; text-align: center; padding-top: 60px;
         }
-        
         /* 加载动画 */
         #loading-screen {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -58,13 +57,12 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 进度条 */
+        /* UI 组件 */
         .progress-container { display: flex; align-items: center; gap: 10px; margin: 20px 0; }
         .progress-track { flex: 1; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); width: 0%; transition: width 0.3s ease; }
         .page-badge { background: #fff; padding: 2px 10px; border-radius: 99px; font-weight: 600; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
 
-        /* 题目区域 (修复版) */
         .question-header { display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center; }
         .option-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .vs-single { 
@@ -79,7 +77,7 @@
         @media (min-width: 640px) {
             .option-box { flex-direction: row; align-items: center; justify-content: space-between; }
             .option-text { width: 45%; }
-            .vs-single { font-size: 24px; margin: 0; } /* 电脑端调整大小 */
+            .vs-single { font-size: 24px; margin: 0; }
             .text-left-opt { text-align: right; }
         }
 
@@ -155,8 +153,7 @@
     <div class="modal-content" style="max-width: 500px; padding: 30px; text-align: center;">
         <div style="font-size: 56px; margin-bottom: 10px;">🧠</div>
         <h2 style="font-size: 28px; margin-bottom: 5px;">MBTI 八维深度测评</h2>
-        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v17.5 终极版 · 剥离社会面具</p>
-        
+        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v17.6 数据可视化版</p>
         <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
             <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 12px; border:none; padding:0;">⚠️ 测评前请阅读</h3>
             <ul style="list-style: none; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 12px;">
@@ -209,8 +206,13 @@
             <div id="res-title" style="font-size:56px; font-weight:900; color:var(--primary); line-height:1; margin-bottom:10px;"></div>
             <div id="res-desc" style="font-size:18px; font-weight:700; color:#334155; margin-bottom:15px;"></div>
             <div id="res-score" class="result-header-badge"></div>
+            
             <div id="radar-container" class="radar-chart-container" style="margin-top: 30px;"></div>
-            <div id="rank-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px;"></div>
+            
+            <div style="margin-top: 25px;">
+                <div style="font-size:12px; color:#94a3b8; font-weight:bold; margin-bottom:12px; letter-spacing:1px;">八维能量分布 (由强到弱)</div>
+                <div id="rank-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
+            </div>
         </div>
         
         <div id="depth-report-content" class="report-section"></div>
@@ -236,7 +238,7 @@
 </div>
 
 <script>
-// ============ 0. 核心数据 ============
+// ============ 0. 语料库 ============
 const reportLibrary = {
     core: {
         "INFP": "你是一位迷失在现实荒原中的**哲学家与治愈者**。你的内心深处藏着一座不为人知的秘密花园，那里盛开着理想主义的花朵。你并非真的软弱，而是因为你的**价值观（Fi）**过于纯粹，以至于在这个粗糙的世界里，你常常感到格格不入。",
@@ -370,8 +372,8 @@ const tieBreakerPool = {
 
 const QUESTIONS_PER_PAGE = 8;
 const TOTAL_QUESTIONS = rawQuestions.length; 
-const STORAGE_KEY = 'mbti_final_v17_5'; 
-const RESULT_KEY = 'mbti_final_report_v17_5';
+const STORAGE_KEY = 'mbti_final_v17_6'; 
+const RESULT_KEY = 'mbti_final_report_v17_6';
 
 let userAnswers = {};
 let currentPage = 0;
@@ -903,15 +905,24 @@ function showModal(res, scores) {
         desc.textContent = typeFullDesc[res.type] || "未知类型";
         scoreBadge.textContent = '匹配度 ' + res.confidence + '%';
 
+        // 绘制雷达图
         radarContainer.innerHTML = generateRadarChart(scores);
 
-        const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"]; 
-        rankContainer.innerHTML = res.sorted.slice(0,4).map((item, i) => {
+        // 绘制全部8个数值 (从高到低)
+        // 1-3名: 暖色; 4名: 绿色; 5-8名: 冷色/灰色
+        const colors = [
+            "#ef4444", "#f97316", "#eab308", // 1-3
+            "#22c55e",                        // 4
+            "#3b82f6", "#6366f1", "#8b5cf6", "#64748b" // 5-8
+        ];
+        
+        // 使用 res.sorted 遍历全部 8 个
+        rankContainer.innerHTML = res.sorted.map((item, i) => {
             let f = item[0]; let s = item[1];
-            return '<div style="background:#fff; padding:5px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">' +
-                '<div style="font-size:10px; color:#94a3b8">#'+(i+1)+'</div>' +
-                '<div style="font-size:18px; font-weight:900; color:'+colors[i]+'">'+f+'</div>' +
-                '<div style="font-size:12px; font-weight:bold; color:#64748b">'+s.toFixed(0)+'</div>' +
+            return '<div style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 4px; text-align:center;">' +
+                '<div style="font-size:10px; color:#94a3b8; margin-bottom:2px;">#'+(i+1)+'</div>' +
+                '<div style="font-size:16px; font-weight:900; color:'+colors[i]+'">'+f+'</div>' +
+                '<div style="font-size:13px; font-weight:bold; color:#334155;">'+s.toFixed(0)+'</div>' +
             '</div>';
         }).join('');
 
