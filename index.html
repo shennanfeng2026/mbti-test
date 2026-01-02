@@ -146,7 +146,44 @@
         }
         .stack-score-val {
             font-size: 12px; font-weight: bold; color: #64748b;
-        }
+        }/* --- v19.0 新增：多重结果卡片样式 --- */
+.possibility-box {
+    margin-top: 30px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.candidate-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f8fafc;
+    transition: transform 0.2s;
+}
+.candidate-card.top-1 {
+    background: #eff6ff;
+    border: 2px solid #6366f1;
+    transform: scale(1.02);
+}
+.c-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.c-type { font-size: 1.2rem; font-weight: 900; color: #1e293b; }
+.c-match { font-weight: bold; color: #6366f1; }
+.progress-track {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+.progress-fill { height: 100%; border-radius: 4px; }
+.c-footer { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
     </style>
     <script>
         window.onerror = function(msg, url, line) {
@@ -237,7 +274,14 @@
                 <div id="rank-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>
             </div>
         </div>
-        
+        <div class="possibility-box" style="margin: 0 30px 20px;">
+            <h3 style="color:#1e293b; margin-bottom:10px; font-size:18px;">📊 你的类型可能性分析</h3>
+            <p style="font-size:14px; color:#64748b; margin-bottom:15px;">
+                基于全功能栈权重的综合分析，你最像以下类型：
+            </p>
+            <div id="candidates-list"></div>
+        </div>
+
         <div id="depth-report-content" class="report-section"></div>
         
         <div style="padding: 0 30px 40px;">
@@ -845,56 +889,78 @@ function resolveTieBreaker() {
     finalizeAndShow(tempScores);
 }
 
+// --- v19.0 核心算法：计算 Top 3 (修复版) ---
+// --- v19.1 核心算法：绝对分权重优化版 ---
 function determineType(scores) {
-    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-    const topFunc = sorted[0][0];   
-    const secondFunc = sorted[1][0]; 
-    const thirdFunc = sorted[2][0];  
+    // 1. 定义权重 (K2C 逻辑)
+    // 适当拉大主导功能(Dom)的权重，让类型区分度更高
+    const weights = { dom: 4.5, aux: 3.0, tert: 1.5, inf: 0.5 }; 
+    
+    // 2. 设定一个“理论上的高分基准”
+    // 假设：主导100分 + 辅助80分 + 第三60分 + 劣势30分 = 约 800 分左右为“典型强类型”
+    // 设定这个值越高，用户的百分比就越低（越严格）
+    const STANDARD_MAX_SCORE = 850; 
 
-    let bestType = "未知";
-    let bestStack = [];
-    let bestScore = -999; 
+    let allResults = [];
 
+    // 3. 遍历 16 种人格
     for (const [type, stack] of Object.entries(FULL_STACKS)) {
-        let score = 0;
-        const dom = stack[0]; 
-        const aux = stack[1]; 
-        const tert = stack[2]; 
-        const inf = stack[3]; 
+        const dom = stack[0], aux = stack[1], tert = stack[2], inf = stack[3];
+        
+        // 计算加权分
+        let matchScore = 
+            (scores[dom] * weights.dom) + 
+            (scores[aux] * weights.aux) + 
+            (scores[tert] * weights.tert) + 
+            (scores[inf] * weights.inf);
 
-        if (dom === topFunc) score += 50;
-        else if (dom === secondFunc) score += 30;
-        if (aux === secondFunc) score += 25; 
-        else if (aux === thirdFunc) score += 20; 
-        else if (sorted.slice(0, 4).some(x => x[0] === aux)) score += 10; 
-
-        let counterAux = "";
-        if (aux.includes('N')) counterAux = aux.replace('N', 'S');
-        if (aux.includes('S')) counterAux = aux.replace('S', 'N');
-        if (aux.includes('T')) counterAux = aux.replace('T', 'F');
-        if (aux.includes('F')) counterAux = aux.replace('F', 'T');
-        if (counterAux && scores[aux] > scores[counterAux] + 10) score += 15; 
-
-        if (sorted.slice(0, 4).some(x => x[0] === tert)) score += 10;
-        if (scores[inf] > scores[dom]) score -= 20;
-        score += (scores[dom] + scores[aux]) * 0.1;
-
-        if (score > bestScore) {
-            bestScore = score;
-            bestType = type;
-            bestStack = stack;
+        // 惩罚项：如果第8功能(魔鬼)过高，扣分力度加大，防止误判
+        const demon = stack[7]; 
+        if (scores[demon] > scores[dom]) {
+            matchScore -= (scores[demon] - scores[dom]) * 2.0;
         }
+
+        allResults.push({ type, score: matchScore, stack });
     }
 
-    const maxScore = 120;
-    let confidence = Math.round((bestScore / maxScore) * 100);
-    if (confidence > 100) confidence = 99;
-    if (bestScore < 40) confidence = Math.min(confidence, 50);
-    
-    return { type: bestType, stack: bestStack, sorted, confidence, scores };
-}
+    // 4. 排序取前三
+    allResults.sort((a, b) => b.score - a.score);
+    const top3 = allResults.slice(0, 3);
 
-const typeFullDesc = {
+    // 5. 格式化输出 (核心修改处)
+    const candidates = top3.map((item) => {
+        // 使用【绝对分】计算：分数 / 理论满分
+        let rawPercent = (item.score / STANDARD_MAX_SCORE) * 100;
+        
+        // 修正逻辑：
+        // 1. 封顶 99%
+        // 2. 只有分数真的很高时才给高分
+        let percent = Math.round(Math.min(rawPercent, 99));
+        
+        // 兜底：如果太低（比如负分），显示 0
+        percent = Math.max(0, percent);
+        
+        return {
+            type: item.type,
+            percent: percent,
+            stack: item.stack,
+            // 确保使用正确的变量名
+            desc: (typeof typeFullDesc !== 'undefined' ? typeFullDesc[item.type] : item.type) 
+        };
+    });
+
+    const best = candidates[0];
+
+    return { 
+        type: best.type,          
+        stack: best.stack,        
+        confidence: best.percent, 
+        bestType: best.type,
+        candidates: candidates,
+        scores: scores 
+    };
+}
+ const typeFullDesc = {
     INTJ: "建筑师 - 独立、战略性", INFJ: "提倡者 - 理想主义、深邃",
     ENTJ: "指挥官 - 大胆、果断", ENFJ: "主人公 - 魅力四射",
     INTP: "逻辑学家 - 渴望知识", INFP: "调停者 - 诗意、善良",
@@ -1005,7 +1071,40 @@ function showModal(res, scores, friendView = false) {
 
         reportContent.innerHTML = generateDepthReport(res.type, scores, res.stack);
         
-        // v18.0 新增: 好友视角 UI 调整
+        const listContainer = document.getElementById('candidates-list');
+        if (listContainer && res.candidates) {
+            let listHtml = '';
+            res.candidates.forEach((item, index) => {
+                const isTop = index === 0;
+                const color = isTop ? '#6366f1' : (index === 1 ? '#8b5cf6' : '#94a3b8');
+                const badge = isTop ? '🥇 No.1' : (index === 1 ? '🥈 No.2' : '🥉 No.3');
+                
+                // 使用你现有的 typeFullDesc 对象
+                const descText = typeFullDesc[item.type] 
+                                 ? typeFullDesc[item.type].split(' - ')[1] 
+                                 : item.type;
+
+                listHtml += `
+                    <div class="candidate-card ${isTop ? 'top-1' : ''}">
+                        <div class="c-header">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:12px; background:${color}; color:#fff; padding:2px 8px; border-radius:4px;">${badge}</span>
+                                <span class="c-type">${item.type}</span>
+                            </div>
+                            <span class="c-match" style="color:${color}">${item.percent}%</span>
+                        </div>
+                        <div style="font-size:13px; color:#334155; margin-bottom:8px;">
+                             ${descText} 
+                        </div>
+                        <div class="progress-track" style="margin:5px 0;">
+                            <div class="progress-fill" style="width:${item.percent}%; background:${color}"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = listHtml;
+        }
+
         if (friendView) {
             friendBanner.style.display = 'block';
             btnRestart.style.display = 'none'; // 隐藏重测
