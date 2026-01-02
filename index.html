@@ -766,21 +766,29 @@ function calculateResults() {
     if(missingCount > 0) { 
         document.getElementById('missing-count').textContent = missingCount;
         const jumpModal = document.getElementById('jump-confirm-modal');
+        
+        // ✅ 修复：只添加 class，不要手动设置 style
         jumpModal.classList.add('show');
-        jumpModal.style.visibility = 'visible';
-        jumpModal.style.opacity = '1';
+        // jumpModal.style.visibility = 'visible'; // ❌ 删掉这行
+        // jumpModal.style.opacity = '1';          // ❌ 删掉这行
+        
         window.targetJumpId = firstMissingId;
         return; 
     }
     runCalculation();
 }
-
 function jumpToFirstUnanswered() {
     const id = window.targetJumpId;
     if (!id) return;
     const idx = rawQuestions.findIndex(q => q.id === id);
     const targetPage = Math.floor(idx / QUESTIONS_PER_PAGE);
-    document.getElementById('jump-confirm-modal').classList.remove('show');
+    
+    // ✅ 修复：确保样式被彻底清除
+    const modal = document.getElementById('jump-confirm-modal');
+    modal.classList.remove('show');
+    modal.style.visibility = ''; // 清空强制样式
+    modal.style.opacity = '';    // 清空强制样式
+
     currentPage = targetPage;
     renderPage();
     setTimeout(() => {
@@ -794,7 +802,12 @@ function jumpToFirstUnanswered() {
 }
 
 function forceSubmit() {
-    document.getElementById('jump-confirm-modal').classList.remove('show');
+    // ✅ 修复：确保样式被彻底清除
+    const modal = document.getElementById('jump-confirm-modal');
+    modal.classList.remove('show');
+    modal.style.visibility = '';
+    modal.style.opacity = '';
+
     rawQuestions.forEach(q => {
         if (!isQuestionAnswered(q.id)) {
             userAnswers[q.id] = 5;
@@ -891,30 +904,28 @@ function resolveTieBreaker() {
 
 // --- v19.0 核心算法：计算 Top 3 (修复版) ---
 // --- v19.1 核心算法：绝对分权重优化版 ---
+// --- v19.3 核心算法：排名衰减版 (拉大差距) ---
 function determineType(scores) {
-    // 1. 定义权重 (K2C 逻辑)
-    // 适当拉大主导功能(Dom)的权重，让类型区分度更高
+    // 1. 定义权重 (保持不变)
     const weights = { dom: 4.5, aux: 3.0, tert: 1.5, inf: 0.5 }; 
     
-    // 2. 设定一个“理论上的高分基准”
-    // 假设：主导100分 + 辅助80分 + 第三60分 + 劣势30分 = 约 800 分左右为“典型强类型”
-    // 设定这个值越高，用户的百分比就越低（越严格）
-    const STANDARD_MAX_SCORE = 850; 
+    // 2. 调整基准分
+    //稍微降低满分基准，让第一名的分数更容易好看（接近 90%+）
+    const STANDARD_MAX_SCORE = 800; 
 
     let allResults = [];
 
-    // 3. 遍历 16 种人格
+    // 3. 遍历计算所有类型的原始得分
     for (const [type, stack] of Object.entries(FULL_STACKS)) {
         const dom = stack[0], aux = stack[1], tert = stack[2], inf = stack[3];
         
-        // 计算加权分
         let matchScore = 
             (scores[dom] * weights.dom) + 
             (scores[aux] * weights.aux) + 
             (scores[tert] * weights.tert) + 
             (scores[inf] * weights.inf);
 
-        // 惩罚项：如果第8功能(魔鬼)过高，扣分力度加大，防止误判
+        // 惩罚项
         const demon = stack[7]; 
         if (scores[demon] > scores[dom]) {
             matchScore -= (scores[demon] - scores[dom]) * 2.0;
@@ -927,24 +938,29 @@ function determineType(scores) {
     allResults.sort((a, b) => b.score - a.score);
     const top3 = allResults.slice(0, 3);
 
-    // 5. 格式化输出 (核心修改处)
-    const candidates = top3.map((item) => {
-        // 使用【绝对分】计算：分数 / 理论满分
+    // 5. ⚡️ 核心修改：引入“排名衰减系数”
+    const candidates = top3.map((item, index) => {
+        // 计算基础百分比
         let rawPercent = (item.score / STANDARD_MAX_SCORE) * 100;
         
-        // 修正逻辑：
-        // 1. 封顶 99%
-        // 2. 只有分数真的很高时才给高分
-        let percent = Math.round(Math.min(rawPercent, 99));
-        
-        // 兜底：如果太低（比如负分），显示 0
+        // 🚀 排名衰减逻辑：
+        // 第一名：保持 100% 实力
+        // 第二名：乘以 0.85 (强行拉开差距)
+        // 第三名：乘以 0.70 (变成陪跑)
+        let decayFactor = 1.0;
+        if (index === 1) decayFactor = 0.85;
+        if (index === 2) decayFactor = 0.70;
+
+        let finalPercent = rawPercent * decayFactor;
+
+        // 修正逻辑：封顶 99%，兜底 0%
+        let percent = Math.round(Math.min(finalPercent, 99));
         percent = Math.max(0, percent);
         
         return {
             type: item.type,
             percent: percent,
             stack: item.stack,
-            // 确保使用正确的变量名
             desc: (typeof typeFullDesc !== 'undefined' ? typeFullDesc[item.type] : item.type) 
         };
     });
