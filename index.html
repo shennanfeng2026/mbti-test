@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="2025最新MBTI八维深度测评，基于荣格心理学，剥离社会面具，探索你的真实人格底色。">
     <meta property="og:title" content="MBTI 八维深度测评 (2025 旗舰版)">
-    <title>MBTI 八维深度测评 (v18.0 功能栈云分享版)</title>
+    <title>MBTI 八维深度测评 (v21.0 最终验证版)</title>
     <style>
         /* ============ 核心样式 ============ */
         :root {
@@ -146,44 +146,45 @@
         }
         .stack-score-val {
             font-size: 12px; font-weight: bold; color: #64748b;
-        }/* --- v19.0 新增：多重结果卡片样式 --- */
-.possibility-box {
-    margin-top: 30px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-.candidate-card {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background: #f8fafc;
-    transition: transform 0.2s;
-}
-.candidate-card.top-1 {
-    background: #eff6ff;
-    border: 2px solid #6366f1;
-    transform: scale(1.02);
-}
-.c-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-.c-type { font-size: 1.2rem; font-weight: 900; color: #1e293b; }
-.c-match { font-weight: bold; color: #6366f1; }
-.progress-track {
-    height: 8px;
-    background: #e2e8f0;
-    border-radius: 4px;
-    margin: 10px 0;
-    overflow: hidden;
-}
-.progress-fill { height: 100%; border-radius: 4px; }
-.c-footer { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
+        }
+        /* --- v19.0 新增：多重结果卡片样式 --- */
+        .possibility-box {
+            margin-top: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .candidate-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            transition: transform 0.2s;
+        }
+        .candidate-card.top-1 {
+            background: #eff6ff;
+            border: 2px solid #6366f1;
+            transform: scale(1.02);
+        }
+        .c-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .c-type { font-size: 1.2rem; font-weight: 900; color: #1e293b; }
+        .c-match { font-weight: bold; color: #6366f1; }
+        .progress-track {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill { height: 100%; border-radius: 4px; }
+        .c-footer { font-size: 0.85rem; color: #64748b; margin-top: 5px; }
     </style>
     <script>
         window.onerror = function(msg, url, line) {
@@ -206,22 +207,44 @@
 </div>
 
 <div id="welcome-modal" class="modal-overlay" style="z-index: 200;">
-    <div class="modal-content" style="max-width: 500px; padding: 30px; text-align: center;">
-        <div style="font-size: 56px; margin-bottom: 10px;">🧠</div>
-        <h2 style="font-size: 28px; margin-bottom: 5px;">MBTI 八维深度测评</h2>
-        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.8;">v18.0 功能栈云分享版</p>
-        <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
-            <h3 style="font-size: 16px; color: var(--primary); margin-bottom: 12px; border:none; padding:0;">⚠️ 测评前请阅读</h3>
-            <ul style="list-style: none; font-size: 14px; color: #475569; display: flex; flex-direction: column; gap: 12px;">
-                <li style="display:flex; gap:8px;">❌ <span><strong>不要选“我应该怎么做”</strong><br><span style="font-size:12px; color:#94a3b8">社会要求的你，不是真实的你。</span></span></li>
-                <li style="display:flex; gap:8px;">❌ <span><strong>不要选“我想成为的样子”</strong><br><span style="font-size:12px; color:#94a3b8">理想的自我，也不是当下的你。</span></span></li>
-                <li style="display:flex; gap:8px;">✅ <span><strong>请选“下意识的第一反应”</strong><br><span style="font-size:12px; color:#94a3b8">哪怕那个选择看起来很懒惰、很自私，只要它是你最舒服的状态，就请诚实地选择它。</span></span></li>
+    <div class="modal-content" style="max-width: 480px; padding: 40px 30px; text-align: center;">
+        <div style="font-size: 56px; margin-bottom: 20px; animation: float 3s ease-in-out infinite;">📜</div>
+        
+        <h2 style="font-size: 24px; font-weight: 900; color: #1e293b; margin-bottom: 10px; letter-spacing: 1px;">欢迎开启自我探索之旅</h2>
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;">PRE-COMMITMENT</div>
+
+        <div style="margin-bottom: 30px; position: relative; padding: 0 10px;">
+            <p style="font-size: 15px; color: #475569; line-height: 1.8; font-weight: 500; text-align: justify;">
+                <span style="color:#6366f1; font-weight:bold;">确定你的类型是你的责任。</span><br>
+                本站无法通过屏幕看穿你的灵魂，它只是一面镜子，客观反射你提供的答案。<br><br>
+                测试的准确度，完全取决于你是否敢于面对<span style="border-bottom: 2px solid #cbd5e1; color:#0f172a; font-weight:bold;">“不完美的自己”</span>。
+            </p>
+        </div>
+
+        <div style="text-align: left; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+            <ul style="list-style: none; font-size: 14px; color: #334155; display: flex; flex-direction: column; gap: 15px;">
+                <li style="display:flex; gap:12px; align-items: flex-start;">
+                    <span style="color:#ef4444; font-weight:bold;">✕</span> 
+                    <div>
+                        <strong>拒绝“工作面具”</strong>
+                        <div style="font-size:12px; color:#94a3b8; margin-top:2px;">不要选“工作中应该做的”，选“回家后最舒服的”。</div>
+                    </div>
+                </li>
+                <li style="display:flex; gap:12px; align-items: flex-start;">
+                    <span style="color:#ef4444; font-weight:bold;">✕</span> 
+                    <div>
+                        <strong>拒绝“理想自我”</strong>
+                        <div style="font-size:12px; color:#94a3b8; margin-top:2px;">不要选“我想成为的”，选“我下意识就是这样的”。</div>
+                    </div>
+                </li>
             </ul>
         </div>
-        <button onclick="startQuiz()" class="btn btn-primary" style="width: 100%; font-size: 18px;">开始探索</button>
+        
+        <button onclick="startQuiz()" class="btn btn-primary" style="width: 100%; font-size: 16px; padding: 16px; font-weight: 800; letter-spacing: 1px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);">
+            我承诺诚实面对自我 · 开始
+        </button>
     </div>
 </div>
-
 <div id="app" class="container">
     <header>
         <h1>MBTI 八维深度测评</h1>
@@ -248,10 +271,45 @@
     <div class="modal-content" style="max-width: 500px; padding: 30px;">
         <div class="text-center mb-6">
             <div style="font-size: 48px; margin-bottom: 10px;">⚖️</div>
-            <h2>进入终极决胜局</h2>
-            <p>系统检测到您的 <span id="tie-names" style="color: var(--primary); font-weight: bold;"></span> 功能难分伯仲。</p>
+            <h2>进入深度验证 (Deep Dive)</h2>
+            <p style="color: #64748b; font-size: 14px; margin-top: 10px;">
+                系统检测到您的 <span id="tie-names" style="color: var(--primary); font-weight: bold;"></span> 功能极度接近。
+                <br><br>
+                为了区分本质，我们需要进行一项<strong style="color:#dc2626;">“压力阴影测试”</strong>。
+                请抛开理智，诚实面对在<strong>极端压力或崩溃状态下</strong>，你更倾向于哪种反应？
+            </p>
         </div>
         <div id="tie-question-container"></div>
+    </div>
+</div>
+
+<div id="final-verify-modal" class="modal-overlay" style="z-index: 900;">
+    <div class="modal-content" style="max-width: 600px; padding: 30px; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 10px;">🤔</div>
+        <h2 style="color: #1e293b; margin-bottom: 15px;">系统在两个类型间犹豫不决...</h2>
+        <p style="color: #64748b; font-size: 15px; margin-bottom: 25px; line-height: 1.6;">
+            根据数据，你非常接近 <span id="verify-type-a" style="font-weight:bold; color:var(--primary);"></span> 和 <span id="verify-type-b" style="font-weight:bold; color:var(--primary);"></span>。<br>
+            根据荣格心理学，<strong>"阴影人格"（压力下的反应）</strong> 是最难伪装的。<br>
+            请阅读下方两种<strong>[崩溃/黑化]</strong>状态，哪一种更像你？
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div onclick="confirmFinalType(0)" class="candidate-card" style="cursor: pointer; text-align: left; border: 2px solid #e2e8f0; transition: all 0.2s;">
+                <div class="c-header">
+                    <span class="c-type" style="font-size: 16px;">模式 A：<span id="verify-name-a"></span> 的阴影</span>
+                </div>
+                <div id="verify-desc-a" style="font-size: 14px; color: #334155; margin-top: 5px; font-weight: 500;"></div>
+            </div>
+
+            <div onclick="confirmFinalType(1)" class="candidate-card" style="cursor: pointer; text-align: left; border: 2px solid #e2e8f0; transition: all 0.2s;">
+                <div class="c-header">
+                    <span class="c-type" style="font-size: 16px;">模式 B：<span id="verify-name-b"></span> 的阴影</span>
+                </div>
+                <div id="verify-desc-b" style="font-size: 14px; color: #334155; margin-top: 5px; font-weight: 500;"></div>
+            </div>
+        </div>
+        
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 20px;">* 点击上方描述卡片，即刻确认你的真实类型</p>
     </div>
 </div>
 
@@ -306,7 +364,6 @@
 
 <script>
 // ============ 0. 全局配置与语料库 ============
-// v18.0 新增: 完整的八维功能栈定义 (Ego + Shadow)
 const FULL_STACKS = {
     INTJ: ["Ni","Te","Fi","Se", "Ne","Ti","Fe","Si"], INFJ: ["Ni","Fe","Ti","Se", "Ne","Fi","Te","Si"],
     ENTJ: ["Te","Ni","Se","Fi", "Ti","Ne","Si","Fe"], ENFJ: ["Fe","Ni","Se","Ti", "Fi","Ne","Si","Te"],
@@ -318,7 +375,6 @@ const FULL_STACKS = {
     ESTP: ["Se","Ti","Fe","Ni", "Si","Te","Fi","Ne"], ESFP: ["Se","Fi","Te","Ni", "Si","Fe","Ti","Ne"]
 };
 
-// v18.0 新增: 功能角色名称
 const ROLE_NAMES = ["主导功能", "辅助功能", "第三功能", "劣势功能", "对立角色", "批判角色", "捣蛋角色", "魔鬼角色"];
 
 const reportLibrary = {
@@ -464,28 +520,17 @@ let tieAdjustments = {};
 
 // ============ 1. 初始化逻辑 ============
 function startApp() {
-    // 检查是否有分享参数
-    if (checkUrlParams()) {
-        return; // 如果有参数，直接渲染结果，不再继续
-    }
-
+    if (checkUrlParams()) { return; }
     loadAnswers();
     const hasStarted = Object.keys(userAnswers).length > 0;
-    
-    // 隐藏加载遮罩
     var loader = document.getElementById('loading-screen');
     if(loader) loader.style.display = 'none';
-    
-    // 显示内容
     document.getElementById('app').style.display = 'block';
-
-    // 微信判断
     var ua = navigator.userAgent.toLowerCase();
     if(ua.match(/MicroMessenger/i)=="micromessenger") {
         document.getElementById('wx-mask').style.display = 'flex';
         return;
     }
-
     if (!hasStarted) {
         document.getElementById('welcome-modal').classList.add('show');
     } else {
@@ -493,35 +538,22 @@ function startApp() {
     }
 }
 
-// v18.0 新增: 解析 URL 参数
 function checkUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const type = params.get('t');
     const scoreStr = params.get('s');
-    
     if (type && scoreStr && FULL_STACKS[type]) {
         try {
-            // 解析分数 s=100-90-80... (顺序固定为 Ni, Ne, Si, Se, Ti, Te, Fi, Fe)
             const parts = scoreStr.split('-');
             const keys = ["Ni", "Ne", "Si", "Se", "Ti", "Te", "Fi", "Fe"];
             if(parts.length === 8) {
                 let scores = {};
                 keys.forEach((key, i) => scores[key] = parseInt(parts[i]) || 0);
-                
-                // 构造结果对象
                 const stack = FULL_STACKS[type];
-                const res = {
-                    type: type,
-                    stack: stack,
-                    confidence: 100 // 分享链接默认视为有效
-                };
-                
-                // 隐藏 Loading
+                const res = { type: type, stack: stack, confidence: 100 };
                 var loader = document.getElementById('loading-screen');
                 if(loader) loader.style.display = 'none';
-
-                // 显示结果模态框
-                showModal(res, scores, true); // true 表示是好友视角
+                showModal(res, scores, true); 
                 return true;
             }
         } catch(e) { console.error("URL Parsing failed", e); }
@@ -564,13 +596,11 @@ function isQuestionAnswered(qId) {
     return (userAnswers[qId] !== undefined) || (userAnswers['dual_'+qId] === true);
 }
 
-// Markdown 解析
 function parseMarkdown(text) {
     if (!text) return "";
     return text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--primary);">$1</strong>');
 }
 
-// 报告生成 (彩色卡片版)
 function generateDepthReport(type, scores, stack) {
     const dom = stack[0]; 
     const aux = stack[1]; 
@@ -585,37 +615,62 @@ function generateDepthReport(type, scores, stack) {
     const adviceKey = type.includes('N') ? 'N' : 'S'; 
 
     return `
-        <div class="report-card" style="background:#eff6ff; border-left:4px solid #3b82f6;">
-            <h3 style="color:#1e40af; margin-top:0; margin-bottom:10px; font-size:18px; font-weight:800;">🌟 你的灵魂底色</h3>
-            <p style="margin-bottom:0; font-size:15px; line-height:1.6; color:#1e293b;">
-                ${parseMarkdown(reportLibrary.core[type] || "数据解析中...")}
-            </p>
+        <div style="margin-bottom: 40px; animation: fadeIn 0.5s;">
+            <div style="display:flex; align-items:center; margin-bottom:15px; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">
+                <span style="font-size:28px; margin-right:12px;">🦄</span>
+                <div>
+                    <h3 style="margin:0; font-size:18px; color:#4f46e5; font-weight:900;">第一态：本我 (The Ego)</h3>
+                    <div style="font-size:12px; color:#64748b;">你最自然、最舒适、不费吹灰之力的状态</div>
+                </div>
+            </div>
+
+            <div class="report-card" style="background:#eff6ff; border-left:4px solid #6366f1;">
+                <h4 style="color:#3730a3; margin-top:0; margin-bottom:10px; font-size:16px; font-weight:bold;">🌟 灵魂底色</h4>
+                <p style="margin-bottom:15px; font-size:15px; line-height:1.7; color:#1e293b; text-align:justify;">
+                    ${parseMarkdown(reportLibrary.core[type] || "解析中...")}
+                </p>
+                <div style="background:rgba(255,255,255,0.6); padding:12px; border-radius:8px; margin-top:10px;">
+                    <div style="margin-bottom:8px; font-size:14px; line-height:1.5; color:#334155;">
+                        <span style="color:#6366f1; font-weight:bold;">🚀 核心驱动 (${dom})：</span>
+                        ${parseMarkdown(reportLibrary.engine[dom] || "")}
+                    </div>
+                </div>
+            </div>
+            ${conflictHtml ? `<div style="margin-top:15px;">${conflictHtml}</div>` : ''}
         </div>
 
-        <div class="report-card" style="background:#f5f3ff; border-left:4px solid #8b5cf6;">
-            <h3 style="color:#5b21b6; margin-top:0; margin-bottom:10px; font-size:18px; font-weight:800;">⚙️ 你的驱动引擎</h3>
-            <p style="margin-bottom:8px; font-size:15px; line-height:1.6; color:#334155;">
-                主导功能 <span class="highlight-text">${dom}</span>：${parseMarkdown(reportLibrary.engine[dom] || "")}
-            </p>
-            <p style="margin-bottom:0; font-size:15px; line-height:1.6; color:#334155;">
-                辅助副驾 <span class="highlight-text">${aux}</span>：${parseMarkdown(reportLibrary.engine[aux] || "")}
-            </p>
+        <div style="margin-bottom: 40px; animation: fadeIn 0.8s;">
+             <div style="display:flex; align-items:center; margin-bottom:15px; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">
+                <span style="font-size:28px; margin-right:12px;">😈</span>
+                <div>
+                    <h3 style="margin:0; font-size:18px; color:#dc2626; font-weight:900;">第二态：黑化 (The Shadow)</h3>
+                    <div style="font-size:12px; color:#64748b;">极端压力下，你可能会爆发的“影子人格”</div>
+                </div>
+            </div>
+
+            <div class="report-card" style="background:#fef2f2; border-left:4px solid #ef4444;">
+                <h4 style="color:#991b1b; margin-top:0; margin-bottom:10px; font-size:16px; font-weight:bold;">💥 压力预警 (Grip State)</h4>
+                <p style="margin-bottom:0; font-size:15px; line-height:1.7; color:#7f1d1d; text-align:justify;">
+                    ${parseMarkdown(reportLibrary.grip[inf] || "")}
+                </p>
+            </div>
         </div>
 
-        ${conflictHtml ? `<div style="margin-bottom:16px;">${conflictHtml}</div>` : ''}
+        <div style="margin-bottom: 20px; animation: fadeIn 1.1s;">
+             <div style="display:flex; align-items:center; margin-bottom:15px; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">
+                <span style="font-size:28px; margin-right:12px;">🌱</span>
+                <div>
+                    <h3 style="margin:0; font-size:18px; color:#16a34a; font-weight:900;">第三态：成长 (The Growth)</h3>
+                    <div style="font-size:12px; color:#64748b;">发展潜意识功能，通往完整人格的进化路径</div>
+                </div>
+            </div>
 
-        <div class="report-card" style="background:#fef2f2; border-left:4px solid #ef4444;">
-            <h3 style="color:#991b1b; margin-top:0; margin-bottom:10px; font-size:18px; font-weight:800;">🌑 阴影与压力</h3>
-            <p style="margin-bottom:0; font-size:15px; line-height:1.6; color:#7f1d1d;">
-                ${parseMarkdown(reportLibrary.grip[inf] || "")}
-            </p>
-        </div>
-
-        <div class="report-card" style="background:#f0fdf4; border-left:4px solid #22c55e;">
-            <h3 style="color:#166534; margin-top:0; margin-bottom:10px; font-size:18px; font-weight:800;">🌱 进化药方</h3>
-            <p style="margin-bottom:0; font-size:15px; line-height:1.6; color:#14532d;">
-                ${parseMarkdown(reportLibrary.advice[adviceKey] || "")}
-            </p>
+            <div class="report-card" style="background:#f0fdf4; border-left:4px solid #22c55e;">
+                <h4 style="color:#166534; margin-top:0; margin-bottom:10px; font-size:16px; font-weight:bold;">💊 进化药方</h4>
+                <p style="margin-bottom:0; font-size:15px; line-height:1.7; color:#14532d; text-align:justify;">
+                    ${parseMarkdown(reportLibrary.advice[adviceKey] || "")}
+                </p>
+            </div>
         </div>
     `;
 }
@@ -643,7 +698,6 @@ function renderPage() {
             ? `<div class="rainbow-bar"><span class="rainbow-tag">⚡ 双核驱动中 ⚡</span></div>`
             : `<input type="range" min="0" max="10" value="${savedValue}" oninput="onSliderChange(this, ${q.id})">`;
 
-        // 修复：只保留一个 VS
         div.innerHTML = `
             <div class="question-header">
                 <span class="text-sm font-bold text-sub">题号 ${globalIdx}/${TOTAL_QUESTIONS}</span>
@@ -766,12 +820,7 @@ function calculateResults() {
     if(missingCount > 0) { 
         document.getElementById('missing-count').textContent = missingCount;
         const jumpModal = document.getElementById('jump-confirm-modal');
-        
-        // ✅ 修复：只添加 class，不要手动设置 style
         jumpModal.classList.add('show');
-        // jumpModal.style.visibility = 'visible'; // ❌ 删掉这行
-        // jumpModal.style.opacity = '1';          // ❌ 删掉这行
-        
         window.targetJumpId = firstMissingId;
         return; 
     }
@@ -783,11 +832,10 @@ function jumpToFirstUnanswered() {
     const idx = rawQuestions.findIndex(q => q.id === id);
     const targetPage = Math.floor(idx / QUESTIONS_PER_PAGE);
     
-    // ✅ 修复：确保样式被彻底清除
     const modal = document.getElementById('jump-confirm-modal');
     modal.classList.remove('show');
-    modal.style.visibility = ''; // 清空强制样式
-    modal.style.opacity = '';    // 清空强制样式
+    modal.style.visibility = ''; 
+    modal.style.opacity = '';    
 
     currentPage = targetPage;
     renderPage();
@@ -802,7 +850,6 @@ function jumpToFirstUnanswered() {
 }
 
 function forceSubmit() {
-    // ✅ 修复：确保样式被彻底清除
     const modal = document.getElementById('jump-confirm-modal');
     modal.classList.remove('show');
     modal.style.visibility = '';
@@ -902,81 +949,52 @@ function resolveTieBreaker() {
     finalizeAndShow(tempScores);
 }
 
-// --- v19.0 核心算法：计算 Top 3 (修复版) ---
-// --- v19.1 核心算法：绝对分权重优化版 ---
-// --- v19.3 核心算法：排名衰减版 (拉大差距) ---
+// v21.0 核心算法：真实权重版 (移除人为衰减，暴露纠结)
 function determineType(scores) {
-    // 1. 定义权重 (保持不变)
     const weights = { dom: 4.5, aux: 3.0, tert: 1.5, inf: 0.5 }; 
-    
-    // 2. 调整基准分
-    //稍微降低满分基准，让第一名的分数更容易好看（接近 90%+）
     const STANDARD_MAX_SCORE = 800; 
-
     let allResults = [];
 
-    // 3. 遍历计算所有类型的原始得分
     for (const [type, stack] of Object.entries(FULL_STACKS)) {
         const dom = stack[0], aux = stack[1], tert = stack[2], inf = stack[3];
-        
+        // 核心公式
         let matchScore = 
             (scores[dom] * weights.dom) + 
             (scores[aux] * weights.aux) + 
             (scores[tert] * weights.tert) + 
             (scores[inf] * weights.inf);
-
-        // 惩罚项
+        
+        // 惩罚项 (如果你此时表现出强大的第8功能，说明可能不是该类型)
         const demon = stack[7]; 
         if (scores[demon] > scores[dom]) {
-            matchScore -= (scores[demon] - scores[dom]) * 2.0;
+            matchScore -= (scores[demon] - scores[dom]) * 1.5;
         }
-
         allResults.push({ type, score: matchScore, stack });
     }
 
-    // 4. 排序取前三
+    // 排序
     allResults.sort((a, b) => b.score - a.score);
-    const top3 = allResults.slice(0, 3);
 
-    // 5. ⚡️ 核心修改：引入“排名衰减系数”
-    const candidates = top3.map((item, index) => {
-        // 计算基础百分比
-        let rawPercent = (item.score / STANDARD_MAX_SCORE) * 100;
-        
-        // 🚀 排名衰减逻辑：
-        // 第一名：保持 100% 实力
-        // 第二名：乘以 0.85 (强行拉开差距)
-        // 第三名：乘以 0.70 (变成陪跑)
-        let decayFactor = 1.0;
-        if (index === 1) decayFactor = 0.85;
-        if (index === 2) decayFactor = 0.70;
-
-        let finalPercent = rawPercent * decayFactor;
-
-        // 修正逻辑：封顶 99%，兜底 0%
-        let percent = Math.round(Math.min(finalPercent, 99));
-        percent = Math.max(0, percent);
+    // 生成候选列表
+    const candidates = allResults.slice(0, 3).map((item, index) => {
+        let percent = Math.round((item.score / STANDARD_MAX_SCORE) * 100);
+        percent = Math.min(Math.max(percent, 0), 99); // 0-99%
         
         return {
             type: item.type,
             percent: percent,
             stack: item.stack,
-            desc: (typeof typeFullDesc !== 'undefined' ? typeFullDesc[item.type] : item.type) 
+            desc: (typeof typeFullDesc !== 'undefined' ? typeFullDesc[item.type] : item.type)
         };
     });
 
-    const best = candidates[0];
-
     return { 
-        type: best.type,          
-        stack: best.stack,        
-        confidence: best.percent, 
-        bestType: best.type,
-        candidates: candidates,
+        candidates: candidates, // 返回前三名
         scores: scores 
     };
 }
- const typeFullDesc = {
+
+const typeFullDesc = {
     INTJ: "建筑师 - 独立、战略性", INFJ: "提倡者 - 理想主义、深邃",
     ENTJ: "指挥官 - 大胆、果断", ENFJ: "主人公 - 魅力四射",
     INTP: "逻辑学家 - 渴望知识", INFP: "调停者 - 诗意、善良",
@@ -1042,7 +1060,6 @@ function generateRadarChart(scores) {
     return svg;
 }
 
-// v18.0 修改: showModal 增加 friendView 参数
 function showModal(res, scores, friendView = false) {
     try {
         const modal = document.getElementById('result-modal');
@@ -1060,15 +1077,12 @@ function showModal(res, scores, friendView = false) {
         desc.textContent = typeFullDesc[res.type] || "未知类型";
         scoreBadge.textContent = '匹配度 ' + res.confidence + '%';
 
-        // 绘制雷达图
         radarContainer.innerHTML = generateRadarChart(scores);
 
-        // v18.0 核心逻辑: 按【功能栈】排序显示，而非按分数高低
-        const stackList = res.stack; // 例如 ["Fi", "Ne", "Si", "Te", "Fe", "Ni", "Se", "Ti"]
+        const stackList = res.stack; 
         
         rankContainer.innerHTML = stackList.map((funcName, i) => {
             const scoreVal = scores[funcName] || 0;
-            // 热力图颜色逻辑：分数越高越红，越低越蓝
             let color = "#64748b";
             if (scoreVal >= 90) color = "#ef4444";
             else if (scoreVal >= 75) color = "#f97316";
@@ -1094,8 +1108,6 @@ function showModal(res, scores, friendView = false) {
                 const isTop = index === 0;
                 const color = isTop ? '#6366f1' : (index === 1 ? '#8b5cf6' : '#94a3b8');
                 const badge = isTop ? '🥇 No.1' : (index === 1 ? '🥈 No.2' : '🥉 No.3');
-                
-                // 使用你现有的 typeFullDesc 对象
                 const descText = typeFullDesc[item.type] 
                                  ? typeFullDesc[item.type].split(' - ')[1] 
                                  : item.type;
@@ -1123,10 +1135,9 @@ function showModal(res, scores, friendView = false) {
 
         if (friendView) {
             friendBanner.style.display = 'block';
-            btnRestart.style.display = 'none'; // 隐藏重测
-            btnShare.textContent = "我也要测"; // 改按钮文本
+            btnRestart.style.display = 'none'; 
+            btnShare.textContent = "我也要测"; 
             btnShare.onclick = function() {
-                // 清除 URL 参数并重载
                 window.location.href = window.location.pathname;
             };
         } else {
@@ -1142,25 +1153,11 @@ function showModal(res, scores, friendView = false) {
     }
 }
 
-function finalizeAndShow(scores) {
-    const result = determineType(scores);
-    showModal(result, scores, false);
-}
-
-// v18.0 新增: 基于 URL 参数的分享
 function shareResults() {
-    // 1. 获取当前数据
     var titleEl = document.getElementById('res-title');
     var type = titleEl ? titleEl.textContent : "未知";
-    
-    // 2. 重新从 DOM 或 内存中获取 8 维分数，按固定顺序序列化
-    // 为了简单，我们直接读取全局的 tempScores (如果是好友视角，tempScores可能为空，需要注意)
-    // 但在好友视角点击这个按钮是跳转首页，所以这里只处理“自己测完分享”的情况
-    
-    // 序列化分数: Ni-Ne-Si-Se-Ti-Te-Fi-Fe
     const keys = ["Ni", "Ne", "Si", "Se", "Ti", "Te", "Fi", "Fe"];
     const scoreValStr = keys.map(k => Math.round(tempScores[k] || 0)).join('-');
-    
     const shareUrl = `${window.location.origin}${window.location.pathname}?t=${type}&s=${scoreValStr}`;
     const text = `我的MBTI八维深度测评结果：${type}！\n这是我的详细功能栈数据，快来看看：${shareUrl}`;
 
@@ -1179,8 +1176,85 @@ function clearStorage() {
     if(confirm('确定清除进度并重测？')) { 
         localStorage.removeItem(STORAGE_KEY); 
         localStorage.removeItem(RESULT_KEY); 
-        location.href = window.location.pathname; // 清除参数并刷新
+        location.href = window.location.pathname; 
     }
+}
+
+// 全局变量暂存候选人，供验证弹窗使用
+let pendingCandidates = [];
+
+// v21.0 核心逻辑: 拦截验证
+// v21.1 优化：加入“主导功能豁免”逻辑
+function finalizeAndShow(scores) {
+    const resultData = determineType(scores);
+    const top1 = resultData.candidates[0];
+    const top2 = resultData.candidates[1];
+
+    // 获取两个候选类型的“主导功能”名称
+    // 例如：top1是INFP -> dom1="Fi"；top2是ENFP -> dom2="Ne"
+    const dom1 = FULL_STACKS[top1.type][0];
+    const dom2 = FULL_STACKS[top2.type][0];
+
+    // 计算分差
+    const percentGap = top1.percent - top2.percent;
+
+    // ⚡️ 智能拦截逻辑 ⚡️
+    // 只有当：(分差小于5%) 且 (主导功能分数咬得很死) 时，才触发验证
+    // 如果你的 Fi 比 Ne 高出 10 分以上，说明你就是 INFP，不需要验证
+    const isAmbiguous = (percentGap < 5) && (Math.abs(scores[dom1] - scores[dom2]) < 10);
+
+    if (isAmbiguous) {
+        // 只有真的分不清时，才弹窗
+        triggerFinalVerification(resultData.candidates, scores);
+    } else {
+        // 结构清晰，直接出结果
+        const finalResult = {
+            type: top1.type,
+            stack: top1.stack,
+            confidence: top1.percent,
+            candidates: resultData.candidates
+        };
+        showModal(finalResult, scores, false);
+    }
+}
+// 触发验证弹窗的函数
+function triggerFinalVerification(candidates, scores) {
+    pendingCandidates = candidates; 
+    window.pendingScores = scores;  
+
+    const typeA = candidates[0].type;
+    const typeB = candidates[1].type;
+
+    const infA = FULL_STACKS[typeA][3];
+    const infB = FULL_STACKS[typeB][3];
+
+    document.getElementById('verify-type-a').textContent = typeA;
+    document.getElementById('verify-type-b').textContent = typeB;
+
+    document.getElementById('verify-name-a').textContent = typeA;
+    document.getElementById('verify-desc-a').innerHTML = reportLibrary.grip[infA] || "加载描述失败";
+
+    document.getElementById('verify-name-b').textContent = typeB;
+    document.getElementById('verify-desc-b').innerHTML = reportLibrary.grip[infB] || "加载描述失败";
+
+    document.getElementById('final-verify-modal').classList.add('show');
+}
+
+// 用户点击确认后的处理
+function confirmFinalType(index) {
+    document.getElementById('final-verify-modal').classList.remove('show');
+
+    const selected = pendingCandidates[index]; 
+    const other = pendingCandidates[index === 0 ? 1 : 0];
+
+    const finalResult = {
+        type: selected.type,
+        stack: selected.stack,
+        confidence: selected.percent + 5, // 给予“自我确认”的加分
+        candidates: [selected, other, pendingCandidates[2]] 
+    };
+
+    showModal(finalResult, window.pendingScores, false);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1194,7 +1268,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     setTimeout(startApp, 100);
-    // 超时强制启动
     setTimeout(function() {
         var loader = document.getElementById('loading-screen');
         if(loader && loader.style.display !== 'none') {
